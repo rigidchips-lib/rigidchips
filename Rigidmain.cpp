@@ -2180,6 +2180,7 @@ void GWorld::DispNetChip(int n)
 		int type=chip->data.type&0x3f;
 		int op1=(chip->data.type>>6)&0x01;
 		int op2=(chip->data.type>>7)&0x01;
+		PlayerData[n].Jet[PlayerData[n].ChipCount] = 0;
 		if(type==GT_COWL&&!ShowCowl) {PlayerData[n].ChipCount++;continue;} 
 		CD3DMesh* mesh=NULL;
 		int meshNo=0;
@@ -2339,7 +2340,6 @@ void GWorld::DispNetChip(int n)
 					m_pXMesh[22]->Render(G3dDevice);
 				}
 			}
-			PlayerData[n].Jet[PlayerData[n].ChipCount]=0;
 			if(type==GT_JET) {
 				if(op1==1 || op1==2){
 					FLOAT f=chip->data.option/10.0f*w2+chip2->data.option/10.0f*w1;
