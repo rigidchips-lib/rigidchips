@@ -1,0 +1,107 @@
+stime=0
+time=0
+count=0
+function OnFrame()
+	out(1,"*-- レース1 --*")
+	out(2,"すべてのリングをくぐれ!")
+	if(count>0 and count<=15) then time=_STICKS()/30-stime end
+	if(_CHECK2(count,0)>0) then 
+		_SETRINGSTATE(count,0)
+		if(count==0) then
+			stime=_STICKS()/30	--タイムスタート
+			_ENERVATE(0)		--速度を0にリセット
+		end
+		count=count+1
+		if(count<=15) then _SETRINGSTATE(count,2) end
+	end
+	
+	out(4,"時間= ",time," 秒")
+end
+
+function OnInit()
+	_SETREG("G",1)
+	_SETREG("A",1)
+	_SETREG("T",1)
+	_SETREG("J",1)
+	_SETREG("U",1)
+	_SETREG("C",1)
+	_SETREG("S",1)
+	_LOADLAND("Land.x")
+	_WARP(0,21,_GETY(x,z)+5,127)
+	_DIRECT(0,0,90,0)
+	time=0
+	
+	_SETRING(0,0,44,127,0,90,0,10)
+	_SETRINGSTATE(0,2)
+	_SETRINGCOLOR(0,1,1,0)
+
+	_SETRING(1,-108,44,127,0,90,0,10)
+	_SETRINGSTATE(1,0)
+	_SETRINGCOLOR(1,1,1,1)
+	
+	_SETRING(2,-240,44,0,0,0,0,10)
+	_SETRINGSTATE(2,0)
+	_SETRINGCOLOR(2,1,1,1)
+
+	_SETRING(3,-108,44,-127,0,90,0,10)
+	_SETRINGSTATE(3,0)
+	_SETRINGCOLOR(3,1,1,1)
+
+	_SETRING(4,108,44,-127,0,90,0,10)
+	_SETRINGSTATE(4,0)
+	_SETRINGCOLOR(4,1,1,1)
+
+	_SETRING(5,240,44,0,0,0,0,10)
+	_SETRINGSTATE(5,0)
+	_SETRINGCOLOR(5,1,1,1)
+
+	_SETRING(6,108,44,127,0,90,0,10)
+	_SETRINGSTATE(6,0)
+	_SETRINGCOLOR(6,1,1,1)
+
+	_SETRING(7,-108,65,170,0,90,0,43)
+	_SETRINGSTATE(7,0)
+	_SETRINGCOLOR(7,1,1,1)
+	
+	_SETRING(8,-283,65,0,0,0,0,43)
+	_SETRINGSTATE(8,0)
+	_SETRINGCOLOR(8,1,1,1)
+	
+	_SETRING(9,-108,65,-170,0,90,0,43)
+	_SETRINGSTATE(9,0)
+	_SETRINGCOLOR(9,1,1,1)
+
+	_SETRING(10,108,65,-170,0,90,0,43)
+	_SETRINGSTATE(10,0)
+	_SETRINGCOLOR(10,1,1,1)
+	
+	_SETRING(11,283,65,0,0,0,0,43)
+	_SETRINGSTATE(11,0)
+	_SETRINGCOLOR(11,1,1,1)
+	
+	_SETRING(12,108,65,170,0,90,0,43)
+	_SETRINGSTATE(12,0)
+	_SETRINGCOLOR(12,1,1,1)
+
+	_SETRING(13,-108,65,170,0,90,0,43)
+	_SETRINGSTATE(13,0)
+	_SETRINGCOLOR(13,1,1,1)
+	
+	_SETRING(14,-283,65,0,0,0,0,43)
+	_SETRINGSTATE(14,0)
+	_SETRINGCOLOR(14,1,1,1)
+	
+	_SETRING(15,0,65,-170,0,90,0,43)
+	_SETRINGSTATE(15,0)
+	_SETRINGCOLOR(15,1,1,0)
+
+	count=0
+end
+
+function OnReset()
+
+end
+
+function OnMode()
+
+end
