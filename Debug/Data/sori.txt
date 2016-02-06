@@ -1,0 +1,52 @@
+//
+Val {
+	Brake(default=0,min=0,max=80,step=80)
+	HBrake(default=0,min=0,max=100,step=100)
+	Handle(default=0,min=-20,max=20,step=5)
+	Engine(default=0,min=-25000,max=25000,step=2500)
+}
+Key {
+	0:Engine(step=-5000)
+	1:Engine(step=5000)
+	2:Handle(step=-0.5)
+	3:Handle(step=0.5)
+	7:Brake(step=30),HBrake(step=20)
+	8:HBrake(step=20)
+}
+Body {
+	Core(color=#ff00){
+		N:Jet(angle=-90,power=Engine){
+		}
+		N:Frame(){
+			N:Rudder(angle=Handle,color=#ff0000){
+				W:Frame(angle=-20,spring=0.2,damper=0.01){
+					W:Chip(angle=70,color=#ffff){
+					}
+				}
+				E:Frame(angle=-20,spring=0.2,damper=0.01){
+					E:Chip(angle=70,color=#ffff){
+					}
+				}
+			}
+		}
+		S:Frame(){
+			W:Frame(angle=-20,spring=0.2,damper=0.01){
+				W:Chip(angle=70){
+				}
+			}
+			E:Frame(angle=-20,spring=0.2,damper=0.01){
+				E:Chip(angle=70){
+				}
+			}
+		}
+	}
+}
+Script
+{
+	//test
+	print 0,"Welcome to Rigid-Chips World."
+	print 1,"  FPS=",_FPS(),"  Chips=",_CHIPS()
+	print 2,"  Width=",_WIDTH(),"  Height=",_HEIGHT()
+	print 3,"  Faces=",_FACE()
+	print 4,"  VZ=",_VZ()
+}

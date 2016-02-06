@@ -1,0 +1,66 @@
+Val {
+	Brake(default=1,min=0,max=300,step=300)
+	HBrake(default=1,min=0,max=80,step=80)
+	Handle(default=0,min=-30,max=30,step=5)
+	Engine(default=0,min=-4500,max=4500,step=4500)
+}
+Key {
+	0:Engine(step=-500)
+	1:Engine(step=500)
+	2:Handle(step=-0.5)
+	3:Handle(step=0.5)
+	7:Brake(step=30),HBrake(step=20)
+	8:HBrake(step=20)
+}
+Body {
+	Core(color=#ff0022){
+		N:Frame(angle=-8){
+			N:Frame(angle=8,spring=0.5,dumper=0.3){
+				W:Rudder(angle=Handle,spring=0.7,color=#ff0022){
+					N:Frame(angle=-150,spring=0.15,damper=0.1){
+						N:Frame(angle=150,spring=0.3,damper=0.1){
+							W:Wheel(angle=90,brake=Brake){
+							}
+						}
+					}
+				}
+				E:Rudder(angle=Handle,spring=0.7,color=#ff0022){
+					N:Frame(angle=-150,spring=0.15,damper=0.1){
+						N:Frame(angle=150,spring=0.3,damper=0.1){
+							E:Wheel(angle=90,brake=Brake){
+							}
+						}
+					}
+				}
+			}
+		}
+		S:Frame(){
+			W:Chip(spring=0.4,dumper=0.9,color=#ff0022){
+				N:Frame(angle=-160,spring=0.15,damper=0.1){
+					N:Frame(angle=160,spring=0.3,damper=0.1){
+						W:Wheel(angle=90,power=Engine,brake=HBrake){
+						}
+					}
+				}
+			}
+			E:Chip(spring=0.4,dumper=0.9,color=#ff0022){
+				N:Frame(angle=-160,spring=0.15,damper=0.1){
+					N:Frame(angle=160,spring=0.3,damper=0.1){
+						E:Wheel(angle=90,power=-Engine,brake=HBrake){
+						}
+					}
+				}
+			}
+		}
+	}
+}
+Script {
+	print 0,"Welcome to Rigid-Chips World."
+	print 1,"  FPS=",_FPS(),"  Chips=",_CHIPS(),"  Weight=",_WEIGHT()
+	print 2,"  Width=",_WIDTH(),"  Height=",_HEIGHT()
+	print 3,"  Faces=",_FACE()
+	print 4,"  Vel=",_VEL()
+	print 5,"  R=",_RED(32,32)
+	print 6,"  G=",_GREEN(32,32)
+	print 7,"  B=",_BLUE(32,32)
+}

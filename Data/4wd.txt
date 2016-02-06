@@ -1,0 +1,58 @@
+//4WD
+Val
+{
+	Brake(default=0,min=0,max=80,step=80)
+	HBrake(default=0,min=0,max=100,step=100,disp=0)
+	Handle(default=0,min=-30,max=30,step=5)
+	Engine(default=0,min=-5500,max=5500,step=2500)
+}
+Key
+{
+	0:Engine(step=-500)
+	1:Engine(step=500)
+	2:Handle(step=-0.5)
+	3:Handle(step=0.5)
+	7:Brake(step=30),HBrake(step=20)
+	8:HBrake(step=20)
+}
+Body {
+	Core(){
+		S:Frame(angle=-15){
+			W:Chip(angle=-30){}
+			E:Chip(angle=-30){}
+		}
+		W:Frame(){
+			W:Frame(angle=-95){
+				N:RudderF(angle=15,spring=0.08,damper=0.15){
+					N:Frame(){
+							E:Chip(angle=-100){}
+							N:Wheel(angle=-Handle,power=-Engine,brake=Brake){
+							}
+					}
+				}
+				S:RudderF(angle=-40,spring=0.08,damper=0.15){
+					S:Wheel(power=-Engine,brake=HBrake){
+					}
+				}
+			}
+		}
+		E:Frame(){
+			E:Frame(angle=-95){
+				N:RudderF(angle=-15,spring=0.08,damper=0.15){
+					N:Frame(){
+							W:Chip(angle=-100){}
+							N:Wheel(angle=Handle,power=Engine,brake=Brake){
+							}
+					}
+				}
+				S:RudderF(angle=40,spring=0.08,damper=0.15){
+					S:Wheel(power=Engine,brake=HBrake,name=TY){
+					}
+				}
+			}
+		}
+	}
+}
+Script
+{
+}

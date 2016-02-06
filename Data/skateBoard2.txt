@@ -1,0 +1,61 @@
+//skateboard2
+Val {
+	Brake(default=0,min=0,max=80,step=80)
+	HBrake(default=0,min=0,max=100,step=100)
+	Handle(default=0,min=-40,max=40,step=1)
+	Jet(default=0,min=-25000,max=25000,step=25000)
+}
+Key {
+	0:Jet(step=500)
+	1:Jet(step=-500)
+	2:Handle(step=2)
+	3:Handle(step=-2)
+	7:Brake(step=30),HBrake(step=20)
+	8:HBrake(step=20)
+}
+Body {
+	Core(color=#ff00){
+	N:Chip(angle=40,color=#ff00){
+		S:Jet(angle=-50,power=Jet){
+		S:Rudder(angle=Handle,color=#ff00){
+		S:Frame(color=#ff00){
+		S:Wheel(angle=0,brake=100,color=#ff00){
+		}
+		}
+		}
+		}
+		N:Rudder(angle=0,spring=0.10,damper=0.1){
+				E:Frame(angle=0){
+					E:Wheel(angle=90,brake=Brake,color=#ffff){
+					}
+				}
+				W:Frame(angle=0){
+					W:Wheel(angle=90,brake=Brake,color=#ffff){
+					}
+				}
+		}
+	}
+	S:Chip(angle=40,color=#ff00){
+		S:Rudder(angle=0,spring=0.10,damper=0.1){
+				E:Frame(angle=0){
+					E:Wheel(angle=90,brake=Brake,color=#ffff){
+					}
+				}
+				W:Frame(angle=0){
+					W:Wheel(angle=90,brake=Brake,color=#ffff){
+					}
+				}
+
+			}
+		}
+	}
+}
+Script
+{
+	//test
+	print 0,"Welcome to Rigid-Chips World."
+	print 1,"  FPS=",_FPS(),"  Chips=",_CHIPS()
+	print 2,"  Width=",_WIDTH(),"  Height=",_HEIGHT()
+	print 3,"  Faces=",_FACE()
+	print 4,"  VZ=",_VZ()
+}

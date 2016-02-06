@@ -1,0 +1,152 @@
+//BigFoot
+Val
+{
+	Brake(default=0,min=0,max=80,step=80)
+	HBrake(default=0,min=0,max=100,step=100)
+	Handle(default=0,min=-20,max=20,step=5)
+	Engine(default=0,min=-60000,max=60000,step=60000)
+}
+Key
+{
+	0:Engine(step=-5000)
+	1:Engine(step=5000)
+	2:Handle(step=-0.5)
+	3:Handle(step=0.5)
+	7:Brake(step=30),HBrake(step=20)
+	8:HBrake(step=20)
+}
+Body {
+	Core(){
+		N:Chip(){
+			N:Rudder(angle=Handle){
+				W:Frame(){
+					W:RLW(angle=90,power=Engine,brake=Brake){
+						N:TrimF(angle=-90) {
+							N:Frame(angle=110) {
+								N:Frame(angle=40) {
+								}
+							}
+						}
+						E:TrimF(angle=-90) {
+							E:Frame(angle=110) {
+								E:Frame(angle=40) {
+								}
+							}
+						}
+						S:TrimF(angle=-90) {
+							S:Frame(angle=110) {
+								S:Frame(angle=40) {
+								}
+							}
+						}
+						W:TrimF(angle=-90) {
+							W:Frame(angle=110) {
+								W:Frame(angle=40) {
+								}
+							}
+						}
+					}
+				}
+				E:Frame(){
+					E:RLW(angle=90,power=-Engine,brake=Brake){
+						N:TrimF(angle=90) {
+							N:Frame(angle=110) {
+								N:Frame(angle=40) {
+								}
+							}
+						}
+						E:TrimF(angle=90) {
+							E:Frame(angle=110) {
+								E:Frame(angle=40) {
+								}
+							}
+						}
+						S:TrimF(angle=90) {
+							S:Frame(angle=110) {
+								S:Frame(angle=40) {
+								}
+							}
+						}
+						W:TrimF(angle=90) {
+							W:Frame(angle=110) {
+								W:Frame(angle=40) {
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		S:Chip(){
+			S:Chip(){
+				W:Frame(){
+					W:RLW(angle=90,power=Engine,brake=HBrake){
+						N:TrimF(angle=90) {
+							N:Frame(angle=110) {
+								N:Frame(angle=40) {
+								}
+							}
+						}
+						E:TrimF(angle=90) {
+							E:Frame(angle=110) {
+								E:Frame(angle=40) {
+								}
+							}
+						}
+						S:TrimF(angle=90) {
+							S:Frame(angle=110) {
+								S:Frame(angle=40) {
+								}
+							}
+						}
+						W:TrimF(angle=90) {
+							W:Frame(angle=110) {
+								W:Frame(angle=40) {
+								}
+							}
+						}
+					}
+				}
+				E:Frame(){
+					E:RLW(angle=90,power=-Engine,brake=HBrake){
+						N:TrimF(angle=-90) {
+							N:Frame(angle=110) {
+								N:Frame(angle=40) {
+								}
+							}
+						}
+						E:TrimF(angle=-90) {
+							E:Frame(angle=110) {
+								E:Frame(angle=40) {
+								}
+							}
+						}
+						S:TrimF(angle=-90) {
+							S:Frame(angle=110) {
+								S:Frame(angle=40) {
+								}
+							}
+						}
+						W:TrimF(angle=-90) {
+							W:Frame(angle=110) {
+								W:Frame(angle=40) {
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+Script
+{
+	print 0,"Welcome to Rigid-Chips World."
+	print 1,"  FPS=",_FPS(),"  Chips=",_CHIPS(),"  Weight=",_WEIGHT()
+	print 2,"  Width=",_WIDTH(),"  Height=",_HEIGHT()
+	print 3,"  Faces=",_FACE()
+	print 4,"  Vel=",_VEL()
+	print 5,"  R=",_RED(32,32)
+	print 6,"  G=",_GREEN(32,32)
+	print 7,"  B=",_BLUE(32,32)
+}

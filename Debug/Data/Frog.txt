@@ -1,0 +1,43 @@
+//frog
+Val {
+	A(default=170,min=0,max=170,step=10)
+	B(default=150,min=30,max=150,step=10)
+	C(default=30,min=0,max=30,step=10)
+}
+Key {
+	0:A(step=-170),B(step=-100),C(step=-30)
+}
+Body {
+	Core(color=#ff00){
+		E:Jet(){
+		}
+		W:Jet(){
+		}
+		S:Chip(color=#ff00){
+			S:Chip(angle=C,color=#ff00){
+				E:Chip(color=#ff00){
+					S:Chip(angle=A,spring=0.2,damper=0.1,color=#ff00){
+						S:Chip(angle=-A,spring=0.2,damper=0.01,color=#ff00){
+							S:Chip(angle=B,spring=0.2,damper=0.01,color=#ff00){
+								S:Wheel(spring=0.5,damper=0.1,brake=1000,color=#ff00){
+								}
+							}
+						}
+					}
+				}
+				W:Chip(color=#ff00){
+					S:Chip(angle=A,spring=0.2,damper=0.1,color=#ff00){
+						S:Chip(angle=-A,spring=0.2,damper=0.01,color=#ff00){
+							S:Chip(angle=B,spring=0.2,damper=0.01,color=#ff00){
+								S:Wheel(spring=0.5,damper=0.1,brake=1000,color=#ff00){
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+Script {
+}

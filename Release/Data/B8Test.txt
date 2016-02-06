@@ -1,0 +1,53 @@
+//BasicCar
+//
+Val
+{
+	Break(default=0,min=0,max=80,step=80)
+	HBreak(default=0,min=0,max=100,step=100)
+	Handle(default=0,min=-20,max=20,step=5)
+	Engine(default=0,min=-2500,max=2500,step=2500)
+	Trig(default=0,min=0,max=1000000,step=1000000)
+
+}
+Key
+{
+	0:Engine(step=-500)
+	1:Engine(step=500)
+	2:Handle(step=-0.5)
+	3:Handle(step=0.5)
+	7:Break(step=30),HBreak(step=20)
+	8:HBreak(step=20)
+	4:Trig(step=1000000)
+}
+Body {
+	Core(){
+		N:Chip(){
+			N:Rudder(angle=Handle){
+				W:Frame(Option=1){
+					W:Wheel(angle=90,break=Break){
+					}
+				}
+				E:Frame(Option=1){
+					E:Wheel(angle=90,break=Break){
+					}
+				}
+				N:ARM(option=250000,power=Trig,name=arm1){
+				}
+			}
+		}
+		S:Chip(){
+			W:Frame(){
+				W:Wheel(angle=90,power=Engine,break=HBreak){
+				}
+			}
+			E:Frame(){
+				E:Wheel(name=abc,angle=90,power=-Engine,break=HBreak){
+				}
+			}
+		}
+	}
+}
+Script
+{
+	print 2,_E(arm1)
+}

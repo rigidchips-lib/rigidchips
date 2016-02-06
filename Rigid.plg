@@ -1,0 +1,38 @@
+<html>
+<body>
+<pre>
+<h1>ﾋﾞﾙﾄﾞのﾛｸﾞ</h1>
+<h3>
+--------------------構成: Rigid - Win32 Debug--------------------
+</h3>
+<h3>ｺﾏﾝﾄﾞ ﾗｲﾝ</h3>
+一時ﾌｧｲﾙ "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSPA2.tmp" を作成し、次の内容を記録します
+[
+dsound.lib dinput8.lib dxerr8.lib d3dx8dt.lib d3d8.lib d3dxof.lib dxguid.lib winmm.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/Rigid.pdb" /debug /machine:I386 /out:"Debug/Rigid.exe" /pdbtype:sept 
+".\Debug\d3dapp.obj"
+".\Debug\d3dfile.obj"
+".\Debug\d3dfont.obj"
+".\Debug\d3dutil.obj"
+".\Debug\diutil.obj"
+".\Debug\dmutil.obj"
+".\Debug\dsutil.obj"
+".\Debug\dxutil.obj"
+".\Debug\GRigid.obj"
+".\Debug\GVector.obj"
+".\Debug\readData.obj"
+".\Debug\readSub.obj"
+".\Debug\Rigid.obj"
+".\Debug\script.obj"
+".\Debug\Rigid.res"
+]
+ｺﾏﾝﾄﾞ ﾗｲﾝ "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSPA2.tmp" の作成中
+<h3>ｱｳﾄﾌﾟｯﾄ ｳｨﾝﾄﾞｳ</h3>
+ﾘﾝｸ中...
+
+
+
+<h3>結果</h3>
+Rigid.exe - ｴﾗｰ 0、警告 0
+</pre>
+</body>
+</html>

@@ -1,0 +1,72 @@
+//robot
+Val {
+	A(default=-50,min=-270,max=180,step=0)
+	B(default=5,min=-180,max=90,step=180)
+	C(default=10,min=0,max=90,step=45)
+	C1(default=20,min=0,max=900,step=45)
+	C2(default=110,min=0,max=900,step=45)
+	D(default=10,min=0,max=90,step=45)
+	D1(default=20,min=0,max=900,step=45)
+	D2(default=110,min=0,max=900,step=45)
+}
+Key {
+	2:C(step=5)
+	3:D(step=5)
+}
+Body {
+	Core(){
+		S:Chip(angle=90){
+			E:Trim(angle=A){
+				E:Chip(angle=80){
+					E:Chip(){
+						E:Chip(){
+						}
+					}
+				}
+			}
+			W:Trim(angle=-A){
+				W:Chip(angle=80){
+					W:Chip(){
+						W:Chip(){
+						}
+					}
+				}
+			}
+			S:Rudder(angle=0){
+				S:Chip(angle=B){
+					E:Rudder(angle=0){
+						S:Chip(angle=C,spring=0.1,damper=0.1){
+							S:Chip(angle=-C1,spring=0.3,damper=0.2){
+								S:Frame(angle=C2,spring=0.3,damper=0.2){
+									S:Frame(angle=0,spring=0.8,damper=0.1){
+									}
+								}
+							}
+						}
+					}
+					W:Rudder(angle=0){
+						S:Chip(angle=D,spring=0.1,damper=0.1){
+							S:Chip(angle=-D1,spring=0.3,damper=0.2){
+								S:Frame(angle=D2,spring=0.3,damper=0.2){
+									S:Frame(angle=0,spring=0.8,damper=0.1){
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	
+	}
+}
+Script
+{
+	print 0,"I am Robot."
+	A=_ax(0)*180/_pi()*1.5-50
+	B=_ax(0)*180/_pi()*0.5
+	C1=C*2
+	C2=90+C
+	D1=D*2
+	D2=90+D
+}

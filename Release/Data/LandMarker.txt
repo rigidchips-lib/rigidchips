@@ -1,0 +1,66 @@
+//LandMarker-Car
+Val
+{
+	Brake(default=0,min=0,max=80,step=80)
+	HBrake(default=0,min=0,max=100,step=100,disp=0)
+	Handle(default=0,min=-30,max=30,step=5)
+	Engine(default=0,min=-1500,max=1500,step=2500)
+}
+Key
+{
+	0:Engine(step=-500)
+	1:Engine(step=500)
+	2:Handle(step=-0.5)
+	3:Handle(step=0.5)
+	7:Brake(step=30),HBrake(step=20)
+	8:HBrake(step=20)
+}
+Body {
+	Core(){
+		S:Frame(){
+			W:Chip(angle=-90){}
+			E:Chip(angle=-90){}
+		}
+		W:Frame(){
+			N:Frame(angle=-20,spring=0.1){
+				N:RudderF(angle=Handle){
+					N:Frame(angle=-160,spring=0.05,damper=0.1){
+						W:Wheel(angle=-90,power=-Engine,brake=Brake){
+						}
+					}
+				}
+			}
+			S:Frame(angle=-20,spring=0.05,damper=0.2){
+				W:Wheel(angle=90,power=Engine,brake=HBrake){
+				}
+			}
+		}
+		E:Frame(){
+			N:Frame(angle=-20,spring=0.1){
+				N:RudderF(angle=Handle){
+					N:Frame(angle=-160,spring=0.05,damper=0.1){
+						E:Wheel(angle=-90,power=Engine,brake=Brake){
+						}
+					}
+				}
+			}
+			S:Frame(angle=-20,spring=0.05,damper=0.2){
+				E:Wheel(angle=90,power=-Engine,brake=HBrake){
+				}
+			}
+		}
+	}
+}
+Script
+{
+	print 0,"This position is"
+	print 1,"  X=",_X(0),"  Y=",_Y(0),"  Z=",_Z(0)
+	print 2,"Direction is"
+	ax=_TODEG(_AX(0))
+	print 3,"  XAxis=",ax
+	ay=_TODEG(_AY(0))
+	print 4,"  YAxis=",ay
+	az=_TODEG(_AZ(0))
+	print 5,"  ZAxis=",az
+
+}

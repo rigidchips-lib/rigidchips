@@ -1,0 +1,31 @@
+WindLevel=0
+LastBall=-1
+
+function OnFrame()
+	
+	if(_SKEYDOWN(0)>0) then
+		LastBall=_ADDBALL(0.6, 2, _GETY(2,0)+6+LastBall ,LastBall/10, 0.3)
+		_SETOBJCOLOR(LastBall,1,0,1)
+	end
+	if(_SKEYDOWN(1)>0) then
+		WindLevel=WindLevel+1
+		if(WindLevel>3) then WindLevel=0 end
+		if(WindLevel==0) then _SETWIND(0,0,0) end
+		if(WindLevel==1) then _SETWIND(5,0,0) end 
+		if(WindLevel==2) then _SETWIND(16,0,0) end
+		if(WindLevel==3) then _SETWIND(50,0,0) end
+	end
+	wx,wy,wz=_GETWIND()
+	if(WindLevel~=0) then out(0,"Wind = ",wx," ",wy," ",wz) end
+	if(LastBall>=0) then out(1,"Ball Count = ",LastBall+1) end
+
+end
+
+function OnInit()
+	WindLevel=0
+	LastBall=-1
+end
+
+function OnReset()
+
+end

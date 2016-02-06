@@ -1,0 +1,70 @@
+stime=0
+time=0
+ball={}
+function OnFrame()
+	out(1,"*-- ŽË“I --*")
+	out(2,"‚·‚×‚Ä‚Ìƒ{[ƒ‹‚ðŒ‚‚Ä!")
+	count=0
+	for i=0 , 3,1 do
+		if(_GETHITOBJ(i,"BULLET")>0) then ball[i]= ball[i]+1 end
+		if(_GETHITOBJ(i,"CHIP")>0) then ball[i]= ball[i]+1 end
+		if(ball[i]>0) then
+			_SETOBJCOLOR(i,1,1,1)
+			count=count+1
+		end
+	end
+	if( count<4) then time=_STICKS()/30-stime end
+	
+	out(4,"ŽžŠÔ= ",time," •b ["..count,"/4]")
+end
+
+function OnInit()
+	_SETREG("G",1)
+	_SETREG("A",1)
+	_SETREG("T",1)
+	_SETREG("J",1)
+	_SETREG("U",1)
+	_SETREG("C",1)
+	_SETREG("S",1)
+	_LOADLAND("Land.x")
+	_WARP(0,0,_GETY(x,z)+5,0)
+	_DIRECT(0,0,-90,0)
+	stime=_STICKS()/30
+	time=0
+	
+	math.randomseed(_STICKS())
+	x=math.random(50)-25+150
+	z=math.random(50)-25+10
+	_ADDBALL(1.0,x,_GETY(x,z)+3,z,0.01)
+	_SETOBJCOLOR(0,1,0,0)
+	
+	x=math.random(50)-25+150
+	z=math.random(50)-25-10
+	_ADDBALL(1.0,x,_GETY(x,z)+3,z,0.01)
+	_SETOBJCOLOR(1,1,0,0)
+	
+	x=math.random(50)-25+150
+	z=math.random(50)-25+20
+	_ADDBALL(1.0,x,_GETY(x,z)+3,z,0.01)
+	_SETOBJCOLOR(2,1,0,0)
+	
+	x=math.random(50)-25+150
+	z=math.random(50)-25-20
+	_ADDBALL(1.0,x,_GETY(x,z)+3,z,0.01)
+	_SETOBJCOLOR(3,1,0,0)
+	
+	ball[0]=0
+	ball[1]=0
+	ball[2]=0
+	ball[3]=0
+	_SETVIEWTYPE(2)
+
+end
+
+function OnReset()
+
+end
+
+function OnMode()
+
+end

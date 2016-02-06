@@ -1,0 +1,31 @@
+//Balloon
+Val
+{
+	Hydrogen(default=8000,min=0,max=40000,step=10)
+}
+Key
+{
+	0:Hydrogen(step=100)
+	1:Hydrogen(step=-100)
+}
+Body {
+	Core(){
+		S:Chip(){
+		}
+		S:Frame(angle=-90,Spring=0.2,Damper=0.1){
+			S:RudderF(Spring=0,Damper=0){
+				S:TrimF(Spring=0,Damper=0){
+					S:Frame(Spring=0,Damper=0){
+						S:Jet(Option=1,Power=Hydrogen,Name=BAL){
+						}
+					}
+				}
+			}
+		}
+	}
+}
+Script
+{
+	print 0,"Balloon"
+	print 1,"option=",_OPTION(BAL)
+}

@@ -1,0 +1,36 @@
+//Bike2
+Val {
+	RBrake(default=0,min=0,max=8,step=8)
+	Engine(default=0,min=-2500,max=2500,step=2500)
+	Handle(default=0,min=-20,max=20,step=20)
+	Barance(default=0,min=-45,max=45)
+}
+Key {
+	0:Engine(step=-300)
+	1:Engine(step=300)
+	2:Handle(step=-0.5)
+	3:Handle(step=0.5)
+	7:RBrake(step=2)
+}
+Body {
+	Core(color=#ff00){
+		N:Trim(angle=90,color=#ff00){
+			N:Rudder(angle=80,spring=0.1,dumper=0.1,color=#ff00){
+				N:Trim(angle=-Barance,color=#ff0000){
+					N:Wheel(){
+					}
+				}
+			}
+		}
+		S:Trim(angle=90,color=#ff0000){
+			S:RLW(power=Engine,brake=RBrake){
+			}
+		}
+	}
+}
+Script
+{
+	v=_vel(0)
+	if v<2 { v=2 }
+	Barance=_az(0)*2500/(10+v*v)+Handle
+}

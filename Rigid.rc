@@ -1,0 +1,413 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define IDC_STATIC -1
+#include <windows.h>
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// ニュートラル (既定) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
+#pragma code_page(932)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_SOURCE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 431
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 235
+    END
+
+    IDD_SETTINGDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 133
+    END
+
+    IDD_NETDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 411
+        VERTGUIDE, 208
+        BOTTOMMARGIN, 252
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SOURCE DIALOGEX 0, 0, 439, 241
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Model-Data"
+FONT 10, "Terminal", 400, 0, 0x80
+BEGIN
+    DEFPUSHBUTTON   "Close",IDOK,195,221,50,14
+    EDITTEXT        IDC_EDIT1,7,24,424,192,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_NOHIDESEL | ES_READONLY | WS_VSCROLL | WS_HSCROLL
+    LTEXT           "スタティック",IDC_STATIC1,7,7,424,15,WS_BORDER
+END
+
+IDD_SETTINGDIALOG DIALOGEX 0, 0, 186, 140
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Setting Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,119,50,14,BS_FLAT
+    CONTROL         "",IDC_FARSLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,69,7,110,20
+    LTEXT           "Foggy Level",IDC_STATIC,7,9,40,8
+    PUSHBUTTON      "Set",IDC_FOGBUTTON,120,32,30,15,BS_FLAT
+    CTEXT           "スタティック",IDC_COLORSTATIC,73,34,39,11
+    LTEXT           "Fog Color",IDC_STATIC,7,35,32,8
+    CONTROL         "",IDC_FASTSHADOWCHECK,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,74,51,11,8
+    LTEXT           "Fast Shadow",IDC_STATIC,7,52,42,8
+    LTEXT           "Marker Size",IDC_STATIC,7,70,38,8
+    CONTROL         "",IDC_MARKERSLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,69,65,110,20
+    LTEXT           "Marker Name Size",IDC_STATIC,7,89,58,8
+    CONTROL         "",IDC_NAMESLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,69,87,110,20
+END
+
+IDD_NETDIALOG DIALOGEX 0, 0, 418, 257
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "Network"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_HOSTEDIT,41,59,109,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_PORTEDIT,41,75,109,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Start",IDC_STARTBUTTON,249,92,53,14,BS_FLAT
+    LTEXT           "Host",IDC_STATIC,14,62,16,8
+    LTEXT           "Port#",IDC_STATIC,15,78,20,8
+    EDITTEXT        IDC_SESSIONEDIT,41,27,109,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_USEREDIT,41,43,81,14,ES_AUTOHSCROLL
+    LTEXT           "Session",IDC_STATIC,14,30,25,8
+    LTEXT           "User",IDC_STATIC,14,46,16,8
+    GROUPBOX        "",IDC_STATIC,13,6,390,17
+    CONTROL         "Host",IDC_HOSTRADIO,"Button",BS_AUTORADIOBUTTON | BS_FLAT,20,12,31,10
+    CONTROL         "Connect",IDC_CONNECTRADIO,"Button",BS_AUTORADIOBUTTON | BS_FLAT,60,12,43,10
+    LTEXT           "スタティック",IDC_STATICMES,15,95,228,8,0,WS_EX_TRANSPARENT
+    LISTBOX         IDC_PLAYERLIST,154,26,149,64,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_NOSEL | WS_VSCROLL | WS_HSCROLL
+    GROUPBOX        "Chat",IDC_STATIC,7,110,404,125
+    EDITTEXT        IDC_CHATTEXT,14,137,389,92,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL
+    EDITTEXT        IDC_CHATEDIT,63,238,276,14,ES_MULTILINE
+    GROUPBOX        "Online",IDC_STATIC,7,0,404,110
+    DEFPUSHBUTTON   "Send",IDC_SEND,351,238,53,14,BS_FLAT
+    CONTROL         "Pause",IDC_PAUSECHECK,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,362,12,35,10
+    PUSHBUTTON      "Color",IDC_COLORBUTTON,125,43,25,14,BS_FLAT
+    CONTROL         "Scenario",IDC_B20CHECK,"Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,313,12,43,10
+    EDITTEXT        IDC_ATTACKTEXT,307,26,96,80,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL
+    EDITTEXT        IDC_KOKUTI,14,121,389,14,ES_AUTOHSCROLL | ES_READONLY
+END
+
+#endif    // ニュートラル (既定) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// 日本語 resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
+#ifdef _WIN32
+LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
+#pragma code_page(932)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BITMAP1             BITMAP                  "Start.bmp"
+#endif    // 日本語 resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// 英語 (米国) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_SELECTDEVICE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 259
+        TOPMARGIN, 7
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SELECTDEVICE DIALOG  0, 0, 267, 138
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Device"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    GROUPBOX        "Rendering device",IDC_STATIC,5,5,200,45
+    LTEXT           "&Adapter:",IDC_STATIC,22,17,65,10,SS_CENTERIMAGE
+    COMBOBOX        IDC_ADAPTER_COMBO,90,15,105,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Device:",IDC_STATIC,22,32,65,10,SS_CENTERIMAGE
+    COMBOBOX        IDC_DEVICE_COMBO,90,30,105,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Rendering mode",IDC_STATIC,5,52,200,45
+    CONTROL         "Use desktop &window",IDC_WINDOW,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,10,62,85,15
+    CONTROL         "&Fullscreen mode:",IDC_FULLSCREEN,"Button",BS_AUTORADIOBUTTON,10,77,75,15
+    COMBOBOX        IDC_FULLSCREENMODES_COMBO,90,77,105,204,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    GROUPBOX        "Multisample",IDC_STATIC,5,101,200,28
+    LTEXT           "&Multisample Type:",IDC_STATIC,22,113,62,10,SS_CENTERIMAGE
+    COMBOBOX        IDC_MULTISAMPLE_COMBO,90,111,105,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,210,10,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,210,30,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Open Chips\tCtrl+O",         IDM_OPEN
+        MENUITEM "Open &Land\tCtrl+L",          IDM_OPENLAND
+        MENUITEM "Open &Game\tCtrl+G",          IDM_OPENGAME
+        MENUITEM SEPARATOR
+        MENUITEM "Open Scenario\tCtrl+R",       IDM_OPENSCENARIO
+        MENUITEM "Close Scenario\tCtrl+T",      IDM_CLOSESCENARIO
+        MENUITEM SEPARATOR
+        MENUITEM "&Reload Chips\tCtrl+U",       IDM_UPDATE
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit\tESC",                  IDM_EXIT
+    END
+    POPUP "&Setting"
+    BEGIN
+        MENUITEM "Config Dis&play...\tF2",      IDM_CONFIGDEVICE
+        MENUITEM "Configure &Input...\tF3",     IDM_CONFIGINPUT
+        MENUITEM "Di&thring\tCtrl+F2",          IDM_DITHER, CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "&Show Shadow\tF4",            IDM_SHOWSHADOW, CHECKED
+        MENUITEM "Show D&ust\tF5",              IDM_SHOWDUST, CHECKED
+        MENUITEM "Show C&owl\tCtrl+F4",         IDM_SETTING_SHOWCOWL, CHECKED
+        MENUITEM "Show Ghost\tCtrl+F5",         IDM_SETTING_SHOWGHOST
+        MENUITEM SEPARATOR
+        MENUITEM "&Limit 15 FPS\tF6",           IDM_LIMIT15
+        MENUITEM "&Limit 30 FPS\tF7",           IDM_LIMIT30, CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "&Texture Alpha\tCtrl+F6",     IDM_SETTING_TEXTUREALPHA, CHECKED
+        MENUITEM "Show Backfaces\tCtrl+F7",     IDM_SETTING_SHOWBACKFACE
+        MENUITEM SEPARATOR
+        MENUITEM "Sound",                       IDM_SETTING_SOUND, CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "Reset Setting",               IDM_RESETSETTING
+        MENUITEM SEPARATOR
+        MENUITEM "Extra  ...",                  IDM_EXTRASETTING
+        MENUITEM SEPARATOR
+        MENUITEM "Network ...\tTab",            IDM_NETWORKSETTING
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "View &A\tF8",                 IDM_CHANGEVIEW1, CHECKED
+        MENUITEM "View &B\tF9",                 IDM_CHANGEVIEW2
+        MENUITEM "View &C\tF10",                IDM_CHANGEVIEW3
+        MENUITEM "View &D\tF11",                IDM_CHANGEVIEW4
+        MENUITEM "View &E\tF12",                IDM_CHANGEVIEW5
+        MENUITEM SEPARATOR
+        MENUITEM "View &F\tCtrl+F8",            IDM_CHANGEVIEW6
+        MENUITEM "View &G\tCtrl+F9",            IDM_CHANGEVIEW7
+        MENUITEM "View &H\tCtrl+F10",           IDM_CHANGEVIEW8
+        MENUITEM "View &I\tCtrl+F11",           IDM_CHANGEVIEW9
+        MENUITEM "View &J\tCtrl+F12",           IDM_CHANGEVIEW10
+        MENUITEM SEPARATOR
+        MENUITEM "User's View (X)",             IDM_CHANGEVIEWX, INACTIVE
+    END
+    POPUP "&Regulation"
+    BEGIN
+        MENUITEM "&Gravity\t1",                 IDM_GRAVITY, CHECKED
+        MENUITEM "Resistance of &Air\t2",       IDM_AIR, CHECKED
+        MENUITEM "Usable Wheel-&Torque\t3",     IDM_TORQUE, CHECKED
+        MENUITEM "Usable &Jet\t4",              IDM_JET, CHECKED
+        MENUITEM "&Unbreakable\t5",             IDM_UNBREAKABLE, CHECKED
+        MENUITEM "Usable &CCD\t6",              IDM_CCD, CHECKED
+        MENUITEM "Usable &Script\t7",           IDM_SCRIPT, CHECKED
+        MENUITEM "&Efficient Fuel\t8",          IDM_ENERGY, CHECKED
+    END
+    POPUP "&Log"
+    BEGIN
+        MENUITEM "&Record\t]",                  IDM_RECORD
+        MENUITEM "&Stop\t:",                    IDM_STOP
+        MENUITEM "&Play\t;",                    IDM_PLAY
+        MENUITEM "S&ave Log",                   IDM_SAVELOG
+        MENUITEM "&Load Log",                   IDM_LOADLOG
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About",                      IDM_SHOWABOUT
+        MENUITEM SEPARATOR
+        MENUITEM "Web &Help\t?",                IDM_WEBHELP
+        MENUITEM SEPARATOR
+        MENUITEM "Show &Meter",                 IDM_SHOWMETER, CHECKED
+        MENUITEM "Show &Regulation",            IDM_SHOWREGULATION, CHECKED
+        MENUITEM "Show &Script Message",        IDM_SHOWSCRIPTMESSAGE, CHECKED
+        MENUITEM "Show &Variable",              IDM_SHOWVARIABLE, CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "Show &External Force",        IDM_SHOWPOWER
+        MENUITEM SEPARATOR
+        MENUITEM "Show Model-&Data",            IDM_HELP_SHOWDATA
+    END
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#define IDC_STATIC -1\r\n"
+    "#include <windows.h>\r\n"
+    "\r\n"
+    "\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAIN_ACCEL ACCELERATORS 
+BEGIN
+    "2",            IDM_AIR,                VIRTKEY, NOINVERT
+    "6",            IDM_CCD,                VIRTKEY, NOINVERT
+    VK_F8,          IDM_CHANGEVIEW1,        VIRTKEY, NOINVERT
+    VK_F12,         IDM_CHANGEVIEW10,       VIRTKEY, CONTROL, NOINVERT
+    VK_F9,          IDM_CHANGEVIEW2,        VIRTKEY, NOINVERT
+    VK_F10,         IDM_CHANGEVIEW3,        VIRTKEY, NOINVERT
+    VK_F11,         IDM_CHANGEVIEW4,        VIRTKEY, NOINVERT
+    VK_F12,         IDM_CHANGEVIEW5,        VIRTKEY, NOINVERT
+    VK_F8,          IDM_CHANGEVIEW6,        VIRTKEY, CONTROL, NOINVERT
+    VK_F9,          IDM_CHANGEVIEW7,        VIRTKEY, CONTROL, NOINVERT
+    VK_F10,         IDM_CHANGEVIEW8,        VIRTKEY, CONTROL, NOINVERT
+    VK_F11,         IDM_CHANGEVIEW9,        VIRTKEY, CONTROL, NOINVERT
+    "T",            IDM_CLOSESCENARIO,      VIRTKEY, CONTROL, NOINVERT
+    VK_F2,          IDM_CONFIGDEVICE,       VIRTKEY, NOINVERT
+    VK_F3,          IDM_CONFIGINPUT,        VIRTKEY, NOINVERT
+    VK_F2,          IDM_DITHER,             VIRTKEY, CONTROL, NOINVERT
+    "8",            IDM_ENERGY,             VIRTKEY, NOINVERT
+    VK_ESCAPE,      IDM_EXIT,               VIRTKEY, NOINVERT
+    "X",            IDM_EXIT,               VIRTKEY, ALT, NOINVERT
+    "1",            IDM_GRAVITY,            VIRTKEY, NOINVERT
+    "4",            IDM_JET,                VIRTKEY, NOINVERT
+    VK_F6,          IDM_LIMIT15,            VIRTKEY, NOINVERT
+    VK_F7,          IDM_LIMIT30,            VIRTKEY, NOINVERT
+    VK_F1,          IDM_MODECHANGE,         VIRTKEY, NOINVERT
+    VK_TAB,         IDM_NETWORKSETTING,     VIRTKEY, NOINVERT
+    "O",            IDM_OPEN,               VIRTKEY, CONTROL, NOINVERT
+    "G",            IDM_OPENGAME,           VIRTKEY, CONTROL, NOINVERT
+    "L",            IDM_OPENLAND,           VIRTKEY, CONTROL, NOINVERT
+    "R",            IDM_OPENSCENARIO,       VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_PLUS,    IDM_PLAY,               VIRTKEY, NOINVERT
+    VK_OEM_6,       IDM_RECORD,             VIRTKEY, NOINVERT
+    "7",            IDM_SCRIPT,             VIRTKEY, NOINVERT
+    VK_F4,          IDM_SETTING_SHOWCOWL,   VIRTKEY, CONTROL, NOINVERT
+    VK_F5,          IDM_SETTING_SHOWGHOST,  VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          IDM_SETTING_TEXTUREALPHA, VIRTKEY, CONTROL, NOINVERT
+    VK_F5,          IDM_SHOWDUST,           VIRTKEY, NOINVERT
+    VK_F4,          IDM_SHOWSHADOW,         VIRTKEY, NOINVERT
+    VK_OEM_1,       IDM_STOP,               VIRTKEY, NOINVERT
+    VK_RETURN,      IDM_TOGGLEFULLSCREEN,   VIRTKEY, ALT, NOINVERT
+    "3",            IDM_TORQUE,             VIRTKEY, NOINVERT
+    "5",            IDM_UNBREAKABLE,        VIRTKEY, NOINVERT
+    "U",            IDM_UPDATE,             VIRTKEY, CONTROL, NOINVERT
+    "?",            IDM_WEBHELP,            ASCII,  NOINVERT
+END
+
+IDR_NET_ACCEL ACCELERATORS 
+BEGIN
+    VK_TAB,         IDC_RETURNMAIN,         VIRTKEY, NOINVERT
+    VK_RETURN,      IDC_SEND,               VIRTKEY, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN_ICON           ICON                    "Rigid.ico"
+#endif    // 英語 (米国) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
