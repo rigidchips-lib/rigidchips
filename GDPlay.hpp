@@ -86,7 +86,6 @@ public:
 		m_hHostAsyncOp=NULL;
 		m_hConnectAsyncOp=NULL;
 		m_Connect=false;
-		isReceivedFirstMessage = false;
 	}
 	~GDPlay () {
 		DeleteCriticalSection( &m_csPlayerContext );
@@ -484,7 +483,6 @@ public:
 			if(m_dpnidLocalPlayer!=0 || m_hConnectAsyncOp==NULL) {
 				break;
 			}
-			if (isReceivedFirstMessage) break;
 			Sleep(10);
 		}
 		if(m_hConnectAsyncOp) m_pDP->CancelAsyncOperation( m_hConnectAsyncOp, 0 );
@@ -571,7 +569,6 @@ public:
 		if (m_pDP != NULL){
 			m_pDP ->Close(DPNCLOSE_IMMEDIATE);
 			m_Connect=false;
-			isReceivedFirstMessage = false;
 			m_pDP->Release();
 			m_pDP=NULL;
 		}
@@ -589,7 +586,6 @@ public:
 			m_pDP ->Close(DPNCLOSE_IMMEDIATE);
 			m_pDP->Release();
 			m_Connect=false;
-			isReceivedFirstMessage = false;
 			m_pDP=NULL;
 		}
 
@@ -615,7 +611,6 @@ public:
 		case DPN_MSGID_CREATE_PLAYER:
 			// ƒvƒŒƒCƒ„[‚ªì¬‚³‚ê‚½‚Æ‚«‚Ìˆ—
 			{
-				gdplay->isReceivedFirstMessage = true;
 				HRESULT hr;
 				PDPNMSG_CREATE_PLAYER pCreatePlayerMsg;
 				pCreatePlayerMsg = (PDPNMSG_CREATE_PLAYER)pMessage;
@@ -711,7 +706,6 @@ public:
 
 		case DPN_MSGID_TERMINATE_SESSION:
 			{
-				gdplay->isReceivedFirstMessage = false;
 				gdplay->m_Connect=false;
 				PDPNMSG_TERMINATE_SESSION pTerminateSessionMsg;
 				pTerminateSessionMsg = (PDPNMSG_TERMINATE_SESSION)pMessage;
