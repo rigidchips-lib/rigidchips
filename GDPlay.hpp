@@ -756,7 +756,6 @@ public:
 		DPNHANDLE           m_hHostAsyncOp;
 		DPNHANDLE           m_hConnectAsyncOp;
 		BOOL				m_Connect;
-		bool                isReceivedFirstMessage;
 };
 
 #endif
