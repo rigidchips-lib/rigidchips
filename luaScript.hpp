@@ -50,6 +50,7 @@ extern GVector UserEyePos;
 extern GVector UserRefPos;
 extern GVector UserUpVec;
 
+extern DWORD UseLuaExternal;
 
 lua_State *luaScriptInit(char *buff);
 void luaScriptEnd(lua_State *L);

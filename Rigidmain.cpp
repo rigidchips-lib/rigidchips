@@ -310,6 +310,8 @@ extern int ScriptErrorCode;
 extern int ScriptErrorPc;
 extern char ScriptErrorStr[];
 
+DWORD UseLuaExternal = 0;
+
 extern lua_State *SystemL;
 extern char *SystemSource;
 extern char SystemOutput[][512];
@@ -1436,13 +1438,15 @@ int CALLBACK DlgExtraProc(HWND hDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 	HDC hDC=GetDC(hDlg);
 	switch(uMsg) {
 		case WM_INITDIALOG:
-			SendMessage(GetDlgItem(hDlg,IDC_FARSLIDER), TBM_SETRANGE, 0, MAKELPARAM(0, 4));
-			SendMessage(GetDlgItem(hDlg,IDC_FARSLIDER), TBM_SETTICFREQ, (WPARAM)1, 0);
-			SendMessage(GetDlgItem(hDlg,IDC_FASTSHADOWCHECK), BM_SETCHECK,(WPARAM)FastShadow,0);
-			SendMessage(GetDlgItem(hDlg,IDC_MARKERSLIDER), TBM_SETRANGE, 0, MAKELPARAM(0, 4));
-			SendMessage(GetDlgItem(hDlg,IDC_MARKERSLIDER), TBM_SETTICFREQ, (WPARAM)1, 0);
-			SendMessage(GetDlgItem(hDlg,IDC_NAMESLIDER), TBM_SETRANGE, 0, MAKELPARAM(0, 4));
-			SendMessage(GetDlgItem(hDlg,IDC_NAMESLIDER), TBM_SETTICFREQ, (WPARAM)1, 0);
+			SendMessage(GetDlgItem(hDlg, IDC_FARSLIDER), TBM_SETRANGE, 0, MAKELPARAM(0, 4));
+			SendMessage(GetDlgItem(hDlg, IDC_FARSLIDER), TBM_SETTICFREQ, (WPARAM)1, 0);
+			SendMessage(GetDlgItem(hDlg, IDC_FASTSHADOWCHECK), BM_SETCHECK, (WPARAM)FastShadow, 0);
+			SendMessage(GetDlgItem(hDlg, IDC_MARKERSLIDER), TBM_SETRANGE, 0, MAKELPARAM(0, 4));
+			SendMessage(GetDlgItem(hDlg, IDC_MARKERSLIDER), TBM_SETTICFREQ, (WPARAM)1, 0);
+			SendMessage(GetDlgItem(hDlg, IDC_NAMESLIDER), TBM_SETRANGE, 0, MAKELPARAM(0, 4));
+			SendMessage(GetDlgItem(hDlg, IDC_NAMESLIDER), TBM_SETTICFREQ, (WPARAM)1, 0);
+			SendMessage(GetDlgItem(hDlg, IDC_LUAEXTERNAL), BM_SETCHECK, (WPARAM)UseLuaExternal, 0);
+
 			if(GFARMAX<=300.0f) p=0;
 			else if(GFARMAX<=600.0f) p=1;
 			else if(GFARMAX<=1200.0f) p=2;
@@ -1530,6 +1534,12 @@ int CALLBACK DlgExtraProc(HWND hDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						if(st&BST_CHECKED) FastShadow=1;
 						else FastShadow=0;
 					}
+					break;
+				case (IDC_LUAEXTERNAL | (BN_CLICKED << 16)) :
+					if (((int)SendMessage(GetDlgItem(hDlg, IDC_LUAEXTERNAL), BM_GETCHECK, 0, 0)) & BST_CHECKED)
+						UseLuaExternal = 1;
+					else
+						UseLuaExternal = 0;
 					break;
                case IDOK:
 					if(state==1) break;
@@ -3515,7 +3525,7 @@ VOID CMyD3DApplication::ReadSettings()
 
 		if(m_dwCreationWidth<160) m_dwCreationWidth=160;
 		if(m_dwCreationHeight<120) m_dwCreationHeight=120;
-		
+
         RegCloseKey( hkey );
     }
 }
@@ -3569,6 +3579,7 @@ VOID CMyD3DApplication::WriteSettings()
         DXUtil_WriteStringRegKey( hkey, TEXT("PlayerName"), PlayerName );
         DXUtil_WriteStringRegKey( hkey, TEXT("HostName"), HostName );
         DXUtil_WriteIntRegKey( hkey, TEXT("PortNo"), PortNo );
+
         RegCloseKey( hkey );
     }
 }
@@ -8471,6 +8482,7 @@ LRESULT CMyD3DApplication::MsgProc( HWND hWnd, UINT msg, WPARAM wParam,
 					CheckMenuItem(hMenu,IDM_SETTING_TEXTUREALPHA,MF_CHECKED);
 					BackFaces = 0;
 					CheckMenuItem(hMenu,IDM_SETTING_SHOWBACKFACE,MF_UNCHECKED);
+					UseLuaExternal = 0;
                     break;
 				}
 

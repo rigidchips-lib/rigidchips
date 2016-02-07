@@ -211,11 +211,16 @@ lua_State *luaScriptInit(char *buff) {
 		lua_setglobal(L,ValList[i].Name);
 	}
 	//スクリプトをセットする
-      luaopen_string(L);
-      luaopen_base(L);
-      luaopen_table(L);
-      luaopen_math(L);
-//      luaopen_io(L);
+	luaopen_string(L);
+	luaopen_base(L);
+	luaopen_table(L);
+	luaopen_math(L);
+	if (UseLuaExternal)
+	{
+		luaopen_io(L);
+		luaopen_loadlib(L);
+	}
+
 	int e=lua_dobuffer (L,buff,strlen(buff),szUpdateFileName0);
 	if(e!=0) {
 		ScriptErrorCode=-1;
