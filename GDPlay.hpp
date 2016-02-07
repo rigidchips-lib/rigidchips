@@ -606,7 +606,7 @@ public:
 		//	dwMessageType = 届いたメッセージの種類
 		//	pMessage = 届いたメッセージ本体。内容はdwMessageTypeの値によって異なる
 		GDPlay *gdplay=(GDPlay*)pvUserContext;
-		gdplay->isReceivedFirstMessage = true;
+		
 		static int y = 20;
 
         EnterCriticalSection( &gdplay->m_csPlayerContext );
@@ -615,6 +615,7 @@ public:
 		case DPN_MSGID_CREATE_PLAYER:
 			// プレイヤーが作成されたときの処理
 			{
+				gdplay->isReceivedFirstMessage = true;
 				HRESULT hr;
 				PDPNMSG_CREATE_PLAYER pCreatePlayerMsg;
 				pCreatePlayerMsg = (PDPNMSG_CREATE_PLAYER)pMessage;
