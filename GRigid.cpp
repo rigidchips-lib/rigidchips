@@ -1234,6 +1234,66 @@ GMatrix33	GRigid::CalcMassMat(GVector &p )
 	
 	return mm;
 }
+
+void GRigid::DispJet(LPDIRECT3DDEVICE8 g3dDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag)
+{
+	//ジェットの表示
+	//	G3dDevice->SetTexture(0,NULL);
+	g3dDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
+	g3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// カリングモード
+	g3dDevice->SetRenderState(D3DRS_SPECULARENABLE, FALSE);
+	g3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	g3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+	g3dDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);   //SRCの設定
+	g3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);  //DESTの設定
+	//G3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);// 引数の成分を乗算する
+	if (JetFlag && MeshNo == 10 && PowerByFuel != 0 && Top != NULL &&  Option == 0) {
+		GMatrix m(TM);
+		D3DXMATRIX mat1;
+		D3DXMATRIX matLocal = D3DXMATRIX((FLOAT)m.elem[0][0], (FLOAT)m.elem[0][1], (FLOAT)m.elem[0][2], (FLOAT)m.elem[0][3],
+			(FLOAT)m.elem[1][0], (FLOAT)m.elem[1][1], (FLOAT)m.elem[1][2], (FLOAT)m.elem[1][3],
+			(FLOAT)m.elem[2][0], (FLOAT)m.elem[2][1], (FLOAT)m.elem[2][2], (FLOAT)m.elem[2][3],
+			(FLOAT)m.elem[3][0], (FLOAT)m.elem[3][1], (FLOAT)m.elem[3][2], (FLOAT)m.elem[3][3]);
+		D3DXMatrixIdentity(&mat1);
+		double f = fabs(PowerByFuel / 2000.0); if (f>2.5) f = 2.5;
+		if (Top != World->Rigid[0] && Top->ByeFlag >= 1) f = fabs(PowerSave / 2000.0); if (f>2.5) f = 2.5;
+		if (Power<0) {
+			D3DXMatrixRotationX(&mat1, (FLOAT)M_PI);
+			D3DXMatrixMultiply(&matLocal, &mat1, &matLocal);
+		}
+		D3DXMatrixRotationY(&mat1, (FLOAT)(rand() % 100 * M_PI / 50.0));
+		D3DXMatrixMultiply(&matLocal, &mat1, &matLocal);
+		D3DXMatrixScaling(&mat1, (FLOAT)0.5, (FLOAT)f, (FLOAT)0.5);
+		D3DXMatrixMultiply(&matLocal, &mat1, &matLocal);
+		D3DXMatrixTranslation(&mat1, 0.0f, -0.32f, 0.0f);
+		D3DXMatrixMultiply(&matLocal, &mat1, &matLocal);
+		D3DXMatrixMultiply(&matLocal, &matLocal, &worldMatrix);
+		g3dDevice->SetTransform(D3DTS_WORLD, &matLocal);
+		fireMesh->Render(g3dDevice);
+	}
+	else if (ChipType == 10 && Power != 0 && Energy <= 0.1) { //ARM
+		GMatrix m(TM);
+		D3DXMATRIX mat1;
+		D3DXMATRIX matLocal = D3DXMATRIX((FLOAT)m.elem[0][0], (FLOAT)m.elem[0][1], (FLOAT)m.elem[0][2], (FLOAT)m.elem[0][3],
+			(FLOAT)m.elem[1][0], (FLOAT)m.elem[1][1], (FLOAT)m.elem[1][2], (FLOAT)m.elem[1][3],
+			(FLOAT)m.elem[2][0], (FLOAT)m.elem[2][1], (FLOAT)m.elem[2][2], (FLOAT)m.elem[2][3],
+			(FLOAT)m.elem[3][0], (FLOAT)m.elem[3][1], (FLOAT)m.elem[3][2], (FLOAT)m.elem[3][3]);
+		D3DXMatrixIdentity(&mat1);
+		D3DXMatrixRotationY(&mat1, (FLOAT)(M_PI*Dir / 2.0));
+		D3DXMatrixMultiply(&matLocal, &mat1, &matLocal);
+		double f = sqrt(fabs(ArmEnergy / 125000.0)); if (f>2.5) f = 2.5;
+		D3DXMatrixRotationZ(&mat1, (FLOAT)(rand() % 100 * M_PI / 50.0));
+		D3DXMatrixMultiply(&matLocal, &mat1, &matLocal);
+		D3DXMatrixScaling(&mat1, (FLOAT)(0.6*f), (FLOAT)(0.6*f), (FLOAT)f * 2);
+		D3DXMatrixMultiply(&matLocal, &mat1, &matLocal);
+		D3DXMatrixTranslation(&mat1, 0.0f, 0.0f, 0.3f);
+		D3DXMatrixMultiply(&matLocal, &mat1, &matLocal);
+		D3DXMatrixMultiply(&matLocal, &matLocal, &worldMatrix);
+		g3dDevice->SetTransform(D3DTS_WORLD, &matLocal);
+		jetMesh->Render(g3dDevice);
+	}
+	g3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);  //DESTの設定
+}
 //***************************************************************
 //	世界クラスメソッド
 //***************************************************************
@@ -2284,8 +2344,8 @@ void GWorld::ObjectDisp()
 //************************************************
 // 世界：JET表示処理
 //************************************************
-void GWorld::JetDisp()
+void GWorld::DispJet(LPDIRECT3DDEVICE8 g3dDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag)
 {
 	int j;
-	for(j=0;j<ChipCount;j++) if(Rigid[j])Rigid[j]->DispJet();
+	for (j = 0; j<ChipCount; j++) if (Rigid[j])Rigid[j]->DispJet(g3dDevice, worldMatrix, jetMesh, fireMesh, JetFlag);
 }
