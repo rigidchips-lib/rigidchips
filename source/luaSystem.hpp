@@ -8,9 +8,9 @@
 #define lua_c
 
 extern "C" {
-    #include "Lua/include/lua.h"
-    #include "Lua/include/lualib.h"
-    #include "Lua/include/lauxlib.h"
+    #include "lua.h"
+    #include "lualib.h"
+    #include "lauxlib.h"
 }
 
 #ifndef M_PI
