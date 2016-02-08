@@ -66,25 +66,9 @@ static char g_strExecutable[256];
 
 
 class GDPlay {
-	HINSTANCE			m_hInst;
-	CRITICAL_SECTION	m_csPlayerContext;
-	IDirectPlay8Peer*	m_pDP;	// DirectPlay peer object
-	LONG				m_MaxPlayers;
 
-	LONG				m_NumberOfActivePlayers;	// アクティブプレイヤーの数
 
-	ReceiveFunc			m_ReceiveFunc;
-	CreateFunc			m_CreateFunc;
-	DestroyFunc			m_DestroyFunc;
-	TerminateFunc		m_TerminateFunc;
 
-	DPNID				m_dpnidLocalPlayer;      // ローカルプレイヤーのDPNID 
-	DPNID				m_dpnidHostPlayer;       // ホストプレイヤーのDPNID
-	IDirectPlay8LobbiedApplication*  m_pLobbyApp;    // LobbyApp object
-
-    DPNHANDLE           m_hHostAsyncOp;
-    DPNHANDLE           m_hConnectAsyncOp;
-	BOOL				m_Connect;
 
 public:
 	GDPlay () {
@@ -499,6 +483,7 @@ public:
 			if(m_dpnidLocalPlayer!=0 || m_hConnectAsyncOp==NULL) {
 				break;
 			}
+			Sleep(10);
 		}
 		if(m_hConnectAsyncOp) m_pDP->CancelAsyncOperation( m_hConnectAsyncOp, 0 );
 		// IDirectPlay8Addressインタフェースの解放
@@ -617,6 +602,7 @@ public:
 		//	dwMessageType = 届いたメッセージの種類
 		//	pMessage = 届いたメッセージ本体。内容はdwMessageTypeの値によって異なる
 		GDPlay *gdplay=(GDPlay*)pvUserContext;
+		
 		static int y = 20;
 
         EnterCriticalSection( &gdplay->m_csPlayerContext );
@@ -750,6 +736,26 @@ public:
         LeaveCriticalSection( &gdplay->m_csPlayerContext );
 		return DPN_OK;
 	};
+	private:
+		HINSTANCE			m_hInst;
+		CRITICAL_SECTION	m_csPlayerContext;
+		IDirectPlay8Peer*	m_pDP;	// DirectPlay peer object
+		LONG				m_MaxPlayers;
+
+		LONG				m_NumberOfActivePlayers;	// アクティブプレイヤーの数
+
+		ReceiveFunc			m_ReceiveFunc;
+		CreateFunc			m_CreateFunc;
+		DestroyFunc			m_DestroyFunc;
+		TerminateFunc		m_TerminateFunc;
+
+		DPNID				m_dpnidLocalPlayer;      // ローカルプレイヤーのDPNID 
+		DPNID				m_dpnidHostPlayer;       // ホストプレイヤーのDPNID
+		IDirectPlay8LobbiedApplication*  m_pLobbyApp;    // LobbyApp object
+
+		DPNHANDLE           m_hHostAsyncOp;
+		DPNHANDLE           m_hConnectAsyncOp;
+		BOOL				m_Connect;
 };
 
 #endif

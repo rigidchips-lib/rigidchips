@@ -910,7 +910,6 @@ HRESULT MyCreateFunc( MYAPP_PLAYER_INFO* playerInfo ) {
 			PlayerData[i].ReceiveData.info.strPlayerName[0]='0';
 		}
 	}
-	PlayersInfoDisp();
 	return S_OK;
 }
 HRESULT MyDestroyFunc( MYAPP_PLAYER_INFO* playerInfo) {
@@ -937,7 +936,6 @@ HRESULT MyDestroyFunc( MYAPP_PLAYER_INFO* playerInfo) {
 			PlayerData[i].ReceiveData.info.strPlayerName[0]='0';
 		}
 	}
-	PlayersInfoDisp();
 	return S_OK;
 }
 HRESULT MyTerminateFunc() {
