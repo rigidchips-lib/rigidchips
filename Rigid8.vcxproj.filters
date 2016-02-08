@@ -96,9 +96,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="cursor1.cur">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="Rigid.ico">
       <Filter>Resource Files</Filter>
     </None>

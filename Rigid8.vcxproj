@@ -201,7 +201,6 @@
     <ClInclude Include="source\Rigidmain.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="cursor1.cur" />
     <None Include="Rigid.ico" />
     <None Include="Start.bmp" />
   </ItemGroup>
