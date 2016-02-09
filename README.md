@@ -18,6 +18,14 @@ VisualStudio2013を使用してビルドを行います．
 
 4. ビルドを行います．
 
+## How to debug build
+
+デバッグビルドを行うにはHow to buildの内容に加えて以下の設定が必要です．
+
+`プロジェクトのプロパティ`->`VC++プロパティ`の`インクルードディレクトリ`と`ライブラリディレクトリ`をReleaseからDebugにコピーします．
+
+
+
 ## Contribution
 1. Fork it
 2. Create your feature branch (git checkout -b my-new-feature)
