@@ -2,22 +2,27 @@
 #define G_RIGID_H
 #include <stdlib.h>
 #include "GVector.hpp"
-#include "GLand.hpp"
 #include "readData.hpp"
+#include "GLand.hpp"
 
-#define GTYPE_FACE 0
-#define GTYPE_DISK 1
-#define GTYPE_BOX 2
-#define GTYPE_BALL 3
-#define GTYPE_CAN 4
-#define GTYPE_CONE 5
-#define GTYPE_DUMMY 6
-#define GCHIPMAX 512
-#define GOBJMAX	20
+const int GTYPE_FACE = 0;
+const int GTYPE_DISK = 1;
+const int GTYPE_BOX = 2;
+const int GTYPE_BALL = 3;
+const int GTYPE_CAN = 4;
+const int GTYPE_CONE = 5;
+const int GTYPE_DUMMY = 6;
 
-#define GCHILDMAX 12
+//最大チップ数
+const int GCHIPMAX = 512;
 
-#define GDESTROY_K 0.3f
+//最大オブジェクト数(e.g. ball)
+const int GOBJMAX = 2;
+
+
+const int GCHILDMAX = 12;
+
+const float GDESTROY_K = 0.3f;
 
 class GWorld;
 class GRigid;
