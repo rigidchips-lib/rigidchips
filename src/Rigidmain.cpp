@@ -2346,7 +2346,7 @@ void GWorld::DispNetChip(int n)
 					G3dDevice->SetTransform( D3DTS_WORLD, &mat1 );
 					mesh=m_pXMesh[33];
 				}
-				else if(op1==0) PlayerData[n].Jet[PlayerData[n].ChipCount]=i;
+				else if(op1==0 || op1>=3) PlayerData[n].Jet[PlayerData[n].ChipCount]=i;
 			}
 			if(type!=GT_COWL) {
 				float r1=((((int)chip->color)>>10)/32.0f)*w2+((((int)chip2->color)>>10)/32.0f)*w1;
@@ -5001,7 +5001,7 @@ if( win == FALSE )
 				stream.data[i].data.option=(unsigned char)(World->Rigid[j]->Option/5000.0f);
 			}
 			if(r->ChipType==GT_JET) {
-				if(r->Option!=0) {
+				if(r->Option!=0&&r->Option<3) {
 					stream.data[i].data.type|=GT_OPTION1;
 					float f=(FLOAT)(pow((double)fabs((double)World->Rigid[j]->Power),1.0/3.0)/5.0);
 					if(f<0.5f) f=0.5f;
