@@ -1,142 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{527529b1-2f66-4488-b24f-c2bdb1a8ea65}</UniqueIdentifier>
-      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{9331dd9a-e239-4d79-b9c8-f6046d354c15}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{50ac02f0-32c5-4d2b-96ad-4c01f3c6962c}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
-    <Filter Include="MySource">
-      <UniqueIdentifier>{3e14d963-ebaf-47bb-84a8-2897ca09d64c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Lua">
       <UniqueIdentifier>{714b9474-c11e-4642-ae6f-fcc9610d2a25}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{2822d039-b1f9-435e-8966-781ee604ae40}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="d3dapp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="d3dfile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="d3dfont.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="d3dutil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="diutil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dmutil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dsutil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dxutil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GRigid.cpp">
-      <Filter>MySource</Filter>
-    </ClCompile>
-    <ClCompile Include="GVector.cpp">
-      <Filter>MySource</Filter>
-    </ClCompile>
-    <ClCompile Include="luaScript.cpp">
-      <Filter>MySource</Filter>
-    </ClCompile>
-    <ClCompile Include="luaSub.cpp">
-      <Filter>MySource</Filter>
-    </ClCompile>
-    <ClCompile Include="luaSystem.cpp">
-      <Filter>MySource</Filter>
-    </ClCompile>
-    <ClCompile Include="readData.cpp">
-      <Filter>MySource</Filter>
-    </ClCompile>
-    <ClCompile Include="readSub.cpp">
-      <Filter>MySource</Filter>
-    </ClCompile>
-    <ClCompile Include="Rigidmain.cpp">
-      <Filter>MySource</Filter>
-    </ClCompile>
-    <ClCompile Include="script.cpp">
-      <Filter>MySource</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="d3dapp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="d3dfile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="d3dfont.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="d3dres.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="d3dutil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="diutil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dmutil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dsutil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dxutil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GDPlay.hpp">
-      <Filter>MySource</Filter>
-    </ClInclude>
-    <ClInclude Include="GLand.hpp">
-      <Filter>MySource</Filter>
-    </ClInclude>
-    <ClInclude Include="GParticle.hpp">
-      <Filter>MySource</Filter>
-    </ClInclude>
-    <ClInclude Include="GPlayers.h">
-      <Filter>MySource</Filter>
-    </ClInclude>
-    <ClInclude Include="GVector.hpp">
-      <Filter>MySource</Filter>
-    </ClInclude>
-    <ClInclude Include="luaScript.hpp">
-      <Filter>MySource</Filter>
-    </ClInclude>
-    <ClInclude Include="luaSub.hpp">
-      <Filter>MySource</Filter>
-    </ClInclude>
-    <ClInclude Include="luaSystem.hpp">
-      <Filter>MySource</Filter>
-    </ClInclude>
-    <ClInclude Include="readData.hpp">
-      <Filter>MySource</Filter>
-    </ClInclude>
-    <ClInclude Include="readSub.hpp">
-      <Filter>MySource</Filter>
-    </ClInclude>
-    <ClInclude Include="Rigidmain.h">
-      <Filter>MySource</Filter>
-    </ClInclude>
     <ClInclude Include="Lua\include\lauxlib.h">
       <Filter>Lua</Filter>
     </ClInclude>
@@ -145,6 +21,78 @@
     </ClInclude>
     <ClInclude Include="Lua\include\lualib.h">
       <Filter>Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="src\d3dapp.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\d3dfile.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\d3dfont.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\d3dres.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\d3dutil.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\diutil.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dmutil.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dsutil.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\dxutil.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GDPlay.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GLand.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GParticle.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GPlayers.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GRigid.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GVector.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Land.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\luaScript.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\luaSub.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\luaSystem.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\readData.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\readLand.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\readSub.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resource.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rigidmain.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -159,11 +107,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Rigid.rc">
-      <Filter>MySource</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
     <Library Include="Lua\lib\liblua.lib">
       <Filter>Lua</Filter>
     </Library>
@@ -176,5 +119,66 @@
     <Library Include="Lua\lib\liblualibd.lib">
       <Filter>Lua</Filter>
     </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\d3dapp.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\d3dfile.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\d3dfont.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\d3dutil.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diutil.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dmutil.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dsutil.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dxutil.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GRigid.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GVector.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\luaScript.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\luaSub.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\luaSystem.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\readdata.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\readLand.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\readSub.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rigidmain.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\script.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src\Rigid.rc">
+      <Filter>src</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
