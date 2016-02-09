@@ -25,7 +25,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -56,15 +56,14 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Develop\Rigid15B26\microsoft directx 9.0 sdk %28summer 2004%29\Include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Develop\Rigid15B26\microsoft directx 9.0 sdk %28summer 2004%29\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">src;Lua\include;microsoft directx 9.0 sdk %28summer 2004%29\Include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">microsoft directx 9.0 sdk %28summer 2004%29\Lib;$(LibraryPath)</LibraryPath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">src;Lua\include;microsoft directx 9.0 sdk %28summer 2004%29\Include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">microsoft directx 9.0 sdk %28summer 2004%29\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <SourcePath>src;$(VC_SourcePath);</SourcePath>
   </PropertyGroup>
-  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -170,46 +169,41 @@
       <HeapReserveSize>0</HeapReserveSize>
       <HeapCommitSize>0</HeapCommitSize>
       <TargetMachine>NotSet</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Lua\include\lauxlib.h" />
     <ClInclude Include="Lua\include\lua.h" />
     <ClInclude Include="Lua\include\lualib.h" />
-	<ClInclude Include="src\d3dapp.h" />
-	<ClInclude Include="src\d3dfile.h" />
-	<ClInclude Include="src\d3dfont.h" />
-	<ClInclude Include="src\d3dres.h" />
-	<ClInclude Include="src\d3dutil.h" />
-	<ClInclude Include="src\diutil.h" />
-	<ClInclude Include="src\dmutil.h" />
-	<ClInclude Include="src\dsutil.h" />
-	<ClInclude Include="src\dxutil.h" />
-	<ClInclude Include="src\GDPlay.hpp" />
-	<ClInclude Include="src\GLand.hpp" />
-	<ClInclude Include="src\GParticle.hpp" />
-	<ClInclude Include="src\GPlayers.h" />
-	<ClInclude Include="src\GRigid.hpp" />
-	<ClInclude Include="src\GVector.hpp" />
-	<ClInclude Include="src\Land.h" />
-	<ClInclude Include="src\luaScript.hpp" />
-	<ClInclude Include="src\luaSub.hpp" />
-	<ClInclude Include="src\luaSystem.hpp" />
-	<ClInclude Include="src\readData.hpp" />
-	<ClInclude Include="src\readLand.hpp" />
-	<ClInclude Include="src\readSub.hpp" />
-	<ClInclude Include="src\resource.h" />
-	<ClInclude Include="src\Rigidmain.h" />
+    <ClInclude Include="src\d3dapp.h" />
+    <ClInclude Include="src\d3dfile.h" />
+    <ClInclude Include="src\d3dfont.h" />
+    <ClInclude Include="src\d3dres.h" />
+    <ClInclude Include="src\d3dutil.h" />
+    <ClInclude Include="src\diutil.h" />
+    <ClInclude Include="src\dmutil.h" />
+    <ClInclude Include="src\dsutil.h" />
+    <ClInclude Include="src\dxutil.h" />
+    <ClInclude Include="src\GDPlay.hpp" />
+    <ClInclude Include="src\GLand.hpp" />
+    <ClInclude Include="src\GParticle.hpp" />
+    <ClInclude Include="src\GPlayers.h" />
+    <ClInclude Include="src\GRigid.hpp" />
+    <ClInclude Include="src\GVector.hpp" />
+    <ClInclude Include="src\Land.h" />
+    <ClInclude Include="src\luaScript.hpp" />
+    <ClInclude Include="src\luaSub.hpp" />
+    <ClInclude Include="src\luaSystem.hpp" />
+    <ClInclude Include="src\readData.hpp" />
+    <ClInclude Include="src\readLand.hpp" />
+    <ClInclude Include="src\readSub.hpp" />
+    <ClInclude Include="src\resource.h" />
+    <ClInclude Include="src\Rigidmain.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Rigid.ico" />
     <None Include="Start.bmp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="Lua\lib\liblua.lib" />
-    <Library Include="Lua\lib\libluad.lib" />
-    <Library Include="Lua\lib\liblualib.lib" />
-    <Library Include="Lua\lib\liblualibd.lib" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\d3dapp.cpp" />
@@ -231,9 +225,12 @@
     <ClCompile Include="src\Rigidmain.cpp" />
     <ClCompile Include="src\script.cpp" />
   </ItemGroup>
-<ItemGroup>
-  <ResourceCompile Include="src\Rigid.rc" />
-</ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src\Rigid.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="Lua\lua50.lib" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
