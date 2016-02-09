@@ -1,4 +1,3 @@
-#include "GVector.hpp"
 #include "GRigid.hpp"
 #include "GParticle.hpp"
 #include <stdio.h>
