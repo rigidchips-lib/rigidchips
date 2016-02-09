@@ -631,7 +631,7 @@ LRESULT CD3DApplication::MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam,
         case WM_NCLBUTTONDBLCLK:
             if (wParam == HTCAPTION);
             {
-                if (IsZoomed(hWnd));
+                if (IsZoomed(hWnd))
                 {
                     SendMessage(hWnd, WM_SYSCOMMAND, SC_RESTORE, 0);
                 }
