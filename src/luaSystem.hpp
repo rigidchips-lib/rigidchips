@@ -8,9 +8,9 @@
 #define lua_c
 
 extern "C" {
-    #include "lua.h"
-    #include "lualib.h"
-    #include "lauxlib.h"
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
 }
 
 #ifndef M_PI
@@ -60,19 +60,19 @@ extern TCHAR CurrScenarioDir[];
 extern CD3DMesh*	m_pLandMesh;	// XMeshÉfÅ[É^
 extern HWND g_hWnd;              // The main app window
 
-HRESULT LoadLand(LPDIRECT3DDEVICE8 Device,char *fname);
-char *SearchFolder(char *path,char *filename,char *result);
-void ResetChip2(int n,GFloat a);
-void setOption(GRigid *rigid,GFloat value);
+HRESULT LoadLand(LPDIRECT3DDEVICE8 Device, char *fname);
+char *SearchFolder(char *path, char *filename, char *result);
+void ResetChip2(int n, GFloat a);
+void setOption(GRigid *rigid, GFloat value);
 
 #define	MESSAGEMAX 64
 extern char MessageData[];
 extern int RecieaveMessageCode[];
-extern char RecieaveMessageData[][MESSAGEMAX+1];
+extern char RecieaveMessageData[][MESSAGEMAX + 1];
 
 
 int LoadSystem(char *fileName);
 int luaSystemInit();
 void luaSystemEnd();
-int luaSystemRun (char *funcName);
+int luaSystemRun(char *funcName);
 #endif

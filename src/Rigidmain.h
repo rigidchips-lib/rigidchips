@@ -53,69 +53,69 @@ typedef struct {
 // pointer for each device that points to this struct
 struct InputDeviceState
 {
-    // TODO: change as needed
-    FLOAT fAxisRotateUD;
-    FLOAT fAxisRotateLR;
-    FLOAT fAxisRotateIO;
-    FLOAT fAxisRotateX;
-    FLOAT fAxisRotateY;
-    FLOAT fAxisRotateZ;
-    FLOAT fAxisHat;
-    BOOL  bButton[GKEYMAX];
-    BOOL  bSystem[GSYSKEYMAX];
-    BOOL  bButtonInit;
-    BOOL  bButtonReset;
-    BOOL  bButtonTitle;
-    BOOL  bButtonZoomIn;
-    BOOL  bButtonZoomOut;
-    BOOL  bButtonResetView;
-    BOOL  bButtonTurnUp;
-    BOOL  bButtonTurnDown;
-    BOOL  bButtonTurnLeft;
-    BOOL  bButtonTurnRight;
-    BOOL  bButtonYForce;
+	// TODO: change as needed
+	FLOAT fAxisRotateUD;
+	FLOAT fAxisRotateLR;
+	FLOAT fAxisRotateIO;
+	FLOAT fAxisRotateX;
+	FLOAT fAxisRotateY;
+	FLOAT fAxisRotateZ;
+	FLOAT fAxisHat;
+	BOOL  bButton[GKEYMAX];
+	BOOL  bSystem[GSYSKEYMAX];
+	BOOL  bButtonInit;
+	BOOL  bButtonReset;
+	BOOL  bButtonTitle;
+	BOOL  bButtonZoomIn;
+	BOOL  bButtonZoomOut;
+	BOOL  bButtonResetView;
+	BOOL  bButtonTurnUp;
+	BOOL  bButtonTurnDown;
+	BOOL  bButtonTurnLeft;
+	BOOL  bButtonTurnRight;
+	BOOL  bButtonYForce;
 };
 
 
 // Struct to store the current input state
 struct UserInput
 {
-    // TODO: change as needed
-    FLOAT fAxisRotateUD;
-    FLOAT fAxisRotateLR;
-    FLOAT fAxisRotateIO;
-    FLOAT fAxisRotateX;
-    FLOAT fAxisRotateY;
-    FLOAT fAxisRotateZ;
-    FLOAT fAxisHat;
-    BOOL bButton[GKEYMAX];
-    BOOL bButtonOneShot[GKEYMAX];
-    BOOL bSystem[GSYSKEYMAX];
-    BOOL bSystemOneShot[GSYSKEYMAX];
-    BOOL  bButtonInit;
-    BOOL  bButtonReset;
-    BOOL  bButtonTitle;
-    BOOL  bButtonZoomIn;
-    BOOL  bButtonZoomOut;
-    BOOL  bButtonResetView;
-    BOOL  bButtonTurnUp;
-    BOOL  bButtonTurnDown;
-    BOOL  bButtonTurnLeft;
-    BOOL  bButtonTurnRight;
-    BOOL  bButtonYForce;
-    BOOL  bButtonOneShotInit;
-    BOOL  bButtonOneShotReset;
-    BOOL  bButtonOneShotTitle;
-    BOOL  bButtonOneShotZoomIn;
-    BOOL  bButtonOneShotZoomOut;
-    BOOL  bButtonOneShotResetView;
-    BOOL  bButtonOneShotTurnUp;
-    BOOL  bButtonOneShotTurnDown;
-    BOOL  bButtonOneShotTurnLeft;
-    BOOL  bButtonOneShotTurnRight;
-    BOOL  bButtonOneShotYForce;
-    BOOL bDoConfigureInput;
-    BOOL bDoConfigureDisplay;
+	// TODO: change as needed
+	FLOAT fAxisRotateUD;
+	FLOAT fAxisRotateLR;
+	FLOAT fAxisRotateIO;
+	FLOAT fAxisRotateX;
+	FLOAT fAxisRotateY;
+	FLOAT fAxisRotateZ;
+	FLOAT fAxisHat;
+	BOOL bButton[GKEYMAX];
+	BOOL bButtonOneShot[GKEYMAX];
+	BOOL bSystem[GSYSKEYMAX];
+	BOOL bSystemOneShot[GSYSKEYMAX];
+	BOOL  bButtonInit;
+	BOOL  bButtonReset;
+	BOOL  bButtonTitle;
+	BOOL  bButtonZoomIn;
+	BOOL  bButtonZoomOut;
+	BOOL  bButtonResetView;
+	BOOL  bButtonTurnUp;
+	BOOL  bButtonTurnDown;
+	BOOL  bButtonTurnLeft;
+	BOOL  bButtonTurnRight;
+	BOOL  bButtonYForce;
+	BOOL  bButtonOneShotInit;
+	BOOL  bButtonOneShotReset;
+	BOOL  bButtonOneShotTitle;
+	BOOL  bButtonOneShotZoomIn;
+	BOOL  bButtonOneShotZoomOut;
+	BOOL  bButtonOneShotResetView;
+	BOOL  bButtonOneShotTurnUp;
+	BOOL  bButtonOneShotTurnDown;
+	BOOL  bButtonOneShotTurnLeft;
+	BOOL  bButtonOneShotTurnRight;
+	BOOL  bButtonOneShotYForce;
+	BOOL bDoConfigureInput;
+	BOOL bDoConfigureDisplay;
 	BOOL bDoOpenChip;
 	BOOL bDoOpenLand;
 	BOOL bDoOpenGame;
@@ -138,73 +138,73 @@ struct UserInput
 class CMyD3DApplication : public CD3DApplication
 {
 public:
-    BOOL                    m_bLoadingApp;          // TRUE, if the app is loading
-    CD3DFont*               m_pFont;                // Font for drawing text
-    CD3DFont*               m_pFontL;                // Font for drawing text
-    CD3DFont*               m_pFont3D;                // Font for drawing text
+	BOOL                    m_bLoadingApp;          // TRUE, if the app is loading
+	CD3DFont*               m_pFont;                // Font for drawing text
+	CD3DFont*               m_pFontL;                // Font for drawing text
+	CD3DFont*               m_pFont3D;                // Font for drawing text
 	//    ID3DXMesh*              m_pD3DXMesh;            // D3DX mesh to store teapot
-	
-    CInputDeviceManager*    m_pInputDeviceManager;  // DirectInput device manager
-    DIACTIONFORMAT          m_diafGame;             // Action format for game play
-    LPDIRECT3DSURFACE8      m_pDIConfigSurface;     // Surface for config'ing DInput devices
-    UserInput               m_UserInput;            // Struct for storing user input 
-	
-    FLOAT                   m_fSoundPlayRepeatCountdown; // Sound repeat timer
-    FLOAT                   m_fSoundPlayRepeatCountdown2; // Sound repeat timer
-	
-    FLOAT                   m_fWorldRotX;           // World rotation state X-axis
-    FLOAT                   m_fWorldRotY;           // World rotation state Y-axis
+
+	CInputDeviceManager*    m_pInputDeviceManager;  // DirectInput device manager
+	DIACTIONFORMAT          m_diafGame;             // Action format for game play
+	LPDIRECT3DSURFACE8      m_pDIConfigSurface;     // Surface for config'ing DInput devices
+	UserInput               m_UserInput;            // Struct for storing user input 
+
+	FLOAT                   m_fSoundPlayRepeatCountdown; // Sound repeat timer
+	FLOAT                   m_fSoundPlayRepeatCountdown2; // Sound repeat timer
+
+	FLOAT                   m_fWorldRotX;           // World rotation state X-axis
+	FLOAT                   m_fWorldRotY;           // World rotation state Y-axis
 
 	int						m_appID;
 	BOOL					m_inputFocus;
 	HIMC					m_hIMC;
 
-public:	
-    HRESULT ViewSet();
-    VOID    Pause( BOOL bPause );
+public:
+	HRESULT ViewSet();
+	VOID    Pause(BOOL bPause);
 protected:
 	HRESULT LoadData(char *filename);
-	HRESULT LoadProp(FILE *fp,int i);
-	HRESULT SaveProp(FILE *fp,int i);
+	HRESULT LoadProp(FILE *fp, int i);
+	HRESULT SaveProp(FILE *fp, int i);
 	HRESULT LoadLog(char *fname);
 	HRESULT SaveLog(char *fname);
 	HRESULT PlayLog();
-    HRESULT OneTimeSceneInit();
-    HRESULT InitDeviceObjects();
-    HRESULT RestoreDeviceObjects();
-    HRESULT InvalidateDeviceObjects();
-    HRESULT DeleteDeviceObjects();
+	HRESULT OneTimeSceneInit();
+	HRESULT InitDeviceObjects();
+	HRESULT RestoreDeviceObjects();
+	HRESULT InvalidateDeviceObjects();
+	HRESULT DeleteDeviceObjects();
 	void RenderSky();
-    HRESULT Render();
-    HRESULT FrameMove();
-    HRESULT FinalCleanup();
-    HRESULT ConfirmDevice( D3DCAPS8*, DWORD, D3DFORMAT );
-	
-    HRESULT RenderText();
-	
-    HRESULT InitInput( HWND hWnd );
-	void	ClearInput( UserInput* pUserInput );
-	void	DummyInput( UserInput* pUserInput );
-    void    UpdateInput( UserInput* pUserInput );
-    void    CleanupDirectInput();
-	
-    HRESULT InitAudio( HWND hWnd );
-	
+	HRESULT Render();
+	HRESULT FrameMove();
+	HRESULT FinalCleanup();
+	HRESULT ConfirmDevice(D3DCAPS8*, DWORD, D3DFORMAT);
+
+	HRESULT RenderText();
+
+	HRESULT InitInput(HWND hWnd);
+	void	ClearInput(UserInput* pUserInput);
+	void	DummyInput(UserInput* pUserInput);
+	void    UpdateInput(UserInput* pUserInput);
+	void    CleanupDirectInput();
+
+	HRESULT InitAudio(HWND hWnd);
+
 	VOID    ReadSettings();
-    VOID    WriteSettings();
-	
+	VOID    WriteSettings();
+
 public:
- 	void SetRegulationMenu();
-	LRESULT MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
-    CMyD3DApplication();
-	
-	HRESULT ResetChips(float x,float z,float a);
-	HRESULT ResetChips(float y,float a);
-	HRESULT InitChips(float a,int hereFlag);
-    HRESULT InputAddDeviceCB( CInputDeviceManager::DeviceInfo* pDeviceInfo, const DIDEVICEINSTANCE* pdidi );
-    static HRESULT CALLBACK StaticInputAddDeviceCB( CInputDeviceManager::DeviceInfo* pDeviceInfo, const DIDEVICEINSTANCE* pdidi, LPVOID pParam );   
-    BOOL    ConfigureInputDevicesCB( IUnknown* pUnknown );
-    static BOOL CALLBACK StaticConfigureInputDevicesCB( IUnknown* pUnknown, VOID* pUserData );
+	void SetRegulationMenu();
+	LRESULT MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	CMyD3DApplication();
+
+	HRESULT ResetChips(float x, float z, float a);
+	HRESULT ResetChips(float y, float a);
+	HRESULT InitChips(float a, int hereFlag);
+	HRESULT InputAddDeviceCB(CInputDeviceManager::DeviceInfo* pDeviceInfo, const DIDEVICEINSTANCE* pdidi);
+	static HRESULT CALLBACK StaticInputAddDeviceCB(CInputDeviceManager::DeviceInfo* pDeviceInfo, const DIDEVICEINSTANCE* pdidi, LPVOID pParam);
+	BOOL    ConfigureInputDevicesCB(IUnknown* pUnknown);
+	static BOOL CALLBACK StaticConfigureInputDevicesCB(IUnknown* pUnknown, VOID* pUserData);
 };
 
 

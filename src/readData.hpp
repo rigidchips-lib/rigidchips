@@ -59,10 +59,10 @@ typedef struct {
 	int RefCount;
 } GValList;
 
-void MakeChip(int type,int rn);
-int readChildData(FILE *fp,int parentNo,bool checkFlag);
-int readData(char *fname,bool checkFlag);
-int readData2(FILE *fp,bool checkFlag);
+void MakeChip(int type, int rn);
+int readChildData(FILE *fp, int parentNo, bool checkFlag);
+int readData(char *fname, bool checkFlag);
+int readData2(FILE *fp, bool checkFlag);
 
 int saveData(char *fname);
 

@@ -17,6 +17,6 @@ void readLand(char *name)
 {
 	FILE *fp;
 	char str[256];
-	int i,cw,n,vn;
-	if((fp=fopen(name,"r"))==NULL) return;
+	int i, cw, n, vn;
+	if ((fp = fopen(name, "r")) == NULL) return;
 }
