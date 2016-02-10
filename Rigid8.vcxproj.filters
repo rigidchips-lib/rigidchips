@@ -104,20 +104,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="Lua\lib\liblua.lib">
-      <Filter>Lua</Filter>
-    </Library>
-    <Library Include="Lua\lib\libluad.lib">
-      <Filter>Lua</Filter>
-    </Library>
-    <Library Include="Lua\lib\liblualib.lib">
-      <Filter>Lua</Filter>
-    </Library>
-    <Library Include="Lua\lib\liblualibd.lib">
-      <Filter>Lua</Filter>
-    </Library>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="src\d3dapp.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -177,5 +163,10 @@
     <ResourceCompile Include="src\Rigid.rc">
       <Filter>src</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="Lua\lua50.lib">
+      <Filter>Lua</Filter>
+    </Library>
   </ItemGroup>
 </Project>

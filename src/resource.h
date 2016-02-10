@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by Rigid.rc
+// Microsoft Visual C++ で生成されたインクルード ファイル。
+// Rigid.rc で使用
 //
 #define IDI_MAIN_ICON                   101
 #define IDR_MAIN_ACCEL                  113
@@ -56,6 +56,8 @@
 #define IDC_B20CHECK                    1055
 #define IDC_CHECK2                      1056
 #define IDC_FASTSHADOWCHECK             1056
+#define IDC_FASTSHADOWCHECK2            1057
+#define IDC_LUAEXTERNAL                 1057
 #define IDD_MULTIPLAYER_CONNECT         10001
 #define IDD_MULTIPLAYER_GAMES           10002
 #define IDD_MULTIPLAYER_CREATE          10003
