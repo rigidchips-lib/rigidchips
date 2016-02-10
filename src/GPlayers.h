@@ -8,14 +8,14 @@ typedef struct {
 } GSTREAM;
 typedef struct {
 	short		code;
-	GCHIPDATA	data[GRECEIVEMAX*2];
+	GCHIPDATA	data[GRECEIVEMAX * 2];
 } GCHIPSTREAM;
 
 
 typedef struct {
 	MYAPP_PLAYER_INFO info;
 	DWORD	size;
-	GCHIPDATA	data[GRECEIVEMAX*2];
+	GCHIPDATA	data[GRECEIVEMAX * 2];
 } GRECEIVEDATA;
 
 typedef struct {
@@ -57,17 +57,17 @@ typedef struct {
 	GEXPDATA2	data[GEXPDATAMAX];
 } GEXPSTREAM2;
 typedef struct {
-	int team; 
-	int haveArm; 
-	int crush; 
-	int init; 
-	int reset; 
+	int team;
+	int haveArm;
+	int crush;
+	int init;
+	int reset;
 	int yforce;
 	int scenarioCode;
 
-	float x,y,z;
-	float w1,w2;
-	float ww1,ww2;
+	float x, y, z;
+	float w1, w2;
+	float ww1, ww2;
 	float maxY;
 	DWORD time;
 	DWORD time2;
@@ -80,17 +80,17 @@ typedef struct {
 } GPLAYERDATA;
 
 typedef struct {
-	unsigned long ver_team; 
-	long haveArm; 
-	long crush; 
-	long init; 
-	long reset; 
-	long yforce; 
-	unsigned long base_fps; 
-	long scenarioCode; 
-	float dummyf1; 
-	float dummyf2; 
-	float dummyf3; 
+	unsigned long ver_team;
+	long haveArm;
+	long crush;
+	long init;
+	long reset;
+	long yforce;
+	unsigned long base_fps;
+	long scenarioCode;
+	float dummyf1;
+	float dummyf2;
+	float dummyf3;
 } GMYDATA;
 
 typedef struct {
