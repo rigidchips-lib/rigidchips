@@ -628,6 +628,20 @@ LRESULT CD3DApplication::MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam,
             }
             break;
 
+        case WM_NCLBUTTONDBLCLK:
+            if (wParam == HTCAPTION);
+            {
+                if (IsZoomed(hWnd))
+                {
+                    SendMessage(hWnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+                }
+                else
+                {
+                    SendMessage(hWnd, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+                }
+            }
+            return S_OK;
+
         case WM_EXITSIZEMOVE:
             Pause( FALSE );
 

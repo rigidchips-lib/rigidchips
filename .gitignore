@@ -1,2 +1,9 @@
 *.obj
 *.exe
+*.sdf
+*.opensdf
+*.suo
+Debug/
+Release/
+!Release/Data
+!Release/Resources
