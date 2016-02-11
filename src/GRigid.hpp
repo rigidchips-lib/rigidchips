@@ -1,23 +1,11 @@
 #ifndef G_RIGID_H
 #define G_RIGID_H
 #include <stdlib.h>
+#include "Consts.hpp"
+
 #include "GVector.hpp"
-#include "GLand.hpp"
 #include "readData.hpp"
-
-#define GTYPE_FACE 0
-#define GTYPE_DISK 1
-#define GTYPE_BOX 2
-#define GTYPE_BALL 3
-#define GTYPE_CAN 4
-#define GTYPE_CONE 5
-#define GTYPE_DUMMY 6
-#define GCHIPMAX 512
-#define GOBJMAX	20
-
-#define GCHILDMAX 12
-
-#define GDESTROY_K 0.3f
+#include "GLand.hpp"
 
 class GWorld;
 class GRigid;
@@ -268,7 +256,7 @@ public:
 	void AddViewModel();
 	void Disp();
 	void DispObject();
-	void DispJet(LPDIRECT3DDEVICE8 g3dDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag);
+	void DispJet(LPDIRECT3DDEVICE8 g_D3DDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag);
 	void DispShadow();
 	GMatrix33	CalcMassMat(GVector &p);
 	void CalcTotalFuel(void);
@@ -359,7 +347,7 @@ public:
 	void ObjectDisp();
 	void DispNetJetAll();
 	void DispNetJet(int type, GMatrix tm, float f, int dir);
-	void DispJet(LPDIRECT3DDEVICE8 g3dDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag);
+	void DispJet(LPDIRECT3DDEVICE8 g_D3DDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag);
 	void CheckJoint(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVector &offsetB);
 	void CheckShaft(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVector &offsetB, GVector &axis);
 	void CheckLink(GRigid* rigidA);

@@ -26,12 +26,7 @@
 #include "DXUtil.h"
 #include "D3Dtypes.h"
 #include "GVector.hpp"
-#define GVALMAX 256
-#define GKEYMAX 17
-#define GSYSKEYMAX 4
-#define GREFMAX 1024
-#define GOUTPUTMAX 25
-#define GRINGMAX	100
+
 
 typedef struct {
 	int State;

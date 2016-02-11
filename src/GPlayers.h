@@ -1,6 +1,7 @@
 #ifndef G_GPLAYERS_H
 #define G_GPLAYERS_H
 #include "GRigid.hpp"
+#include "GDPlay.hpp"
 #define GRECEIVEMAX 513
 typedef struct {
 	short		code;
@@ -72,7 +73,7 @@ typedef struct {
 	DWORD time;
 	DWORD time2;
 	GRECEIVEDATA	ReceiveData;
-	int ChipCount;
+	int g_ChipCount;
 
 	int Jet[GRECEIVEMAX];
 	GVector	X[GRECEIVEMAX];

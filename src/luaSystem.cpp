@@ -25,9 +25,11 @@
 #include <locale.h>
 #include "string.h"
 #include "ctype.h"
+#include "Globals.hpp"
 #include "readData.hpp"
 #include "luaSystem.hpp"
 #include "luaSub.hpp"
+
 #include "GDPlay.hpp"
 #include "GPlayers.h"
 
@@ -42,47 +44,13 @@
 #endif 
 //--メモリリーク検出用
 
-extern CMyD3DApplication* g_pApp;
-extern char szUpdateFileName0[];
-extern float luaL3dx, luaL3dy, luaL3dz;
-extern int luaGraColor;
-extern GVector CompassTarget;
-extern int ViewUpdate;
 
 
-char SystemOutput[GOUTPUTMAX][512];
-char *SystemSource = NULL;
-int SystemErrorCode;
-char SystemErrorStr[512];
-lua_State *SystemL = NULL;
-
-extern int scenarioCode;
-
-
-extern bool GravityFlag;
-extern bool AirFlag;
-extern bool TorqueFlag;
-extern bool JetFlag;
-extern bool UnbreakableFlag;
-extern bool ScriptFlag;
-extern bool CCDFlag;
-extern bool EfficientFlag;
-
-extern GRing Ring[];
-
-extern int ChipCount;
-extern float Zoom;
-
-extern GDPlay *DPlay;
-extern GPLAYERDATA PlayerData[];
-extern GMYDATA MyPlayerData;
-
-extern char LastChatData[];
 
 
 #define FILEMAX 32
 FILE *FpTable[32];
-extern bool ControlKeysLock[];//0:Init,1:Reset,2:Open,3:Update,4:OpenLand,5:OpenGame,6:YForce,7:Title
+
 
 int luaGetLastChat(lua_State *L)
 {
@@ -126,24 +94,24 @@ int CloseFp(int n) {
 int luaSendAllMessage(lua_State *L)
 {
 	char *str = (char *)lua_tostring(L, 1);
-	_tcsncpy(MessageData, str, MESSAGEMAX);
+	_tcsncpy(g_MessageData, str, MESSAGEMAX);
 	return 0;
 }
 int luaReceiveMessage(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= DPlay->GetNumPlayers() || scenarioCode != RecieaveMessageCode[no]) {
+	if (no < 0 || no >= g_DPlay->GetNumPlayers() || scenarioCode != g_RecieaveMessageCode[no]) {
 		lua_pushstring(L, "");
 		return 1;
 	}
-	lua_pushstring(L, RecieaveMessageData[no]);
+	lua_pushstring(L, g_RecieaveMessageData[no]);
 	return 1;
 }
 int luaReceiveMessageClear(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= DPlay->GetNumPlayers()) return 0;
-	RecieaveMessageData[no][0] = '\0';
+	if (no < 0 || no >= g_DPlay->GetNumPlayers()) return 0;
+	g_RecieaveMessageData[no][0] = '\0';
 	return 0;
 }
 
@@ -196,9 +164,9 @@ int luaFileGets(lua_State *L)
 int luaReset(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= ChipCount) return 0;
-	World->RestoreLink(Chip[no], Chip[no]->Top);
-	Chip[no]->CalcTotalCenter();
+	if (no < 0 || no >= g_ChipCount) return 0;
+	g_World->RestoreLink(g_Chip[no], g_Chip[no]->Top);
+	g_Chip[no]->CalcTotalCenter();
 	return 0;
 }
 int luaSetTarget(lua_State *L)
@@ -214,16 +182,16 @@ int luaKeyLock(lua_State *L)
 	int f = (int)lua_tonumber(L, 2);
 	if (n >= GKEYMAX) return 0;
 	if (n < 0) {
-		for (int i = 0;i < GKEYMAX;i++) KeyList[i].Lock = f;
+		for (int i = 0;i < GKEYMAX;i++) g_KeyList[i].Lock = f;
 	}
 	else {
-		KeyList[n].Lock = f;
+		g_KeyList[n].Lock = f;
 	}
 	return 0;
 }
 int luaGetSystemTickCount(lua_State *L)
 {
-	lua_pushnumber(L, SystemTickCount);
+	lua_pushnumber(L, g_SystemTickCount);
 	return 1;
 }
 int luaSetView(lua_State *L)
@@ -358,7 +326,7 @@ int luaLoadLand(lua_State *L)
 		}
 
 
-		r = LoadLand(G3dDevice, s);
+		r = LoadLand(g_D3DDevice, s);
 		if (r == 0) {
 			char szDrive[_MAX_DRIVE + 1];	// ドライブ名格納領域 
 			char szPath[_MAX_PATH + 1];	// パス名格納領域 
@@ -372,15 +340,15 @@ int luaLoadLand(lua_State *L)
 			lstrcpy(szLandFileName, str);
 			lstrcpy(szLandFileName0, szTitle);
 			lstrcat(szLandFileName0, szExt);
-			GFloat y = World->Land->GetY(0, 0);
-			Chip[0]->CalcTotalCenter();
-			Chip[0]->X = GVector(0, Chip[0]->Top->TotalRadius * 2 + 2 + y, 0);
-			Chip[0]->R = GMatrix33();
-			World->RestoreLink(Chip[0], Chip[0]);
-			if (Chip[0]->X.y <= -100000.0f)Chip[0]->X.y = 0.0f;
+			GFloat y = g_World->Land->GetY(0, 0);
+			g_Chip[0]->CalcTotalCenter();
+			g_Chip[0]->X = GVector(0, g_Chip[0]->Top->TotalRadius * 2 + 2 + y, 0);
+			g_Chip[0]->R = GMatrix33();
+			g_World->RestoreLink(g_Chip[0], g_Chip[0]);
+			if (g_Chip[0]->X.y <= -100000.0f)g_Chip[0]->X.y = 0.0f;
 		}
 	}
-	World->MainStepCount = -1;
+	g_World->MainStepCount = -1;
 
 	lua_pushnumber(L, r);
 	return 1;
@@ -398,13 +366,13 @@ int luaSaveChips(lua_State *L)
 }
 int luaUpdateChips(lua_State *L)
 {
-	GFloat x = Chip[0]->X.x, z = Chip[0]->X.z;
+	GFloat x = g_Chip[0]->X.x, z = g_Chip[0]->X.z;
 	int errCode = 0;
 	if ((errCode = readData(szUpdateFileName, true)) == 0) {
 		readData(szUpdateFileName, false);
-		if (ChipCount == 0) errCode = -1;
-		//		if(SystemL!=NULL) luaSystemRun("OnOpenChips");
-		if (m_pLandMesh) g_pApp->ResetChips(x, z, 0);
+		if (g_ChipCount == 0) errCode = -1;
+		//		if(g_SystemLua!=NULL) luaSystemRun("OnOpenChips");
+		if (g_pLandMesh) g_pApp->ResetChips(x, z, 0);
 	}
 	lua_pushnumber(L, errCode);
 	return 1;
@@ -433,7 +401,7 @@ int luaAddBall(lua_State *L)
 	float z = (float)lua_tonumber(L, 4);
 	float d = (float)lua_tonumber(L, 5);
 
-	GRigid *rg = World->AddObject(GTYPE_BALL, false, r * 2, r * 2, r * 2, d);
+	GRigid *rg = g_World->AddObject(GTYPE_BALL, false, r * 2, r * 2, r * 2, d);
 	if (rg) {
 		rg->X.x = x;
 		rg->X.y = y;
@@ -453,7 +421,7 @@ int luaSetObjFix(lua_State *L)
 	bool b = lua_tonumber(L, 2) == 0 ? false : true;
 	if (n < 0 || n >= GOBJMAX) return 0;
 
-	if (World->Object[n]) World->Object[n]->Fixed = b;
+	if (g_World->Object[n]) g_World->Object[n]->Fixed = b;
 	return 0;
 }
 int luaSetObjColor(lua_State *L)
@@ -463,8 +431,8 @@ int luaSetObjColor(lua_State *L)
 	float g = (float)lua_tonumber(L, 3);
 	float b = (float)lua_tonumber(L, 4);
 	if (n < 0 || n >= GOBJMAX) return 0;
-	if (World->Object[n]) {
-		World->Object[n]->Color = GFloat((int)(r * 255) * 256 * 256 + (int)(g * 255) * 256 + (int)(b * 255));
+	if (g_World->Object[n]) {
+		g_World->Object[n]->Color = GFloat((int)(r * 255) * 256 * 256 + (int)(g * 255) * 256 + (int)(b * 255));
 	}
 	return 0;
 }
@@ -502,8 +470,8 @@ int luaCheckRingArea(lua_State *L)
 	int rn = (int)lua_tonumber(L, 1);	//リング番号
 	int n = (int)lua_tonumber(L, 2);	//チップ番号
 	int b = 0;
-	if ((n >= 0 && n < World->ChipCount) && (rn >= 0 && rn < GRINGMAX)) {
-		if ((Ring[rn].Point - World->Rigid[n]->X).abs() < Ring[rn].Scale) b = 1;
+	if ((n >= 0 && n < g_World->ChipCount) && (rn >= 0 && rn < GRINGMAX)) {
+		if ((Ring[rn].Point - g_World->Rigid[n]->X).abs() < Ring[rn].Scale) b = 1;
 	}
 	lua_pushnumber(L, b);
 	return 1;
@@ -513,8 +481,8 @@ int luaCheckObjRingArea(lua_State *L)
 	int rn = (int)lua_tonumber(L, 1);	//リング番号
 	int n = (int)lua_tonumber(L, 2);	//オブジェクト番号
 	int b = 0;
-	if ((n >= 0 && n < GOBJMAX) && (rn >= 0 && rn < GRINGMAX) && World->Object[n] != NULL) {
-		if ((Ring[rn].Point - World->Object[n]->X).abs() < Ring[rn].Scale) b = 1;
+	if ((n >= 0 && n < GOBJMAX) && (rn >= 0 && rn < GRINGMAX) && g_World->Object[n] != NULL) {
+		if ((Ring[rn].Point - g_World->Object[n]->X).abs() < Ring[rn].Scale) b = 1;
 	}
 	lua_pushnumber(L, b);
 	return 1;
@@ -524,15 +492,15 @@ int luaCollisionRingArea(lua_State *L)
 	int rn = (int)lua_tonumber(L, 1);	//リング番号
 	int n = (int)lua_tonumber(L, 2);	//チップ番号
 	int b = 0;
-	if ((n >= 0 && n < World->ChipCount) && (rn >= 0 && rn < GRINGMAX)) {
+	if ((n >= 0 && n < g_World->ChipCount) && (rn >= 0 && rn < GRINGMAX)) {
 		GMatrix m = GMatrix().rotateX(Ring[rn].Dir.x*(float)M_PI / 180.0f).rotateY(Ring[rn].Dir.y*(float)M_PI / 180.0f).rotateZ(Ring[rn].Dir.z*(float)M_PI / 180.0f);
 		GVector norm;
 		norm.x = m.elem[2][0];
 		norm.y = m.elem[2][1];
 		norm.z = m.elem[2][2];
-		float t = World->Rigid[n]->preX.distanceOnFaceAndLine(norm, Ring[rn].Point, (World->Rigid[n]->X - World->Rigid[n]->preX));
+		float t = g_World->Rigid[n]->preX.distanceOnFaceAndLine(norm, Ring[rn].Point, (g_World->Rigid[n]->X - g_World->Rigid[n]->preX));
 		if (t >= 0 && t <= 1.0f) {
-			GVector p = World->Rigid[n]->preX + (World->Rigid[n]->X - World->Rigid[n]->preX)*t;
+			GVector p = g_World->Rigid[n]->preX + (g_World->Rigid[n]->X - g_World->Rigid[n]->preX)*t;
 			if ((Ring[rn].Point - p).abs() <= Ring[rn].Scale) b = 1;
 		}
 	}
@@ -544,15 +512,15 @@ int luaCollisionObjRingArea(lua_State *L)
 	int rn = (int)lua_tonumber(L, 1);	//リング番号
 	int n = (int)lua_tonumber(L, 2);	//オブジェクト番号
 	int b = 0;
-	if ((n >= 0 && n < GOBJMAX) && (rn >= 0 && rn < GRINGMAX) && World->Object[n] != NULL) {
+	if ((n >= 0 && n < GOBJMAX) && (rn >= 0 && rn < GRINGMAX) && g_World->Object[n] != NULL) {
 		GMatrix m = GMatrix().rotateX(Ring[rn].Dir.x*(float)M_PI / 180.0f).rotateY(Ring[rn].Dir.y*(float)M_PI / 180.0f).rotateZ(Ring[rn].Dir.z*(float)M_PI / 180.0f);
 		GVector norm;
 		norm.x = m.elem[2][0];
 		norm.y = m.elem[2][1];
 		norm.z = m.elem[2][2];
-		float t = World->Object[n]->preX.distanceOnFaceAndLine(norm, Ring[rn].Point, (World->Object[n]->X - World->Object[n]->preX));
+		float t = g_World->Object[n]->preX.distanceOnFaceAndLine(norm, Ring[rn].Point, (g_World->Object[n]->X - g_World->Object[n]->preX));
 		if (t >= 0 && t <= 1.0f) {
-			GVector p = World->Object[n]->preX + (World->Object[n]->X - World->Object[n]->preX)*t;
+			GVector p = g_World->Object[n]->preX + (g_World->Object[n]->X - g_World->Object[n]->preX)*t;
 			if ((Ring[rn].Point - p).abs() <= Ring[rn].Scale) b = 1;
 		}
 	}
@@ -601,11 +569,11 @@ int luaHitCountObj(lua_State *L)
 	int n = (int)lua_tonumber(L, 1);
 	char *type = (char*)lua_tostring(L, 2);
 	if (n < 0 || n >= GOBJMAX) return 0;
-	if (World->Object[n]) {
-		if (strcmp(type, "OBJ") == 0) hit = World->Object[n]->HitObj;
-		if (strcmp(type, "CHIP") == 0) hit = World->Object[n]->HitChip;
-		if (strcmp(type, "BULLET") == 0) hit = World->Object[n]->HitBullet;
-		if (strcmp(type, "LAND") == 0) hit = World->Object[n]->HitLand;
+	if (g_World->Object[n]) {
+		if (strcmp(type, "OBJ") == 0) hit = g_World->Object[n]->HitObj;
+		if (strcmp(type, "CHIP") == 0) hit = g_World->Object[n]->HitChip;
+		if (strcmp(type, "BULLET") == 0) hit = g_World->Object[n]->HitBullet;
+		if (strcmp(type, "LAND") == 0) hit = g_World->Object[n]->HitLand;
 	}
 	lua_pushnumber(L, hit);
 	return 1;
@@ -615,12 +583,12 @@ int luaHitCount(lua_State *L)
 	int hit = 0;
 	int n = (int)lua_tonumber(L, 1);
 	char *type = (char*)lua_tostring(L, 2);
-	if (n < 0 || n >= World->ChipCount) return 0;
-	if (World->Rigid[n]) {
-		if (strcmp(type, "OBJ") == 0) hit = World->Rigid[n]->HitObj;
-		if (strcmp(type, "BULLET") == 0) hit = World->Rigid[n]->HitBullet;
-		if (strcmp(type, "CHIP") == 0) hit = World->Rigid[n]->HitChip;
-		if (strcmp(type, "LAND") == 0) hit = World->Rigid[n]->HitLand;
+	if (n < 0 || n >= g_World->ChipCount) return 0;
+	if (g_World->Rigid[n]) {
+		if (strcmp(type, "OBJ") == 0) hit = g_World->Rigid[n]->HitObj;
+		if (strcmp(type, "BULLET") == 0) hit = g_World->Rigid[n]->HitBullet;
+		if (strcmp(type, "CHIP") == 0) hit = g_World->Rigid[n]->HitChip;
+		if (strcmp(type, "LAND") == 0) hit = g_World->Rigid[n]->HitLand;
 	}
 	lua_pushnumber(L, hit);
 	return 1;
@@ -631,13 +599,13 @@ int luaWarp(lua_State *L)
 	float x = (float)lua_tonumber(L, 2);
 	float y = (float)lua_tonumber(L, 3);
 	float z = (float)lua_tonumber(L, 4);
-	if (n < 0 || n >= World->ChipCount) return 0;
-	if (World->Rigid[n]) {
-		GVector v = GVector(x, y, z) - World->Rigid[n]->Top->X;
-		World->Rigid[n]->Top->TranslateWithChild(v);
-		World->Rigid[n]->Top->ResetXfWithChild();
-		World->Rigid[n]->CalcTotalCenter();
-		World->MainStepCount = -1;
+	if (n < 0 || n >= g_World->ChipCount) return 0;
+	if (g_World->Rigid[n]) {
+		GVector v = GVector(x, y, z) - g_World->Rigid[n]->Top->X;
+		g_World->Rigid[n]->Top->TranslateWithChild(v);
+		g_World->Rigid[n]->Top->ResetXfWithChild();
+		g_World->Rigid[n]->CalcTotalCenter();
+		g_World->MainStepCount = -1;
 	}
 	return 0;
 }
@@ -648,12 +616,12 @@ int luaWarpObj(lua_State *L)
 	float y = (float)lua_tonumber(L, 3);
 	float z = (float)lua_tonumber(L, 4);
 	if (n < 0 || n >= GOBJMAX) return 0;
-	if (World->Object[n]) {
-		GVector v = GVector(x, y, z) - World->Object[n]->X;
-		World->Object[n]->TranslateWithChild(v);
-		World->Object[n]->ResetXfWithChild();
-		World->Object[n]->CalcTotalCenter();
-		World->MainStepCount = -1;
+	if (g_World->Object[n]) {
+		GVector v = GVector(x, y, z) - g_World->Object[n]->X;
+		g_World->Object[n]->TranslateWithChild(v);
+		g_World->Object[n]->ResetXfWithChild();
+		g_World->Object[n]->CalcTotalCenter();
+		g_World->MainStepCount = -1;
 	}
 	return 0;
 }
@@ -663,11 +631,11 @@ int luaRotate(lua_State *L)
 	float x = (float)lua_tonumber(L, 2);
 	float y = (float)lua_tonumber(L, 3);
 	float z = (float)lua_tonumber(L, 4);
-	if (n < 0 || n >= World->ChipCount) return 0;
-	if (World->Rigid[n]) {
+	if (n < 0 || n >= g_World->ChipCount) return 0;
+	if (g_World->Rigid[n]) {
 		GMatrix m = GMatrix().rotateX(x*(float)M_PI / 180.0f).rotateY(y*(float)M_PI / 180.0f).rotateZ(z*(float)M_PI / 180.0f);
-		World->Rigid[n]->Top->RotateWithChild(m, World->Rigid[n]->Top->X);
-		World->Rigid[n]->Top->ResetXfWithChild();
+		g_World->Rigid[n]->Top->RotateWithChild(m, g_World->Rigid[n]->Top->X);
+		g_World->Rigid[n]->Top->ResetXfWithChild();
 	}
 	return 0;
 }
@@ -678,10 +646,10 @@ int luaRotateObj(lua_State *L)
 	float y = (float)lua_tonumber(L, 3);
 	float z = (float)lua_tonumber(L, 4);
 	if (n < 0 || n >= GOBJMAX) return 0;
-	if (World->Object[n]) {
+	if (g_World->Object[n]) {
 		GMatrix m = GMatrix().rotateX(x*(float)M_PI / 180.0f).rotateY(y*(float)M_PI / 180.0f).rotateZ(z*(float)M_PI / 180.0f);
-		World->Object[n]->RotateWithChild(m, World->Object[n]->X);
-		World->Object[n]->ResetXfWithChild();
+		g_World->Object[n]->RotateWithChild(m, g_World->Object[n]->X);
+		g_World->Object[n]->ResetXfWithChild();
 	}
 	return 0;
 }
@@ -691,11 +659,11 @@ int luaDirect(lua_State *L)
 	float x = (float)lua_tonumber(L, 2);
 	float y = (float)lua_tonumber(L, 3);
 	float z = (float)lua_tonumber(L, 4);
-	if (n < 0 || n >= World->ChipCount) return 0;
-	if (World->Rigid[n]) {
+	if (n < 0 || n >= g_World->ChipCount) return 0;
+	if (g_World->Rigid[n]) {
 		GMatrix m = GMatrix().rotateX(x*(float)M_PI / 180.0f).rotateY(y*(float)M_PI / 180.0f).rotateZ(z*(float)M_PI / 180.0f);
-		World->Rigid[n]->Top->RotateWithChildAbs(m, World->Rigid[n]->Top->X);
-		World->Rigid[n]->Top->ResetXfWithChild();
+		g_World->Rigid[n]->Top->RotateWithChildAbs(m, g_World->Rigid[n]->Top->X);
+		g_World->Rigid[n]->Top->ResetXfWithChild();
 	}
 	return 0;
 }
@@ -706,19 +674,19 @@ int luaDirectObj(lua_State *L)
 	float y = (float)lua_tonumber(L, 3);
 	float z = (float)lua_tonumber(L, 4);
 	if (n < 0 || n >= GOBJMAX) return 0;
-	if (World->Object[n]) {
+	if (g_World->Object[n]) {
 		GMatrix m = GMatrix().rotateX(x*(float)M_PI / 180.0f).rotateY(y*(float)M_PI / 180.0f).rotateZ(z*(float)M_PI / 180.0f);
-		World->Object[n]->RotateWithChildAbs(m, World->Object[n]->X);
-		World->Object[n]->ResetXfWithChild();
+		g_World->Object[n]->RotateWithChildAbs(m, g_World->Object[n]->X);
+		g_World->Object[n]->ResetXfWithChild();
 	}
 	return 0;
 }
 int luaEnervate(lua_State *L)
 {
 	int n = (int)lua_tonumber(L, 1);
-	if (n < 0 || n >= World->ChipCount) return 0;
-	if (World->Rigid[n]) {
-		World->Rigid[n]->Top->EnervateWithChild();
+	if (n < 0 || n >= g_World->ChipCount) return 0;
+	if (g_World->Rigid[n]) {
+		g_World->Rigid[n]->Top->EnervateWithChild();
 	}
 	return 0;
 }
@@ -726,21 +694,21 @@ int luaEnervateObj(lua_State *L)
 {
 	int n = (int)lua_tonumber(L, 1);
 	if (n < 0 || n >= GOBJMAX) return 0;
-	if (World->Object[n]) {
-		World->Object[n]->EnervateWithChild();
+	if (g_World->Object[n]) {
+		g_World->Object[n]->EnervateWithChild();
 	}
 	return 0;
 }
 int luaPause(lua_State *L)
 {
-	World->Stop = true;
-	for (int i = 0;i < ChipCount;i++) World->Rigid[i]->preX = World->Rigid[i]->X;
-	for (int i = 0;i < GOBJMAX;i++) if (World->Object[i]) World->Object[i]->preX = World->Object[i]->X;
+	g_World->Stop = true;
+	for (int i = 0;i < g_ChipCount;i++) g_World->Rigid[i]->preX = g_World->Rigid[i]->X;
+	for (int i = 0;i < GOBJMAX;i++) if (g_World->Object[i]) g_World->Object[i]->preX = g_World->Object[i]->X;
 	return 0;
 }
 int luaPlay(lua_State *L)
 {
-	World->Stop = false;
+	g_World->Stop = false;
 	return 0;
 }
 int luaGetSystemKey(lua_State *L)
@@ -774,8 +742,8 @@ int luaApplyTorqueObj(lua_State *L)
 	float y = (float)lua_tonumber(L, 3);
 	float z = (float)lua_tonumber(L, 4);
 	if (n < 0 || n >= GOBJMAX) return 0;
-	if (World->Object[n]) {
-		World->Object[n]->ApplyTorque(GVector(x, y, z));
+	if (g_World->Object[n]) {
+		g_World->Object[n]->ApplyTorque(GVector(x, y, z));
 	}
 	return 0;
 }
@@ -786,8 +754,8 @@ int luaApplyForceObj(lua_State *L)
 	float y = (float)lua_tonumber(L, 3);
 	float z = (float)lua_tonumber(L, 4);
 	if (n < 0 || n >= GOBJMAX) return 0;
-	if (World->Object[n]) {
-		World->Object[n]->ApplyForce(GVector(x, y, z), World->Object[n]->X);
+	if (g_World->Object[n]) {
+		g_World->Object[n]->ApplyForce(GVector(x, y, z), g_World->Object[n]->X);
 	}
 	return 0;
 }
@@ -797,9 +765,9 @@ int luaApplyTorque(lua_State *L)
 	float x = (float)lua_tonumber(L, 2);
 	float y = (float)lua_tonumber(L, 3);
 	float z = (float)lua_tonumber(L, 4);
-	if (n < 0 || n >= World->ChipCount) return 0;
-	if (World->Rigid[n]) {
-		World->Rigid[n]->ApplyTorque(GVector(x, y, z));
+	if (n < 0 || n >= g_World->ChipCount) return 0;
+	if (g_World->Rigid[n]) {
+		g_World->Rigid[n]->ApplyTorque(GVector(x, y, z));
 	}
 	return 0;
 }
@@ -809,9 +777,9 @@ int luaApplyForce(lua_State *L)
 	float x = (float)lua_tonumber(L, 2);
 	float y = (float)lua_tonumber(L, 3);
 	float z = (float)lua_tonumber(L, 4);
-	if (n < 0 || n >= World->ChipCount) return 0;
-	if (World->Rigid[n]) {
-		World->Rigid[n]->ApplyForce(GVector(x, y, z), World->Rigid[n]->X);
+	if (n < 0 || n >= g_World->ChipCount) return 0;
+	if (g_World->Rigid[n]) {
+		g_World->Rigid[n]->ApplyForce(GVector(x, y, z), g_World->Rigid[n]->X);
 	}
 	return 0;
 }
@@ -825,19 +793,19 @@ int luaGetH(lua_State *L)
 	LPDIRECT3DINDEXBUFFER8  pIB;
 	WORD*            pIndices;
 	D3DVERTEX*    pVertices;
-	if (m_pLandMesh == NULL) {
+	if (g_pLandMesh == NULL) {
 		lua_pushnumber(L, -100000.0f);
 		return 1;
 	}
-	m_pLandMesh->GetSysMemMesh()->GetVertexBuffer(&pVB);
-	m_pLandMesh->GetSysMemMesh()->GetIndexBuffer(&pIB);
+	g_pLandMesh->GetSysMemMesh()->GetVertexBuffer(&pVB);
+	g_pLandMesh->GetSysMemMesh()->GetIndexBuffer(&pIB);
 	pIB->Lock(0, 0, (BYTE**)&pIndices, 0);
 	pVB->Lock(0, 0, (BYTE**)&pVertices, 0);
 	D3DXVECTOR3 v1, v2;
 	GVector dir2 = GVector(0, -1, 0);
 	v1.x = x;v1.y = 100000.0f;v1.z = z;
 	v2.x = 0;v2.y = -1;v2.z = 0;
-	D3DXIntersect(m_pLandMesh->GetSysMemMesh(), &v1, &v2, &hit, NULL, NULL, NULL, &dist, NULL, NULL);
+	D3DXIntersect(g_pLandMesh->GetSysMemMesh(), &v1, &v2, &hit, NULL, NULL, NULL, &dist, NULL, NULL);
 	if (!hit) dist = -100000.0f;
 	else dist = 100000.0f - dist;
 	lua_pushnumber(L, dist);
@@ -857,7 +825,7 @@ int luaAddChip(lua_State *L)
 	char *news = (char*)lua_tostring(L, 3);
 	float angle = (float)lua_tonumber(L, 4);
 
-	if (parentNo < 0 || parentNo >= ChipCount) {
+	if (parentNo < 0 || parentNo >= g_ChipCount) {
 		lua_pushnumber(L, -1);
 		return 1;
 	}
@@ -947,92 +915,92 @@ int luaAddChip(lua_State *L)
 		flag = 1;
 	}
 	if (flag > 0) {
-		int cno = ChipCount;
-		Chip[parentNo]->DirCode |= dirCode;
+		int cno = g_ChipCount;
+		g_Chip[parentNo]->DirCode |= dirCode;
 		if (flag == 2) {
 			if (dirCode == 0x01) {
-				Chip[cno]->CheckShape.PointN = 6;
-				Chip[cno]->CheckShape.Point[0] = Chip[cno]->Shape.Point[1];
-				Chip[cno]->CheckShape.Point[1] = Chip[cno]->Shape.Point[0];
-				Chip[cno]->CheckShape.Point[2] = Chip[cno]->Shape.Point[2];
-				Chip[cno]->CheckShape.Point[3] = Chip[cno]->Shape.Point[5];
-				Chip[cno]->CheckShape.Point[4] = Chip[cno]->Shape.Point[6];
-				Chip[cno]->CheckShape.Point[5] = Chip[cno]->Shape.Point[8];
+				g_Chip[cno]->CheckShape.PointN = 6;
+				g_Chip[cno]->CheckShape.Point[0] = g_Chip[cno]->Shape.Point[1];
+				g_Chip[cno]->CheckShape.Point[1] = g_Chip[cno]->Shape.Point[0];
+				g_Chip[cno]->CheckShape.Point[2] = g_Chip[cno]->Shape.Point[2];
+				g_Chip[cno]->CheckShape.Point[3] = g_Chip[cno]->Shape.Point[5];
+				g_Chip[cno]->CheckShape.Point[4] = g_Chip[cno]->Shape.Point[6];
+				g_Chip[cno]->CheckShape.Point[5] = g_Chip[cno]->Shape.Point[8];
 			}
 			else if (dirCode == 0x02) {
-				Chip[cno]->CheckShape.PointN = 6;
-				Chip[cno]->CheckShape.Point[0] = Chip[cno]->Shape.Point[2];
-				Chip[cno]->CheckShape.Point[1] = Chip[cno]->Shape.Point[1];
-				Chip[cno]->CheckShape.Point[2] = Chip[cno]->Shape.Point[3];
-				Chip[cno]->CheckShape.Point[3] = Chip[cno]->Shape.Point[6];
-				Chip[cno]->CheckShape.Point[4] = Chip[cno]->Shape.Point[7];
-				Chip[cno]->CheckShape.Point[5] = Chip[cno]->Shape.Point[8];
+				g_Chip[cno]->CheckShape.PointN = 6;
+				g_Chip[cno]->CheckShape.Point[0] = g_Chip[cno]->Shape.Point[2];
+				g_Chip[cno]->CheckShape.Point[1] = g_Chip[cno]->Shape.Point[1];
+				g_Chip[cno]->CheckShape.Point[2] = g_Chip[cno]->Shape.Point[3];
+				g_Chip[cno]->CheckShape.Point[3] = g_Chip[cno]->Shape.Point[6];
+				g_Chip[cno]->CheckShape.Point[4] = g_Chip[cno]->Shape.Point[7];
+				g_Chip[cno]->CheckShape.Point[5] = g_Chip[cno]->Shape.Point[8];
 			}
 			else if (dirCode == 0x04) {
-				Chip[cno]->CheckShape.PointN = 6;
-				Chip[cno]->CheckShape.Point[0] = Chip[cno]->Shape.Point[0];
-				Chip[cno]->CheckShape.Point[1] = Chip[cno]->Shape.Point[3];
-				Chip[cno]->CheckShape.Point[2] = Chip[cno]->Shape.Point[1];
-				Chip[cno]->CheckShape.Point[3] = Chip[cno]->Shape.Point[4];
-				Chip[cno]->CheckShape.Point[4] = Chip[cno]->Shape.Point[5];
-				Chip[cno]->CheckShape.Point[5] = Chip[cno]->Shape.Point[8];
+				g_Chip[cno]->CheckShape.PointN = 6;
+				g_Chip[cno]->CheckShape.Point[0] = g_Chip[cno]->Shape.Point[0];
+				g_Chip[cno]->CheckShape.Point[1] = g_Chip[cno]->Shape.Point[3];
+				g_Chip[cno]->CheckShape.Point[2] = g_Chip[cno]->Shape.Point[1];
+				g_Chip[cno]->CheckShape.Point[3] = g_Chip[cno]->Shape.Point[4];
+				g_Chip[cno]->CheckShape.Point[4] = g_Chip[cno]->Shape.Point[5];
+				g_Chip[cno]->CheckShape.Point[5] = g_Chip[cno]->Shape.Point[8];
 			}
 			else if (dirCode == 0x08) {
-				Chip[cno]->CheckShape.PointN = 6;
-				Chip[cno]->CheckShape.Point[0] = Chip[cno]->Shape.Point[3];
-				Chip[cno]->CheckShape.Point[1] = Chip[cno]->Shape.Point[2];
-				Chip[cno]->CheckShape.Point[2] = Chip[cno]->Shape.Point[0];
-				Chip[cno]->CheckShape.Point[3] = Chip[cno]->Shape.Point[4];
-				Chip[cno]->CheckShape.Point[4] = Chip[cno]->Shape.Point[7];
-				Chip[cno]->CheckShape.Point[5] = Chip[cno]->Shape.Point[8];
+				g_Chip[cno]->CheckShape.PointN = 6;
+				g_Chip[cno]->CheckShape.Point[0] = g_Chip[cno]->Shape.Point[3];
+				g_Chip[cno]->CheckShape.Point[1] = g_Chip[cno]->Shape.Point[2];
+				g_Chip[cno]->CheckShape.Point[2] = g_Chip[cno]->Shape.Point[0];
+				g_Chip[cno]->CheckShape.Point[3] = g_Chip[cno]->Shape.Point[4];
+				g_Chip[cno]->CheckShape.Point[4] = g_Chip[cno]->Shape.Point[7];
+				g_Chip[cno]->CheckShape.Point[5] = g_Chip[cno]->Shape.Point[8];
 			}
-			Chip[cno]->SaveShape = Chip[cno]->CheckShape;
+			g_Chip[cno]->SaveShape = g_Chip[cno]->CheckShape;
 		}
 		else {
-			Chip[cno]->CheckShape = Chip[cno]->Shape;
-			Chip[cno]->SaveShape = Chip[cno]->Shape;
+			g_Chip[cno]->CheckShape = g_Chip[cno]->Shape;
+			g_Chip[cno]->SaveShape = g_Chip[cno]->Shape;
 		}
-		if (strcmp(type, "COWL") == 0) link2 = World->AddCowl(Chip[parentNo], offA, Chip[ChipCount], offB, axis[an], angle);
-		else link2 = World->AddHinge(Chip[parentNo], offA, Chip[ChipCount], offB, axis[an], angle, 1, 0.5);
-		ChipCount++;if (ChipCount >= GCHIPMAX) ChipCount = GCHIPMAX - 1;
+		if (strcmp(type, "COWL") == 0) link2 = g_World->AddCowl(g_Chip[parentNo], offA, g_Chip[g_ChipCount], offB, axis[an], angle);
+		else link2 = g_World->AddHinge(g_Chip[parentNo], offA, g_Chip[g_ChipCount], offB, axis[an], angle, 1, 0.5);
+		g_ChipCount++;if (g_ChipCount >= GCHIPMAX) g_ChipCount = GCHIPMAX - 1;
 	}
 	else {
 		if (strcmp(type, "WHEEL") == 0) {
-			int cno2 = ChipCount;
+			int cno2 = g_ChipCount;
 			MakeChip(GT_DUMMY, rn);
-			Chip[cno2]->CheckShape = Chip[cno2]->Shape;
-			Chip[cno2]->SaveShape = Chip[cno2]->Shape;
-			link2 = World->AddHinge(Chip[parentNo], offA, Chip[cno2], offB, axis[0], angle, 1.0, 0.5);
-			ChipCount++;if (ChipCount >= GCHIPMAX) ChipCount = GCHIPMAX - 1;
-			int cno = ChipCount;
+			g_Chip[cno2]->CheckShape = g_Chip[cno2]->Shape;
+			g_Chip[cno2]->SaveShape = g_Chip[cno2]->Shape;
+			link2 = g_World->AddHinge(g_Chip[parentNo], offA, g_Chip[cno2], offB, axis[0], angle, 1.0, 0.5);
+			g_ChipCount++;if (g_ChipCount >= GCHIPMAX) g_ChipCount = GCHIPMAX - 1;
+			int cno = g_ChipCount;
 			MakeChip(GT_WHEEL, rn);
-			Chip[cno]->CheckShape = Chip[cno]->Shape;
-			Chip[cno]->SaveShape = Chip[cno]->Shape;
-			Chip[parentNo]->DirCode |= dirCode;
-			link1 = World->AddShaft(Chip[cno2], GVector(0, 0, 0), Chip[cno], GVector(0, 0, 0), axis[1], 0);
-			ChipCount++;if (ChipCount >= GCHIPMAX) ChipCount = GCHIPMAX - 1;
+			g_Chip[cno]->CheckShape = g_Chip[cno]->Shape;
+			g_Chip[cno]->SaveShape = g_Chip[cno]->Shape;
+			g_Chip[parentNo]->DirCode |= dirCode;
+			link1 = g_World->AddShaft(g_Chip[cno2], GVector(0, 0, 0), g_Chip[cno], GVector(0, 0, 0), axis[1], 0);
+			g_ChipCount++;if (g_ChipCount >= GCHIPMAX) g_ChipCount = GCHIPMAX - 1;
 			an = 2;
 		}
 		else if (strcmp(type, "RLW") == 0) {
-			int cno2 = ChipCount;
+			int cno2 = g_ChipCount;
 			MakeChip(GT_DUMMY, rn);
-			Chip[cno2]->CheckShape = Chip[cno2]->Shape;
-			Chip[cno2]->SaveShape = Chip[cno2]->Shape;
-			link2 = World->AddHinge(Chip[parentNo], offA, Chip[cno2], offB, axis[0], angle, 1.0, 0.5);
-			ChipCount++;if (ChipCount >= GCHIPMAX) ChipCount = GCHIPMAX - 1;
-			int cno = ChipCount;
+			g_Chip[cno2]->CheckShape = g_Chip[cno2]->Shape;
+			g_Chip[cno2]->SaveShape = g_Chip[cno2]->Shape;
+			link2 = g_World->AddHinge(g_Chip[parentNo], offA, g_Chip[cno2], offB, axis[0], angle, 1.0, 0.5);
+			g_ChipCount++;if (g_ChipCount >= GCHIPMAX) g_ChipCount = GCHIPMAX - 1;
+			int cno = g_ChipCount;
 			MakeChip(GT_RLW, rn);
-			Chip[cno]->CheckShape = Chip[cno]->Shape;
-			Chip[cno]->SaveShape = Chip[cno]->Shape;
-			Chip[parentNo]->DirCode |= dirCode;
-			link1 = World->AddShaft(Chip[cno2], GVector(0, 0, 0), Chip[cno], GVector(0, 0, 0), axis[1], 0);
-			ChipCount++;if (ChipCount >= GCHIPMAX) ChipCount = GCHIPMAX - 1;
+			g_Chip[cno]->CheckShape = g_Chip[cno]->Shape;
+			g_Chip[cno]->SaveShape = g_Chip[cno]->Shape;
+			g_Chip[parentNo]->DirCode |= dirCode;
+			link1 = g_World->AddShaft(g_Chip[cno2], GVector(0, 0, 0), g_Chip[cno], GVector(0, 0, 0), axis[1], 0);
+			g_ChipCount++;if (g_ChipCount >= GCHIPMAX) g_ChipCount = GCHIPMAX - 1;
 			an = 2;
 		}
 	}
-	//World->CalcLink(Chip[parentNo]);
-	World->RestoreLink(Chip[0], Chip[0]);
-	lua_pushnumber(L, ChipCount - 1);
+	//g_World->CalcLink(g_Chip[parentNo]);
+	g_World->RestoreLink(g_Chip[0], g_Chip[0]);
+	lua_pushnumber(L, g_ChipCount - 1);
 	return 1;
 }
 int luaGetChild(lua_State *L)
@@ -1041,7 +1009,7 @@ int luaGetChild(lua_State *L)
 	int cn = (int)lua_tonumber(L, 2);
 	double value = -1;
 	if (n >= 0 && n < GCHILDMAX) {
-		if (World->Rigid[n]->Child[n].RigidB) value = World->Rigid[n]->Child[n].RigidB->ID;
+		if (g_World->Rigid[n]->Child[n].RigidB) value = g_World->Rigid[n]->Child[n].RigidB->ID;
 	}
 	lua_pushnumber(L, value);
 	return 1;
@@ -1051,54 +1019,54 @@ int luaGetChip(lua_State *L)
 	int n = (int)lua_tonumber(L, 1);
 	char *name = (char*)lua_tostring(L, 2);
 	double value = 0.0;
-	if (n < 0 || n >= World->ChipCount) return 0;
-	if (World->Rigid[n]) {
+	if (n < 0 || n >= g_World->ChipCount) return 0;
+	if (g_World->Rigid[n]) {
 		if (strcmp(name, "DIR") == 0) {
-			value = World->Rigid[n]->Dir;
+			value = g_World->Rigid[n]->Dir;
 		}
 		else if (strcmp(name, "EFFECT") == 0) {
-			value = World->Rigid[n]->Effect;
+			value = g_World->Rigid[n]->Effect;
 		}
 		else if (strcmp(name, "OPTION") == 0) {
-			value = World->Rigid[n]->Option;
+			value = g_World->Rigid[n]->Option;
 		}
 		else if (strcmp(name, "ANGLE") == 0) {
-			if (World->Rigid[n]->LinkInfo) value = World->Rigid[n]->LinkInfo->Angle;
+			if (g_World->Rigid[n]->LinkInfo) value = g_World->Rigid[n]->LinkInfo->Angle;
 		}
 		else if (strcmp(name, "POWER") == 0) {
-			value = World->Rigid[n]->Power;
+			value = g_World->Rigid[n]->Power;
 		}
 		else if (strcmp(name, "SPRING") == 0) {
-			if (World->Rigid[n]->LinkInfo) value = World->Rigid[n]->LinkInfo->SpringK;
+			if (g_World->Rigid[n]->LinkInfo) value = g_World->Rigid[n]->LinkInfo->SpringK;
 		}
 		else if (strcmp(name, "DAMPER") == 0 || strcmp(name, "DUMPER") == 0) {
-			if (World->Rigid[n]->LinkInfo) value = World->Rigid[n]->LinkInfo->DamperK;
+			if (g_World->Rigid[n]->LinkInfo) value = g_World->Rigid[n]->LinkInfo->DamperK;
 		}
 		else if (strcmp(name, "BRAKE") == 0) {
-			if (World->Rigid[n]->LinkInfo) value = World->Rigid[n]->LinkInfo->FrictionK;
+			if (g_World->Rigid[n]->LinkInfo) value = g_World->Rigid[n]->LinkInfo->FrictionK;
 		}
 		else if (strcmp(name, "COLOR") == 0) {
-			value = World->Rigid[n]->Color;
+			value = g_World->Rigid[n]->Color;
 		}
 		else if (strcmp(name, "PARENT") == 0) {
-			if (World->Rigid[n]->Parent) value = World->Rigid[n]->Parent->ID;
+			if (g_World->Rigid[n]->Parent) value = g_World->Rigid[n]->Parent->ID;
 			else value = -1;
 		}
 		else if (strcmp(name, "TOP") == 0) {
-			if (World->Rigid[n]->Top) value = World->Rigid[n]->Top->ID;
+			if (g_World->Rigid[n]->Top) value = g_World->Rigid[n]->Top->ID;
 			else value = -1;
 		}
 		else if (strcmp(name, "USER1") == 0) {
-			value = World->Rigid[n]->UserEffect;
+			value = g_World->Rigid[n]->UserEffect;
 		}
 		else if (strcmp(name, "USER2") == 0) {
-			value = World->Rigid[n]->UserOption;
+			value = g_World->Rigid[n]->UserOption;
 		}
 		else if (strcmp(name, "FUEL") == 0) {
-			value = World->Rigid[n]->Fuel;
+			value = g_World->Rigid[n]->Fuel;
 		}
 		else if (strcmp(name, "FUELMAX") == 0) {
-			value = World->Rigid[n]->FuelMax;
+			value = g_World->Rigid[n]->FuelMax;
 		}
 	}
 	lua_pushnumber(L, value);
@@ -1109,58 +1077,58 @@ int luaSetChip(lua_State *L)
 	int n = (int)lua_tonumber(L, 1);
 	char *name = (char*)lua_tostring(L, 2);
 	float value = (float)lua_tonumber(L, 3);
-	if (n < 0 || n >= World->ChipCount) return 0;
-	if (World->Rigid[n]) {
+	if (n < 0 || n >= g_World->ChipCount) return 0;
+	if (g_World->Rigid[n]) {
 		if (strcmp(name, "EFFECT") == 0) {
-			World->Rigid[n]->Effect = value;
+			g_World->Rigid[n]->Effect = value;
 		}
 		else if (strcmp(name, "OPTION") == 0) {
-			setOption(World->Rigid[n], value);
-			if (World->Rigid[n]->ChipType == 4 || World->Rigid[n]->ChipType == 5) {
-				int nn = World->Rigid[n]->Top->ID;
-				for (int i = 0;i < VarCount;i++) {
-					ValList[i].Val = ValList[i].Def;
-					if (ValList[i].Val > ValList[i].Max) ValList[i].Val = ValList[i].Max;
-					if (ValList[i].Val < ValList[i].Min) ValList[i].Val = ValList[i].Min;
-					ValList[i].Updated = true;
-					for (int j = 0;j < ValList[i].RefCount;j++) {
-						if (ValList[i].Flag[j])
-							*(ValList[i].Ref[j]) = -ValList[i].Val;
-						else *(ValList[i].Ref[j]) = ValList[i].Val;
+			setOption(g_World->Rigid[n], value);
+			if (g_World->Rigid[n]->ChipType == 4 || g_World->Rigid[n]->ChipType == 5) {
+				int nn = g_World->Rigid[n]->Top->ID;
+				for (int i = 0;i < g_VarCount;i++) {
+					g_ValList[i].Val = g_ValList[i].Def;
+					if (g_ValList[i].Val > g_ValList[i].Max) g_ValList[i].Val = g_ValList[i].Max;
+					if (g_ValList[i].Val < g_ValList[i].Min) g_ValList[i].Val = g_ValList[i].Min;
+					g_ValList[i].Updated = true;
+					for (int j = 0;j < g_ValList[i].RefCount;j++) {
+						if (g_ValList[i].Flag[j])
+							*(g_ValList[i].Ref[j]) = -g_ValList[i].Val;
+						else *(g_ValList[i].Ref[j]) = g_ValList[i].Val;
 					}
 				}
 				ResetChip2(nn, 0);
 			}
 		}
 		else if (strcmp(name, "ANGLE") == 0) {
-			if (World->Rigid[n]->LinkInfo) World->Rigid[n]->LinkInfo->Angle = value;
+			if (g_World->Rigid[n]->LinkInfo) g_World->Rigid[n]->LinkInfo->Angle = value;
 		}
 		else if (strcmp(name, "POWER") == 0) {
-			World->Rigid[n]->Power = value;
+			g_World->Rigid[n]->Power = value;
 		}
 		else if (strcmp(name, "SPRING") == 0) {
-			if (World->Rigid[n]->LinkInfo) World->Rigid[n]->LinkInfo->SpringK = value;
+			if (g_World->Rigid[n]->LinkInfo) g_World->Rigid[n]->LinkInfo->SpringK = value;
 		}
 		else if (strcmp(name, "DAMPER") == 0 || strcmp(name, "DUMPER") == 0) {
-			if (World->Rigid[n]->LinkInfo) World->Rigid[n]->LinkInfo->DamperK = value;
+			if (g_World->Rigid[n]->LinkInfo) g_World->Rigid[n]->LinkInfo->DamperK = value;
 		}
 		else if (strcmp(name, "BRAKE") == 0) {
-			if (World->Rigid[n]->LinkInfo) World->Rigid[n]->LinkInfo->FrictionK = value;
+			if (g_World->Rigid[n]->LinkInfo) g_World->Rigid[n]->LinkInfo->FrictionK = value;
 		}
 		else if (strcmp(name, "COLOR") == 0) {
-			World->Rigid[n]->Color = value;
+			g_World->Rigid[n]->Color = value;
 		}
 		else if (strcmp(name, "USER1") == 0) {
-			World->Rigid[n]->UserEffect = value;
+			g_World->Rigid[n]->UserEffect = value;
 		}
 		else if (strcmp(name, "USER2") == 0) {
-			World->Rigid[n]->UserOption = value;
+			g_World->Rigid[n]->UserOption = value;
 		}
 		else if (strcmp(name, "FUEL") == 0) {
-			World->Rigid[n]->Fuel = value;
+			g_World->Rigid[n]->Fuel = value;
 		}
 		else if (strcmp(name, "FUELMAX") == 0) {
-			World->Rigid[n]->FuelMax = value;
+			g_World->Rigid[n]->FuelMax = value;
 		}
 	}
 	return 0;
@@ -1224,287 +1192,287 @@ int LoadSystem(char *fileName) {
 int luaSystemInit() {
 	SystemErrorStr[0] = '\0';
 	SystemErrorCode = 0;
-	if (SystemL) luaSystemEnd();
+	if (g_SystemLua) luaSystemEnd();
 	for (int i = 0;i < FILEMAX;i++) FpTable[i] = NULL;
 	setlocale(LC_ALL, "");
 	//
-	SystemL = lua_open();  /* create state */
+	g_SystemLua = lua_open();  /* create state */
 	// 関数を登録する(v1.5)
-	lua_register(SystemL, "_CTRLLOCK", luaControlKeyLock);
-	lua_register(SystemL, "_SENDALL", luaSendAllMessage);
-	lua_register(SystemL, "_RECEIVE", luaReceiveMessage);
-	lua_register(SystemL, "_RECEIVECLEAR", luaReceiveMessageClear);
-	lua_register(SystemL, "_FOPEN", luaFileOpen);
-	lua_register(SystemL, "_FCLOSE", luaFileClose);
-	lua_register(SystemL, "_FPUTS", luaFilePuts);
-	lua_register(SystemL, "_FGETS", luaFileGets);
-	lua_register(SystemL, "_CHAT", luaGetLastChat);
+	lua_register(g_SystemLua, "_CTRLLOCK", luaControlKeyLock);
+	lua_register(g_SystemLua, "_SENDALL", luaSendAllMessage);
+	lua_register(g_SystemLua, "_RECEIVE", luaReceiveMessage);
+	lua_register(g_SystemLua, "_RECEIVECLEAR", luaReceiveMessageClear);
+	lua_register(g_SystemLua, "_FOPEN", luaFileOpen);
+	lua_register(g_SystemLua, "_FCLOSE", luaFileClose);
+	lua_register(g_SystemLua, "_FPUTS", luaFilePuts);
+	lua_register(g_SystemLua, "_FGETS", luaFileGets);
+	lua_register(g_SystemLua, "_CHAT", luaGetLastChat);
 	// 関数を登録する(v1.4)
-	lua_register(SystemL, "_RESET", luaReset);
-	lua_register(SystemL, "_COMPASS", luaSetTarget);
-	lua_register(SystemL, "_SETVIEWUP", luaSetViewUp);
+	lua_register(g_SystemLua, "_RESET", luaReset);
+	lua_register(g_SystemLua, "_COMPASS", luaSetTarget);
+	lua_register(g_SystemLua, "_SETVIEWUP", luaSetViewUp);
 	// 関数を登録する(v1.3)
-	lua_register(SystemL, "_KEYLOCK", luaKeyLock);
-	lua_register(SystemL, "_STICKS", luaGetSystemTickCount);
+	lua_register(g_SystemLua, "_KEYLOCK", luaKeyLock);
+	lua_register(g_SystemLua, "_STICKS", luaGetSystemTickCount);
 	// 関数を登録する(v1.2)
-	lua_register(SystemL, "_SETVIEW", luaSetView);
-	lua_register(SystemL, "_GETVIEW", luaGetView);
-	lua_register(SystemL, "_SETVIEWTYPE", luaSetViewType);
-	lua_register(SystemL, "_GETVIEWTYPE", luaGetViewType);
-	lua_register(SystemL, "_SETVIEWZOOM", luaSetViewZoom);
-	lua_register(SystemL, "_GETVIEWZOOM", luaGetViewZoom);
+	lua_register(g_SystemLua, "_SETVIEW", luaSetView);
+	lua_register(g_SystemLua, "_GETVIEW", luaGetView);
+	lua_register(g_SystemLua, "_SETVIEWTYPE", luaSetViewType);
+	lua_register(g_SystemLua, "_GETVIEWTYPE", luaGetViewType);
+	lua_register(g_SystemLua, "_SETVIEWZOOM", luaSetViewZoom);
+	lua_register(g_SystemLua, "_GETVIEWZOOM", luaGetViewZoom);
 
 	// 関数を登録する(v1.1)
-	lua_register(SystemL, "_GET", luaGetChip);
-	lua_register(SystemL, "_GETCHILD", luaGetChild);
+	lua_register(g_SystemLua, "_GET", luaGetChip);
+	lua_register(g_SystemLua, "_GETCHILD", luaGetChild);
 
 	// 関数を登録する(v1.0)
-	lua_register(SystemL, "out", luaSystemPrint);
+	lua_register(g_SystemLua, "out", luaSystemPrint);
 
-	lua_register(SystemL, "_SETREG", luaSetRegulationFlag);
+	lua_register(g_SystemLua, "_SETREG", luaSetRegulationFlag);
 
-	lua_register(SystemL, "_LOADLAND", luaLoadLand);
+	lua_register(g_SystemLua, "_LOADLAND", luaLoadLand);
 
-	lua_register(SystemL, "_SETWIND", luaWind);
-	lua_register(SystemL, "_GETWIND", luaGetWind);
+	lua_register(g_SystemLua, "_SETWIND", luaWind);
+	lua_register(g_SystemLua, "_GETWIND", luaGetWind);
 
-	lua_register(SystemL, "_ADDBALL", luaAddBall);
-	lua_register(SystemL, "_SETOBJFIX", luaSetObjFix);
-	lua_register(SystemL, "_SETOBJCOLOR", luaSetObjColor);
+	lua_register(g_SystemLua, "_ADDBALL", luaAddBall);
+	lua_register(g_SystemLua, "_SETOBJFIX", luaSetObjFix);
+	lua_register(g_SystemLua, "_SETOBJCOLOR", luaSetObjColor);
 
-	lua_register(SystemL, "_SETRINGSTATE", luaSetRingState);
-	lua_register(SystemL, "_GETRINGSTATE", luaGetRingState);
-	lua_register(SystemL, "_SETRING", luaSetRing);
-	lua_register(SystemL, "_GETRING", luaGetRing);
-	lua_register(SystemL, "_SETRINGCOLOR", luaSetRingColor);
-	lua_register(SystemL, "_CHECK", luaCheckRingArea);
-	lua_register(SystemL, "_CHECKOBJ", luaCheckObjRingArea);
-	lua_register(SystemL, "_CHECK2", luaCollisionRingArea);
-	lua_register(SystemL, "_CHECK2OBJ", luaCollisionObjRingArea);
+	lua_register(g_SystemLua, "_SETRINGSTATE", luaSetRingState);
+	lua_register(g_SystemLua, "_GETRINGSTATE", luaGetRingState);
+	lua_register(g_SystemLua, "_SETRING", luaSetRing);
+	lua_register(g_SystemLua, "_GETRING", luaGetRing);
+	lua_register(g_SystemLua, "_SETRINGCOLOR", luaSetRingColor);
+	lua_register(g_SystemLua, "_CHECK", luaCheckRingArea);
+	lua_register(g_SystemLua, "_CHECKOBJ", luaCheckObjRingArea);
+	lua_register(g_SystemLua, "_CHECK2", luaCollisionRingArea);
+	lua_register(g_SystemLua, "_CHECK2OBJ", luaCollisionObjRingArea);
 
-	lua_register(SystemL, "_WARP", luaWarp);
-	lua_register(SystemL, "_WARPOBJ", luaWarpObj);
+	lua_register(g_SystemLua, "_WARP", luaWarp);
+	lua_register(g_SystemLua, "_WARPOBJ", luaWarpObj);
 
-	lua_register(SystemL, "_FORCE", luaApplyForce);
-	lua_register(SystemL, "_FORCEOBJ", luaApplyForceObj);
+	lua_register(g_SystemLua, "_FORCE", luaApplyForce);
+	lua_register(g_SystemLua, "_FORCEOBJ", luaApplyForceObj);
 
-	lua_register(SystemL, "_TORQUE", luaApplyTorque);
-	lua_register(SystemL, "_TORQUEOBJ", luaApplyTorqueObj);
+	lua_register(g_SystemLua, "_TORQUE", luaApplyTorque);
+	lua_register(g_SystemLua, "_TORQUEOBJ", luaApplyTorqueObj);
 
-	lua_register(SystemL, "_GETHIT", luaHitCount);
-	lua_register(SystemL, "_GETHITOBJ", luaHitCountObj);
+	lua_register(g_SystemLua, "_GETHIT", luaHitCount);
+	lua_register(g_SystemLua, "_GETHITOBJ", luaHitCountObj);
 
 
-	lua_register(SystemL, "_SET", luaSetChip);
+	lua_register(g_SystemLua, "_SET", luaSetChip);
 
-	lua_register(SystemL, "_ROTATE", luaRotate);
-	lua_register(SystemL, "_ROTATEOBJ", luaRotateObj);
-	lua_register(SystemL, "_DIRECT", luaDirect);
-	lua_register(SystemL, "_DIRECTOBJ", luaDirectObj);
+	lua_register(g_SystemLua, "_ROTATE", luaRotate);
+	lua_register(g_SystemLua, "_ROTATEOBJ", luaRotateObj);
+	lua_register(g_SystemLua, "_DIRECT", luaDirect);
+	lua_register(g_SystemLua, "_DIRECTOBJ", luaDirectObj);
 
-	lua_register(SystemL, "_ENERVATE", luaEnervate);
-	lua_register(SystemL, "_ENERVATEOBJ", luaEnervateObj);
+	lua_register(g_SystemLua, "_ENERVATE", luaEnervate);
+	lua_register(g_SystemLua, "_ENERVATEOBJ", luaEnervateObj);
 
-	lua_register(SystemL, "_PAUSE", luaPause);
-	lua_register(SystemL, "_PLAY", luaPlay);
+	lua_register(g_SystemLua, "_PAUSE", luaPause);
+	lua_register(g_SystemLua, "_PLAY", luaPlay);
 
-	lua_register(SystemL, "_SKEY", luaGetSystemKey);
-	lua_register(SystemL, "_SKEYDOWN", luaGetSystemKeyDown);
-	lua_register(SystemL, "_SKEYUP", luaGetSystemKeyUp);
+	lua_register(g_SystemLua, "_SKEY", luaGetSystemKey);
+	lua_register(g_SystemLua, "_SKEYDOWN", luaGetSystemKeyDown);
+	lua_register(g_SystemLua, "_SKEYUP", luaGetSystemKeyUp);
 
-	lua_register(SystemL, "_GETY", luaGetH);
+	lua_register(g_SystemLua, "_GETY", luaGetH);
 
-	lua_register(SystemL, "_ADDCHIP", luaAddChip);
-	lua_register(SystemL, "_RELOAD", luaUpdateChips);
-	lua_register(SystemL, "_SAVE", luaSaveChips);
+	lua_register(g_SystemLua, "_ADDCHIP", luaAddChip);
+	lua_register(g_SystemLua, "_RELOAD", luaUpdateChips);
+	lua_register(g_SystemLua, "_SAVE", luaSaveChips);
 
-	lua_register(SystemL, "_MX", luaGetSMouseX);
-	lua_register(SystemL, "_MY", luaGetSMouseY);
-	lua_register(SystemL, "_ML", luaGetSMouseL);
-	lua_register(SystemL, "_MR", luaGetSMouseR);
-	lua_register(SystemL, "_MM", luaGetSMouseM);
+	lua_register(g_SystemLua, "_MX", luaGetSMouseX);
+	lua_register(g_SystemLua, "_MY", luaGetSMouseY);
+	lua_register(g_SystemLua, "_ML", luaGetSMouseL);
+	lua_register(g_SystemLua, "_MR", luaGetSMouseR);
+	lua_register(g_SystemLua, "_MM", luaGetSMouseM);
 
-	lua_register(SystemL, "_DT", luaGetDt);
-	lua_register(SystemL, "_FPS", luaGetFps);
-	lua_register(SystemL, "_BASE", luaGetBase);
-	lua_register(SystemL, "_TICKS", luaGetTickCount);
-	lua_register(SystemL, "_SETTICKS", luaSetTicks);
-	lua_register(SystemL, "_KEY", luaKey2);
-	lua_register(SystemL, "_KEYDOWN", luaKeyDown2);
-	lua_register(SystemL, "_KEYUP", luaKeyUp2);
-	lua_register(SystemL, "_ANALOG", luaAnalog);
-	lua_register(SystemL, "_HAT", luaHat);
-	lua_register(SystemL, "_CHIPS", luaChips);
-	lua_register(SystemL, "_WEIGHT", luaWeight);
-	lua_register(SystemL, "_WIDTH", luaGetWidth);
-	lua_register(SystemL, "_HEIGHT", luaGetHeight);
-	lua_register(SystemL, "_FACE", luaGetFaces);
-	lua_register(SystemL, "_ZOOM", luaSetCCDZoom);
-	lua_register(SystemL, "_OX", luaObjPosx);
-	lua_register(SystemL, "_OY", luaObjPosy);
-	lua_register(SystemL, "_OZ", luaObjPosz);
-	lua_register(SystemL, "_X", luaPosx);
-	lua_register(SystemL, "_Y", luaPosy);
-	lua_register(SystemL, "_Z", luaPosz);
-	lua_register(SystemL, "_H", luaGetY);
-	lua_register(SystemL, "_AX", luaAx);
-	lua_register(SystemL, "_AY", luaAy);
-	lua_register(SystemL, "_AZ", luaAz);
-	lua_register(SystemL, "_EX", luaEx);
-	lua_register(SystemL, "_EY", luaEy);
-	lua_register(SystemL, "_EZ", luaEz);
-	lua_register(SystemL, "_GX", luaGx);
-	lua_register(SystemL, "_GY", luaGy);
-	lua_register(SystemL, "_GZ", luaGz);
-	lua_register(SystemL, "_XX", luaXx);
-	lua_register(SystemL, "_XY", luaXy);
-	lua_register(SystemL, "_XZ", luaXz);
-	lua_register(SystemL, "_YX", luaYx);
-	lua_register(SystemL, "_YY", luaYy);
-	lua_register(SystemL, "_YZ", luaYz);
-	lua_register(SystemL, "_ZX", luaZx);
-	lua_register(SystemL, "_ZY", luaZy);
-	lua_register(SystemL, "_ZZ", luaZz);
-	lua_register(SystemL, "_QX", luaQx);
-	lua_register(SystemL, "_QY", luaQy);
-	lua_register(SystemL, "_QZ", luaQz);
-	lua_register(SystemL, "_QW", luaQw);
-	lua_register(SystemL, "_RX", luaRx);
-	lua_register(SystemL, "_RY", luaRy);
-	lua_register(SystemL, "_RZ", luaRz);
-	lua_register(SystemL, "_LX", luaLx);
-	lua_register(SystemL, "_LY", luaLy);
-	lua_register(SystemL, "_LZ", luaLz);
-	lua_register(SystemL, "_VX", luaVx);
-	lua_register(SystemL, "_VY", luaVy);
-	lua_register(SystemL, "_VZ", luaVz);
-	lua_register(SystemL, "_FX", luaFx);
-	lua_register(SystemL, "_FY", luaFy);
-	lua_register(SystemL, "_FZ", luaFz);
-	lua_register(SystemL, "_WX", luaWx);
-	lua_register(SystemL, "_WY", luaWy);
-	lua_register(SystemL, "_WZ", luaWz);
-	lua_register(SystemL, "_CCD", luaGetCCD);
-	lua_register(SystemL, "_RED", luaGetCCDRed);
-	lua_register(SystemL, "_GREEN", luaGetCCDGreen);
-	lua_register(SystemL, "_BLUE", luaGetCCDBlue);
-	lua_register(SystemL, "_BYE", luaUnLinkBye);
-	lua_register(SystemL, "_SPLIT", luaUnLink);
-	lua_register(SystemL, "_RND", luaRnd);
-	lua_register(SystemL, "_TODEG", luaToDeg);
-	lua_register(SystemL, "_TORAD", luaToRad);
-	lua_register(SystemL, "_TYPE", luaGetType);
-	lua_register(SystemL, "_OPTION", luaGetOption);
-	lua_register(SystemL, "_EFFECT", luaGetEffect);
-	lua_register(SystemL, "_USER1", luaGetUserEffect);
-	lua_register(SystemL, "_USER2", luaGetUserOption);
-	lua_register(SystemL, "_DIR", luaGetDir);
-	lua_register(SystemL, "_ANGLE", luaGetAngle);
-	lua_register(SystemL, "_POWER", luaGetPower);
-	lua_register(SystemL, "_SPRING", luaGetSpring);
-	lua_register(SystemL, "_DAMPER", luaGetDamper);
-	lua_register(SystemL, "_BRAKE", luaGetBrake);
-	lua_register(SystemL, "_COLOR", luaGetColor);
-	lua_register(SystemL, "_PARENT", luaGetParent);
-	lua_register(SystemL, "_TOP", luaGetTop);
-	lua_register(SystemL, "_M", luaGetM);
-	lua_register(SystemL, "_I", luaGetI);
-	lua_register(SystemL, "_MOBJ", luaGetObjM);
-	lua_register(SystemL, "_IOBJ", luaGetObjI);
-	lua_register(SystemL, "_E", luaGetEnergy);
-	lua_register(SystemL, "_T", luaGetTolerant);
-	lua_register(SystemL, "_MOVE3D", luaMove3D);
-	lua_register(SystemL, "_LINE3D", luaLine3D);
-	lua_register(SystemL, "_MOVE2D", luaMove2D);
-	lua_register(SystemL, "_LINE2D", luaLine2D);
-	lua_register(SystemL, "_SETCOLOR", luaSetColor);
-	lua_register(SystemL, "_PLAYERS", luaGetPlayers);
-	lua_register(SystemL, "_PLAYERHOSTID", luaGetPlayerHostID);
-	lua_register(SystemL, "_PLAYERMYID", luaGetPlayerMyID);
-	lua_register(SystemL, "_PLAYERID", luaGetPlayerID);
-	lua_register(SystemL, "_PLAYERCHIPS", luaGetPlayerChips);
-	lua_register(SystemL, "_PLAYERCRUSHES", luaGetPlayerCrushes);
-	lua_register(SystemL, "_PLAYERRESETS", luaGetPlayerResets);
-	lua_register(SystemL, "_PLAYERINITS", luaGetPlayerInits);
-	lua_register(SystemL, "_PLAYERCOLOR", luaGetPlayerColor);
-	lua_register(SystemL, "_PLAYERX", luaGetPlayerX);
-	lua_register(SystemL, "_PLAYERY", luaGetPlayerY);
-	lua_register(SystemL, "_PLAYERZ", luaGetPlayerZ);
-	lua_register(SystemL, "_PLAYERARMS", luaGetPlayerArms);
-	lua_register(SystemL, "_PLAYEYFORCES", luaGetPlayerYForces);
-	lua_register(SystemL, "_PLAYERNAME", luaGetPlayerName);
-	lua_register(SystemL, "_FUEL", luaGetFuel);
-	lua_register(SystemL, "_FUELMAX", luaGetFuelMax);
+	lua_register(g_SystemLua, "_DT", luaGetDt);
+	lua_register(g_SystemLua, "_FPS", luaGetFps);
+	lua_register(g_SystemLua, "_BASE", luaGetBase);
+	lua_register(g_SystemLua, "_TICKS", luaGetTickCount);
+	lua_register(g_SystemLua, "_SETTICKS", luaSetTicks);
+	lua_register(g_SystemLua, "_KEY", luaKey2);
+	lua_register(g_SystemLua, "_KEYDOWN", luaKeyDown2);
+	lua_register(g_SystemLua, "_KEYUP", luaKeyUp2);
+	lua_register(g_SystemLua, "_ANALOG", luaAnalog);
+	lua_register(g_SystemLua, "_HAT", luaHat);
+	lua_register(g_SystemLua, "_CHIPS", luaChips);
+	lua_register(g_SystemLua, "_WEIGHT", luaWeight);
+	lua_register(g_SystemLua, "_WIDTH", luaGetWidth);
+	lua_register(g_SystemLua, "_HEIGHT", luaGetHeight);
+	lua_register(g_SystemLua, "_FACE", luaGetFaces);
+	lua_register(g_SystemLua, "_ZOOM", luaSetCCDZoom);
+	lua_register(g_SystemLua, "_OX", luaObjPosx);
+	lua_register(g_SystemLua, "_OY", luaObjPosy);
+	lua_register(g_SystemLua, "_OZ", luaObjPosz);
+	lua_register(g_SystemLua, "_X", luaPosx);
+	lua_register(g_SystemLua, "_Y", luaPosy);
+	lua_register(g_SystemLua, "_Z", luaPosz);
+	lua_register(g_SystemLua, "_H", luaGetY);
+	lua_register(g_SystemLua, "_AX", luaAx);
+	lua_register(g_SystemLua, "_AY", luaAy);
+	lua_register(g_SystemLua, "_AZ", luaAz);
+	lua_register(g_SystemLua, "_EX", luaEx);
+	lua_register(g_SystemLua, "_EY", luaEy);
+	lua_register(g_SystemLua, "_EZ", luaEz);
+	lua_register(g_SystemLua, "_GX", luaGx);
+	lua_register(g_SystemLua, "_GY", luaGy);
+	lua_register(g_SystemLua, "_GZ", luaGz);
+	lua_register(g_SystemLua, "_XX", luaXx);
+	lua_register(g_SystemLua, "_XY", luaXy);
+	lua_register(g_SystemLua, "_XZ", luaXz);
+	lua_register(g_SystemLua, "_YX", luaYx);
+	lua_register(g_SystemLua, "_YY", luaYy);
+	lua_register(g_SystemLua, "_YZ", luaYz);
+	lua_register(g_SystemLua, "_ZX", luaZx);
+	lua_register(g_SystemLua, "_ZY", luaZy);
+	lua_register(g_SystemLua, "_ZZ", luaZz);
+	lua_register(g_SystemLua, "_QX", luaQx);
+	lua_register(g_SystemLua, "_QY", luaQy);
+	lua_register(g_SystemLua, "_QZ", luaQz);
+	lua_register(g_SystemLua, "_QW", luaQw);
+	lua_register(g_SystemLua, "_RX", luaRx);
+	lua_register(g_SystemLua, "_RY", luaRy);
+	lua_register(g_SystemLua, "_RZ", luaRz);
+	lua_register(g_SystemLua, "_LX", luaLx);
+	lua_register(g_SystemLua, "_LY", luaLy);
+	lua_register(g_SystemLua, "_LZ", luaLz);
+	lua_register(g_SystemLua, "_VX", luaVx);
+	lua_register(g_SystemLua, "_VY", luaVy);
+	lua_register(g_SystemLua, "_VZ", luaVz);
+	lua_register(g_SystemLua, "_FX", luaFx);
+	lua_register(g_SystemLua, "_FY", luaFy);
+	lua_register(g_SystemLua, "_FZ", luaFz);
+	lua_register(g_SystemLua, "_WX", luaWx);
+	lua_register(g_SystemLua, "_WY", luaWy);
+	lua_register(g_SystemLua, "_WZ", luaWz);
+	lua_register(g_SystemLua, "_CCD", luaGetCCD);
+	lua_register(g_SystemLua, "_RED", luaGetCCDRed);
+	lua_register(g_SystemLua, "_GREEN", luaGetCCDGreen);
+	lua_register(g_SystemLua, "_BLUE", luaGetCCDBlue);
+	lua_register(g_SystemLua, "_BYE", luaUnLinkBye);
+	lua_register(g_SystemLua, "_SPLIT", luaUnLink);
+	lua_register(g_SystemLua, "_RND", luaRnd);
+	lua_register(g_SystemLua, "_TODEG", luaToDeg);
+	lua_register(g_SystemLua, "_TORAD", luaToRad);
+	lua_register(g_SystemLua, "_TYPE", luaGetType);
+	lua_register(g_SystemLua, "_OPTION", luaGetOption);
+	lua_register(g_SystemLua, "_EFFECT", luaGetEffect);
+	lua_register(g_SystemLua, "_USER1", luaGetUserEffect);
+	lua_register(g_SystemLua, "_USER2", luaGetUserOption);
+	lua_register(g_SystemLua, "_DIR", luaGetDir);
+	lua_register(g_SystemLua, "_ANGLE", luaGetAngle);
+	lua_register(g_SystemLua, "_POWER", luaGetPower);
+	lua_register(g_SystemLua, "_SPRING", luaGetSpring);
+	lua_register(g_SystemLua, "_DAMPER", luaGetDamper);
+	lua_register(g_SystemLua, "_BRAKE", luaGetBrake);
+	lua_register(g_SystemLua, "_COLOR", luaGetColor);
+	lua_register(g_SystemLua, "_PARENT", luaGetParent);
+	lua_register(g_SystemLua, "_TOP", luaGetTop);
+	lua_register(g_SystemLua, "_M", luaGetM);
+	lua_register(g_SystemLua, "_I", luaGetI);
+	lua_register(g_SystemLua, "_MOBJ", luaGetObjM);
+	lua_register(g_SystemLua, "_IOBJ", luaGetObjI);
+	lua_register(g_SystemLua, "_E", luaGetEnergy);
+	lua_register(g_SystemLua, "_T", luaGetTolerant);
+	lua_register(g_SystemLua, "_MOVE3D", luaMove3D);
+	lua_register(g_SystemLua, "_LINE3D", luaLine3D);
+	lua_register(g_SystemLua, "_MOVE2D", luaMove2D);
+	lua_register(g_SystemLua, "_LINE2D", luaLine2D);
+	lua_register(g_SystemLua, "_SETCOLOR", luaSetColor);
+	lua_register(g_SystemLua, "_PLAYERS", luaGetPlayers);
+	lua_register(g_SystemLua, "_PLAYERHOSTID", luaGetPlayerHostID);
+	lua_register(g_SystemLua, "_PLAYERMYID", luaGetPlayerMyID);
+	lua_register(g_SystemLua, "_PLAYERID", luaGetPlayerID);
+	lua_register(g_SystemLua, "_PLAYERCHIPS", luaGetPlayerChips);
+	lua_register(g_SystemLua, "_PLAYERCRUSHES", luaGetPlayerCrushes);
+	lua_register(g_SystemLua, "_PLAYERRESETS", luaGetPlayerResets);
+	lua_register(g_SystemLua, "_PLAYERINITS", luaGetPlayerInits);
+	lua_register(g_SystemLua, "_PLAYERCOLOR", luaGetPlayerColor);
+	lua_register(g_SystemLua, "_PLAYERX", luaGetPlayerX);
+	lua_register(g_SystemLua, "_PLAYERY", luaGetPlayerY);
+	lua_register(g_SystemLua, "_PLAYERZ", luaGetPlayerZ);
+	lua_register(g_SystemLua, "_PLAYERARMS", luaGetPlayerArms);
+	lua_register(g_SystemLua, "_PLAYEYFORCES", luaGetPlayerYForces);
+	lua_register(g_SystemLua, "_PLAYERNAME", luaGetPlayerName);
+	lua_register(g_SystemLua, "_FUEL", luaGetFuel);
+	lua_register(g_SystemLua, "_FUELMAX", luaGetFuelMax);
 	luaL3dx = luaL3dy = luaL3dz = 0.0f;
 	luaGraColor = 0xffffff;
 	for (int i = 0;i < 8;i++) ControlKeysLock[i] = false;
 	//グローバル変数の登録
-	for (int i = 0;i < VarCount;i++) {
-		lua_pushnumber(SystemL, ValList[i].Val);
-		lua_setglobal(SystemL, ValList[i].Name);
+	for (int i = 0;i < g_VarCount;i++) {
+		lua_pushnumber(g_SystemLua, g_ValList[i].Val);
+		lua_setglobal(g_SystemLua, g_ValList[i].Name);
 	}
 	//スクリプトをセットする
-	luaopen_string(SystemL);
-	luaopen_base(SystemL);
-	luaopen_table(SystemL);
-	luaopen_math(SystemL);
-	//      luaopen_io(SystemL);
-	int e = lua_dobuffer(SystemL, SystemSource, strlen(SystemSource), "System.rcs");
+	luaopen_string(g_SystemLua);
+	luaopen_base(g_SystemLua);
+	luaopen_table(g_SystemLua);
+	luaopen_math(g_SystemLua);
+	//      luaopen_io(g_SystemLua);
+	int e = lua_dobuffer(g_SystemLua, SystemSource, strlen(SystemSource), "System.rcs");
 	if (e != 0) {
 		SystemErrorCode = -1;
-		sprintf(SystemErrorStr, "%s\n", lua_tostring(SystemL, 0));
-		lua_close(SystemL);
-		SystemL = NULL;
+		sprintf(SystemErrorStr, "%s\n", lua_tostring(g_SystemLua, 0));
+		lua_close(g_SystemLua);
+		g_SystemLua = NULL;
 		return 1;
 	}
 	return 0;
 }
 void luaSystemEnd() {
-	if (SystemL == NULL) return;
+	if (g_SystemLua == NULL) return;
 	for (int i = 0;i < FILEMAX;i++) if (FpTable[i]) fclose(FpTable[i]);
-	lua_close(SystemL);  /* create state */
-	SystemL = NULL;
+	lua_close(g_SystemLua);  /* create state */
+	g_SystemLua = NULL;
 	return;
 }
 int luaSystemRun(char *funcName) {
-	if (SystemL == NULL) return 1;
+	if (g_SystemLua == NULL) return 1;
 	for (int i = 0;i < GOUTPUTMAX;i++) SystemOutput[i][0] = '\0';
 	if (strcmp(funcName, "OnInit") == 0) {
-		World->Stop = false;
-		World->MainStepCount = -1;
-		for (int i = 0;i < GKEYMAX;i++) KeyList[i].Lock = 0;
+		g_World->Stop = false;
+		g_World->MainStepCount = -1;
+		for (int i = 0;i < GKEYMAX;i++) g_KeyList[i].Lock = 0;
 	}
 	//	int status;
 	//  struct Smain s;
 		//グローバル変数の登録
-	for (int i = 0;i < VarCount;i++) {
-		lua_pushnumber(SystemL, ValList[i].Val);
-		lua_setglobal(SystemL, ValList[i].Name);
+	for (int i = 0;i < g_VarCount;i++) {
+		lua_pushnumber(g_SystemLua, g_ValList[i].Val);
+		lua_setglobal(g_SystemLua, g_ValList[i].Name);
 	}
 	// グローバルテーブルからmain関数を拾ってスタックに積む
-	lua_pushstring(SystemL, funcName);
-	lua_gettable(SystemL, LUA_GLOBALSINDEX);
-	if (lua_topointer(SystemL, -1) == NULL) {//もし関数がないなら
-		lua_pop(SystemL, 1);//スタックを戻す
+	lua_pushstring(g_SystemLua, funcName);
+	lua_gettable(g_SystemLua, LUA_GLOBALSINDEX);
+	if (lua_topointer(g_SystemLua, -1) == NULL) {//もし関数がないなら
+		lua_pop(g_SystemLua, 1);//スタックを戻す
 		if (strcmp(funcName, "OnFrame") == 0) {
-			lua_pushstring(SystemL, "main");
-			lua_gettable(SystemL, LUA_GLOBALSINDEX);
+			lua_pushstring(g_SystemLua, "main");
+			lua_gettable(g_SystemLua, LUA_GLOBALSINDEX);
 		}
 		else return 0;
 	}
 	// 関数を呼ぶ。lua_callの第2引数は渡す引数の数、第3引数は戻り値の数。
 	// 関数とその引数はスタックから取り除かれ、戻り値がスタックに残る。
-	SystemErrorCode = lua_pcall(SystemL, 0, 0, 0);
-	if (SystemErrorCode)sprintf(SystemErrorStr, "%s %s\n", lua_tostring(SystemL, -1));
-	for (int i = 0;i < VarCount;i++) {
-		lua_pushstring(SystemL, ValList[i].Name); // (1) Luaの変数名toCを指定
-		lua_gettable(SystemL, LUA_GLOBALSINDEX); // (2)と(3)の動作
-		double v = lua_tonumber(SystemL, -1); // (4) 仮想スタックのトップ内容(toCの中身)を数値型で取り出す
-		if (ValList[i].Val != v) ValList[i].Updated = true;
-		ValList[i].Val = (GFloat)v;
-		lua_pop(SystemL, 1); // (5) 取り出したら仮想スタックを1個popする
-		if (ValList[i].Val > ValList[i].Max) ValList[i].Val = ValList[i].Max;
-		if (ValList[i].Val < ValList[i].Min) ValList[i].Val = ValList[i].Min;
+	SystemErrorCode = lua_pcall(g_SystemLua, 0, 0, 0);
+	if (SystemErrorCode)sprintf(SystemErrorStr, "%s %s\n", lua_tostring(g_SystemLua, -1));
+	for (int i = 0;i < g_VarCount;i++) {
+		lua_pushstring(g_SystemLua, g_ValList[i].Name); // (1) Luaの変数名toCを指定
+		lua_gettable(g_SystemLua, LUA_GLOBALSINDEX); // (2)と(3)の動作
+		double v = lua_tonumber(g_SystemLua, -1); // (4) 仮想スタックのトップ内容(toCの中身)を数値型で取り出す
+		if (g_ValList[i].Val != v) g_ValList[i].Updated = true;
+		g_ValList[i].Val = (GFloat)v;
+		lua_pop(g_SystemLua, 1); // (5) 取り出したら仮想スタックを1個popする
+		if (g_ValList[i].Val > g_ValList[i].Max) g_ValList[i].Val = g_ValList[i].Max;
+		if (g_ValList[i].Val < g_ValList[i].Min) g_ValList[i].Val = g_ValList[i].Min;
 	}
 	luaUpdateVal();
 
