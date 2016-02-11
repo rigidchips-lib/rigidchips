@@ -197,7 +197,6 @@ static DWORD ShowDustFlag = TRUE;
 static DWORD DitherFlag = TRUE;
 static DWORD FastShadow = 1;
 static DWORD GraphicBoardType = 0;
-
 bool MoveEnd = false;
 
 TCHAR SessionName[256] = "RigidChips";
