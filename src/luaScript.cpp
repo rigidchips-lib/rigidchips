@@ -205,9 +205,9 @@ lua_State *luaScriptInit(char *buff) {
 	luaL3dx = luaL3dy = luaL3dz = 0.0f;
 	luaGraColor = 0xffffff;
 	//グローバル変数の登録
-	for (int i = 0;i < VarCount;i++) {
-		lua_pushnumber(L, ValList[i].Val);
-		lua_setglobal(L, ValList[i].Name);
+	for (int i = 0;i < g_VarCount;i++) {
+		lua_pushnumber(L, g_ValList[i].Val);
+		lua_setglobal(L, g_ValList[i].Name);
 	}
 	//スクリプトをセットする
 	luaopen_string(L);
@@ -239,9 +239,9 @@ int luaScriptRun(lua_State *L, char *funcName) {
 	//	int status;
 	//  struct Smain s;
 		//グローバル変数の登録
-	for (int i = 0;i < VarCount;i++) {
-		lua_pushnumber(L, ValList[i].Val);
-		lua_setglobal(L, ValList[i].Name);
+	for (int i = 0;i < g_VarCount;i++) {
+		lua_pushnumber(L, g_ValList[i].Val);
+		lua_setglobal(L, g_ValList[i].Name);
 	}
 	// グローバルテーブルからmain関数を拾ってスタックに積む
 	lua_pushstring(L, funcName);
@@ -258,19 +258,19 @@ int luaScriptRun(lua_State *L, char *funcName) {
 	// 関数とその引数はスタックから取り除かれ、戻り値がスタックに残る。
 	ScriptErrorCode = lua_pcall(L, 0, 0, 0);
 	if (ScriptErrorCode)sprintf(ScriptErrorStr, "%s\n", lua_tostring(L, -1));
-	for (int i = 0;i < VarCount;i++) {
-		lua_pushstring(L, ValList[i].Name); // (1) Luaの変数名toCを指定
+	for (int i = 0;i < g_VarCount;i++) {
+		lua_pushstring(L, g_ValList[i].Name); // (1) Luaの変数名toCを指定
 		lua_gettable(L, LUA_GLOBALSINDEX); // (2)と(3)の動作
 		double v = lua_tonumber(L, -1); // (4) 仮想スタックのトップ内容(toCの中身)を数値型で取り出す
-		if (ValList[i].Val != v) ValList[i].Updated = true;
-		ValList[i].Val = (GFloat)v;
+		if (g_ValList[i].Val != v) g_ValList[i].Updated = true;
+		g_ValList[i].Val = (GFloat)v;
 		lua_pop(L, 1); // (5) 取り出したら仮想スタックを1個popする
-		if (ValList[i].Val > ValList[i].Max) ValList[i].Val = ValList[i].Max;
-		if (ValList[i].Val < ValList[i].Min) ValList[i].Val = ValList[i].Min;
+		if (g_ValList[i].Val > g_ValList[i].Max) g_ValList[i].Val = g_ValList[i].Max;
+		if (g_ValList[i].Val < g_ValList[i].Min) g_ValList[i].Val = g_ValList[i].Min;
 	}
 	luaUpdateVal();
-	randTime += rand() % 3 + 1;
-	if (randTime > 20000000) randTime = 0;
+	g_RandTime += rand() % 3 + 1;
+	if (g_RandTime > 20000000) g_RandTime = 0;
 	return 0;
 }
 

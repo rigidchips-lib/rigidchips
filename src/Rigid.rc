@@ -229,8 +229,8 @@ BEGIN
         MENUITEM "Show C&owl\tCtrl+F4",         IDM_SETTING_SHOWCOWL, CHECKED
         MENUITEM "Show Ghost\tCtrl+F5",         IDM_SETTING_SHOWGHOST
         MENUITEM SEPARATOR
-        MENUITEM "&Limit 15 FPS\tF6",           IDM_LIMIT15
-        MENUITEM "&Limit 30 FPS\tF7",           IDM_LIMIT30, CHECKED
+        MENUITEM "&Limit 15 g_FPS\tF6",           IDM_LIMIT15
+        MENUITEM "&Limit 30 g_FPS\tF7",           IDM_LIMIT30, CHECKED
         MENUITEM SEPARATOR
         MENUITEM "&Texture Alpha\tCtrl+F6",     IDM_SETTING_TEXTUREALPHA, CHECKED
         MENUITEM "Show Backfaces\tCtrl+F7",     IDM_SETTING_SHOWBACKFACE

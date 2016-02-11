@@ -8,7 +8,6 @@
 #include "GPlayers.h"
 #include "GDPlay.hpp"
 #include "GParticle.hpp"
-
 #include "Rigidmain.h"
 //Global.cppでだけ実態定義、他ではexternの外部参照扱い
 #ifdef _GLOBAL_BODY
@@ -17,44 +16,59 @@
 #define EXTERN extern
 #endif
 
-//struct lua_State;
-//typedef float GFloat;
-
-
 //ここからグローバル変数定義
-EXTERN LPDIRECT3DDEVICE8 G3dDevice;
-EXTERN GValList ValList[GVALMAX];
-EXTERN GKeyList KeyList[GKEYMAX];
-EXTERN GWorld *World;
-EXTERN GRigid *Chip[GCHIPMAX];
-
+EXTERN LPDIRECT3DDEVICE8 g_D3DDevice;
+EXTERN GValList g_ValList[GVALMAX];
+EXTERN GKeyList g_KeyList[GKEYMAX];
+EXTERN GWorld *g_World;
+EXTERN GRigid *g_Chip[GCHIPMAX];
 EXTERN CMyD3DApplication* g_pApp;
-
-EXTERN GParticle *GroundParticle;
-EXTERN GParticle *WATER_LINEParticle;
-EXTERN GParticle *JetParticle;
-EXTERN GBullet *Bullet;
-//EXTERN bool ObjectBallFlag;
-EXTERN DWORD ShowGhost;
-EXTERN DWORD ShowDustFlag;
+EXTERN CD3DMesh* g_pLandMesh;	// XMeshデータ
+EXTERN HWND g_hWnd;              // The main app window
+//ネットワーク関係
+EXTERN GDPlay *g_DPlay;
+EXTERN GPLAYERDATA g_PlayerData[GPLAYERMAX];
+EXTERN GMYDATA g_MyPlayerData;
+//受信したメッセージ？
+EXTERN char g_MessageData[MESSAGEMAX + 1];
+EXTERN int g_RecieaveMessageCode[GPLAYERMAX];
+EXTERN char g_RecieaveMessageData[GPLAYERMAX][MESSAGEMAX + 1];
+//パーティクル描画関係
+EXTERN GParticle *g_GroundParticle;
+EXTERN GParticle *g_WaterLineParticle;
+EXTERN GParticle *g_JetParticle;
+EXTERN GBullet *g_Bullet;
 //モデル読み込みからのフレーム数
 EXTERN int g_TickCount;
 //起動からのフレーム数
 EXTERN int g_SystemTickCount;
-
+//現在のモデルのチップ数
+EXTERN int g_ChipCount;
+//現在のモデルのVar数
+EXTERN int g_VarCount;
+//現在のFPS
+EXTERN double g_FPS;
 //正しい初期化位置がわからないので窮余の策
 #ifdef _GLOBAL_BODY
-EXTERN float g_FarMax=600.0f;
-EXTERN float g_MarkerSize=1.0f;
-EXTERN float g_NameSize=1.0f;
+EXTERN int g_LimitFPS = 30;
+EXTERN float g_FarMax = 600.0f;
+EXTERN float g_MarkerSize = 1.0f;
+EXTERN float g_NameSize = 1.0f;
 EXTERN GFloat TotalPower = 0;
 #else
+//制限FPS
+EXTERN int g_LimitFPS;//=30
+//描画限界距離
 EXTERN float g_FarMax;
 EXTERN float g_MarkerSize;
 EXTERN float g_NameSize;
 EXTERN GFloat TotalPower;
 #endif
 
+//EXTERN bool ObjectBallFlag;
+EXTERN DWORD ShowGhost;
+EXTERN DWORD ShowDustFlag;
+//Script関係（あんまり手を付けたくない）
 EXTERN char *ScriptSource;
 EXTERN int ScriptType;
 EXTERN char ScriptOutput[GOUTPUTMAX][512];
@@ -62,28 +76,22 @@ EXTERN int ScriptErrorCode;
 EXTERN int ScriptErrorPc;
 EXTERN char ScriptErrorStr[];
 
-EXTERN lua_State *SystemL;
+//Lua関係
+//モデルの方のLua
+EXTERN lua_State *g_ScriptLua;
+//シナリオLua
+EXTERN lua_State *g_SystemLua;
+//多分３ＤLINEの描画位置
+EXTERN float luaL3dx, luaL3dy, luaL3dz;
+//現在のLuaで引く色の色
+EXTERN int luaGraColor;
 EXTERN char *SystemSource;
 EXTERN char SystemOutput[GOUTPUTMAX][512];
 EXTERN int SystemErrorCode;
 EXTERN char SystemErrorStr[512];
-
-EXTERN lua_State *ScriptL;
-
-EXTERN char szUpdateFileName0[];
-EXTERN float luaL3dx, luaL3dy, luaL3dz;
-EXTERN int luaGraColor;
-EXTERN int randTime;
-
-EXTERN int ChipCount;
-EXTERN int VarCount;
-
-EXTERN double FPS;
-#ifdef _GLOBAL_BODY
-EXTERN int g_LimitFPS=30;
-#else
-EXTERN int g_LimitFPS;//=30
-#endif
+//ネットワークノイズの内、長期のサインカーブの方
+EXTERN int g_RandTime;
+//システム情報関連。グローバルである必要あるのか？
 EXTERN int Width;
 EXTERN int Height;
 EXTERN int NumFace;
@@ -105,8 +113,10 @@ EXTERN int ViewType;
 EXTERN GVector UserEyePos;
 EXTERN GVector UserRefPos;
 EXTERN GVector UserUpVec;
+EXTERN GFloat Zoom;
+EXTERN GVector AirSpeed;//風
 
-
+//レギュレーションの設定
 #ifdef _GLOBAL_BODY
 EXTERN bool GravityFlag = TRUE;
 EXTERN bool AirFlag = TRUE;
@@ -126,13 +136,10 @@ EXTERN bool ScriptFlag;
 EXTERN bool CCDFlag;
 EXTERN bool EfficientFlag;
 #endif
-
 EXTERN DWORD UseLuaExternal;
+EXTERN bool ControlKeysLock[8];//0:Init,1:Reset,2:Open,3:Update,4:OpenLand,5:OpenGame,6:YForce,7:Title
 
 EXTERN int ViewUpdate;//=0
-EXTERN GDPlay *DPlay;
-EXTERN GPLAYERDATA PlayerData[GPLAYERMAX];
-EXTERN GMYDATA MyPlayerData;
 
 #ifdef _GLOBAL_BODY
 EXTERN char szUpdateFileName[_MAX_PATH] = "";
@@ -151,13 +158,11 @@ EXTERN char szTempFileName0[_MAX_PATH];
 EXTERN char szSystemFileName[_MAX_PATH];
 EXTERN char szSystemFileName0[_MAX_PATH];
 #endif
-EXTERN GFloat Zoom;
-EXTERN GVector AirSpeed;//風
 
 EXTERN bool SystemKeys[GSYSKEYMAX];
 EXTERN bool SystemKeysDown[GSYSKEYMAX];
 EXTERN bool SystemKeysUp[GSYSKEYMAX];
-
+//各種フォルダのパス。実はグローバルに使ってるのはCurrDataDirだけぽい
 EXTERN TCHAR AppDir[MAX_PATH];
 EXTERN TCHAR ResourceDir[MAX_PATH];
 EXTERN TCHAR DataDir[MAX_PATH];
@@ -165,20 +170,10 @@ EXTERN TCHAR CurrDataDir[MAX_PATH];
 EXTERN TCHAR CurrScenarioDir[MAX_PATH];
 
 EXTERN int scenarioCode;//=0
-
+//モデル読み込み時のエラーフラグぽい？
 EXTERN int DataCheck;// = 0;
-
 
 EXTERN GVector CompassTarget;
 EXTERN GRing Ring[];
 EXTERN char LastChatData[];
-
-EXTERN char MessageData[MESSAGEMAX + 1];
-EXTERN int RecieaveMessageCode[GPLAYERMAX];
-EXTERN char RecieaveMessageData[GPLAYERMAX][MESSAGEMAX + 1];
-
-EXTERN bool ControlKeysLock[8];//0:Init,1:Reset,2:Open,3:Update,4:OpenLand,5:OpenGame,6:YForce,7:Title
-
-EXTERN CD3DMesh*	m_pLandMesh;	// XMeshデータ
-EXTERN HWND g_hWnd;              // The main app window
 #endif

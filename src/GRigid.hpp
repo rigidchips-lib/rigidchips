@@ -136,7 +136,7 @@ public:
 	GHit Hit[100];
 	bool Fixed;
 	int Ghost;
-	GWorld *World;
+	GWorld *g_World;
 
 	//ï®óùì¡ê´
 	GVector X;		//*èdêSà íu
@@ -256,7 +256,7 @@ public:
 	void AddViewModel();
 	void Disp();
 	void DispObject();
-	void DispJet(LPDIRECT3DDEVICE8 g3dDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag);
+	void DispJet(LPDIRECT3DDEVICE8 g_D3DDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag);
 	void DispShadow();
 	GMatrix33	CalcMassMat(GVector &p);
 	void CalcTotalFuel(void);
@@ -302,7 +302,7 @@ public:
 	int MainStepCount;
 	GFloat DestroyK;
 	bool DestroyFlag;
-	int ChipCount;
+	int g_ChipCount;
 	GRigid	*Rigid[GCHIPMAX];
 	GRigid	*RecRigid[GCHIPMAX];
 	int haveArm;
@@ -347,7 +347,7 @@ public:
 	void ObjectDisp();
 	void DispNetJetAll();
 	void DispNetJet(int type, GMatrix tm, float f, int dir);
-	void DispJet(LPDIRECT3DDEVICE8 g3dDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag);
+	void DispJet(LPDIRECT3DDEVICE8 g_D3DDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag);
 	void CheckJoint(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVector &offsetB);
 	void CheckShaft(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVector &offsetB, GVector &axis);
 	void CheckLink(GRigid* rigidA);

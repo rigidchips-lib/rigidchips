@@ -147,8 +147,8 @@ public:
 	FLOAT                   m_fSoundPlayRepeatCountdown; // Sound repeat timer
 	FLOAT                   m_fSoundPlayRepeatCountdown2; // Sound repeat timer
 
-	FLOAT                   m_fWorldRotX;           // World rotation state X-axis
-	FLOAT                   m_fWorldRotY;           // World rotation state Y-axis
+	FLOAT                   m_fWorldRotX;           // g_World rotation state X-axis
+	FLOAT                   m_fWorldRotY;           // g_World rotation state Y-axis
 
 	int						m_appID;
 	BOOL					m_inputFocus;

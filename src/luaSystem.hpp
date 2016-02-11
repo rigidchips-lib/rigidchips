@@ -22,10 +22,6 @@ char *SearchFolder(char *path, char *filename, char *result);
 void ResetChip2(int n, GFloat a);
 void setOption(GRigid *rigid, GFloat value);
 
-
-
-
-
 int LoadSystem(char *fileName);
 int luaSystemInit();
 void luaSystemEnd();
