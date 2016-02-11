@@ -6887,7 +6887,7 @@ HRESULT CMyD3DApplication::Render()
 			count++;
 		}
 		g_D3DDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
-		g_World->DispJet(g_D3DDevice, GMatWorld, m_pXMesh[33], m_pXMesh[11], JetFlag);
+		g_World->DispJet(g_D3DDevice, GMatWorld, m_pXMesh[31], m_pXMesh[11], JetFlag);
 		g_World->DispNetJetAll();
 
 		//		m_pd3dDevice->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
