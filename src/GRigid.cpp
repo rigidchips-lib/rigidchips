@@ -1047,7 +1047,7 @@ void GRigid::Impulse() {
 
 				}
 				else {
-					if (ShowDustFlag) {
+					if (IsShowDust()) {
 						//
 						GFloat a = (j2*n2 - j1*(n2*ud + na*ud2)*dd / 2.0f).abs();
 						if ((myrand() % 100) < (int)(V.abs()*(1 + Hit[i].Ux * 50)) && a > 30.0) {
@@ -1299,7 +1299,7 @@ GWorld::GWorld(GFloat steptime, int substep)
 	SubStep = substep;
 	Dt = StepTime / SubStep;
 	MainStepCount = 0;
-	g_ChipCount = 0;
+	ChipCount = 0;
 	ObjectCount = 0;
 	G = GVector(0, -9.807f, 0);
 	for (int i = 0;i < GCHIPMAX;i++) {
@@ -1323,7 +1323,7 @@ GWorld::~GWorld()
 }
 void GWorld::InitRndTable()
 {
-	for (int i = 0;i < g_ChipCount;i++) {
+	for (int i = 0;i < g_World->getChipCount();i++) {
 		RndTable[i] = i;
 	}
 }
@@ -1347,7 +1347,7 @@ void GWorld::DeleteLand() {
 }
 
 void GWorld::DeleteRigids() {
-	for (int i = 0;i < g_ChipCount;i++) {
+	for (int i = 0;i < g_World->getChipCount();i++) {
 		if (Rigid[i]) delete Rigid[i];
 		if (RecRigid[i]) delete RecRigid[i];
 		Rigid[i] = NULL;
@@ -1370,10 +1370,10 @@ void GWorld::DeleteObjects() {
 //************************************************
 GRigid* GWorld::AddRigid(int type, bool fix, GFloat x, GFloat y, GFloat z, GFloat ax, GFloat ay, GFloat az)
 {
-	if (g_ChipCount >= GCHIPMAX) return NULL;
-	GRigid*  r = Rigid[ChipCount++] = new GRigid(type, fix, x, y, z);
+	if (g_World->getChipCount() >= GCHIPMAX) return NULL;
+	GRigid*  r = Rigid[ChipCount] = new GRigid(type, fix, x, y, z);
 	if (r == NULL) return NULL;
-	r->ID = g_ChipCount - 1;
+	r->ID = g_World->getChipCount() - 1;
 	r->World = this;
 	//	r->Rb.unity();
 	r->Rb = GMatrix33().rotateX(ax*(GFloat)M_PI / 180.0f).rotateY(ay*(GFloat)M_PI / 180.0f).rotateZ(az*(GFloat)M_PI / 180.0f);
@@ -1862,7 +1862,7 @@ GFloat  GWorld::CalcShaft(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVec
 GFloat GWorld::CalcHinge(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVector &offsetB, GVector &axis, GFloat angle = 0, GFloat k = 1, GFloat damper = 0)
 {
 
-	float h = 10.0f / (GFloat)GLOOP*(GFloat)30.0f / (GFloat)g_LimitFPS*10.0f / (GFloat)GDTSTEP;
+	float h = 10.0f / (GFloat)GLOOP*(GFloat)30.0f / (GFloat)GetLimitFPS()*10.0f / (GFloat)GDTSTEP;
 	k = k*h*0.6f / (GFloat)CHIPSIZE;if (k > 1.0f*10.0f / (GFloat)GDTSTEP) k = 1.0f*10.0f / (GFloat)GDTSTEP;else if (k < 0) k = 0.0f;
 	damper = damper*h;if (damper > 0.5*10.0f / (GFloat)GDTSTEP) damper = 0.5f*10.0f / (GFloat)GDTSTEP;else if (damper < 0) damper = 0.0f;
 	angle = angle*(GFloat)M_PI / 180.0f + (GFloat)M_PI;
@@ -1935,7 +1935,7 @@ void GWorld::Move(bool initFlag)
 	int c, i, j, k;
 	Dt = StepTime / SubStep;
 	if (Stop || NetStop) return;
-	for (j = 0;j < g_ChipCount;j++) {
+	for (j = 0;j < g_World->getChipCount();j++) {
 		Rigid[j]->preX = Rigid[j]->X;
 		Rigid[j]->HitChip = 0;
 		Rigid[j]->HitLand = 0;
@@ -1981,12 +1981,12 @@ void GWorld::Move(bool initFlag)
 		//チップとの当たり判定
 	GFloat t, t2;
 	GRigid *r = NULL;
-	if (haveArm && g_TickCount * 30 / g_LimitFPS>150) {
+	if (haveArm && !IsInvulnerableTime()) {
 		for (i = 0;i < g_Bullet->MaxVertex;i++) {
 			if (g_Bullet->Vertex[i].Life>0) {
 				r = NULL;
 				t2 = 100000.0f;
-				for (j = 0;j < g_ChipCount;j++) {
+				for (j = 0;j < g_World->getChipCount();j++) {
 					if (g_Bullet->Vertex[i].Rigid != Rigid[j] && Rigid[j]->ChipType != 9 && (Rigid[j]->ChipType < 32 || myrand() % 100 >= 70)) {
 						t = Rigid[j]->X.distanceOnBallAndLine(0.3f, g_Bullet->Vertex[i].Pos, g_Bullet->Vertex[i].Vec.normalize2());
 						if (t >= 0 && t < g_Bullet->Vertex[i].Vec.abs() && t < t2) {
@@ -2060,7 +2060,7 @@ void GWorld::Move(bool initFlag)
 	g_WaterLineParticle->Move();
 	g_JetParticle->Move();
 	g_Bullet->Move();
-	for (j = 0;j < g_ChipCount;j++) {
+	for (j = 0;j < g_World->getChipCount();j++) {
 		if (Rigid[j]->ChipType == GT_COWL) continue;
 		Rigid[j]->RSet();
 		Rigid[j]->MaxImpulse = 0.0;
@@ -2068,14 +2068,14 @@ void GWorld::Move(bool initFlag)
 		Rigid[j]->L2.clear();
 		Rigid[j]->Hit[0].FricV.clear();
 		if (Rigid[j]->ChipType == 10) {
-			double e = 5000.0*30.0 / g_LimitFPS;
+			double e = 5000.0*30.0 / GetLimitFPS();
 			if (!EfficientFlag) e = Rigid[j]->Top->CheckFuel(e / ARM_EFF)*ARM_EFF;
 			Rigid[j]->Energy += (GFloat)e;
 			if (Rigid[j]->Energy >= Rigid[j]->ArmEnergy) {
 				Rigid[j]->Energy = Rigid[j]->ArmEnergy;
 			}
 			else {
-				TotalPower += (GFloat)fabs(e);
+				AddTotalPower((GFloat)fabs(e));
 				if (!EfficientFlag) {
 					Rigid[j]->Top->UseFuel(e / ARM_EFF);
 					Rigid[j]->CalcTotalFuel();
@@ -2094,7 +2094,7 @@ void GWorld::Move(bool initFlag)
 		//移動処理
 	if (MainStepCount <= 0) {
 		Land->List3Reset();
-		for (j = 0;j < g_ChipCount;j++) {
+		for (j = 0;j < g_World->getChipCount();j++) {
 			if (Rigid[j]->Parent == NULL) {
 				Land->List3up(Rigid[j]->TotalCenter, Rigid[j]->TotalRadius + 7.0f / StepTime);
 			}
@@ -2108,7 +2108,7 @@ void GWorld::Move(bool initFlag)
 		//		}
 	}
 	Land->List2Reset();
-	for (j = 0;j < g_ChipCount;j++) {
+	for (j = 0;j < g_World->getChipCount();j++) {
 		Rigid[j]->preX = Rigid[j]->X;
 		if (Rigid[j]->Parent == NULL) {
 			Land->List2up(Rigid[j]->TotalCenter, Rigid[j]->TotalRadius + 7.0f);
@@ -2127,15 +2127,15 @@ void GWorld::Move(bool initFlag)
 	GFloat dt3 = StepTime / SubStep;
 	GVector xmax, x;
 	for (i = 0;i < SubStep;i++) {
-		for (int ii = 0;ii < g_ChipCount / 12 + 2;ii++) {
-			j = myRand() % g_ChipCount;
-			k = myRand() % g_ChipCount;
+		for (int ii = 0;ii < g_World->getChipCount() / 12 + 2;ii++) {
+			j = myRand() % g_World->getChipCount();
+			k = myRand() % g_World->getChipCount();
 			int n = RndTable[j];
 			RndTable[j] = RndTable[k];
 			RndTable[k] = n;
 		}
 		//		if(i%3==0) {
-		for (j = 0;j < g_ChipCount;j++) {
+		for (j = 0;j < g_World->getChipCount();j++) {
 			k = RndTable[j];
 			if (Rigid[k]->Parent == NULL) {
 				Rigid[k]->TranslateWithParentAll(Rigid[k]->TopBias);
@@ -2161,7 +2161,7 @@ void GWorld::Move(bool initFlag)
 			Object[k]->HitN = 0;
 		}
 		//		}
-		for (j = 0;j < g_ChipCount;j++) {
+		for (j = 0;j < g_World->getChipCount();j++) {
 			k = RndTable[j];
 			Rigid[k]->HitN = 0;
 			if (Rigid[k]->ChipType == GT_COWL) continue;
@@ -2182,7 +2182,7 @@ void GWorld::Move(bool initFlag)
 			}
 		}
 		//		}
-		for (j = 0;j < g_ChipCount;j++) {
+		for (j = 0;j < g_World->getChipCount();j++) {
 			k = RndTable[j];
 			if (Rigid[k]->ChipType == GT_COWL) continue;
 			Rigid[k]->Bias.clear();
@@ -2191,7 +2191,7 @@ void GWorld::Move(bool initFlag)
 				Check(Rigid[k]);
 			}
 		}
-		for (j = 0;j < g_ChipCount;j++) {
+		for (j = 0;j < g_World->getChipCount();j++) {
 			k = RndTable[j];
 			if (Rigid[k]->ChipType == GT_COWL) continue;
 			CheckObject(Rigid[k]);
@@ -2204,7 +2204,7 @@ void GWorld::Move(bool initFlag)
 		}
 		//		}
 		if (!initFlag) {
-			for (j = 0;j < g_ChipCount;j++) {
+			for (j = 0;j < g_World->getChipCount();j++) {
 				k = RndTable[j];
 				if (Rigid[k]->ChipType == GT_COWL) continue;
 				if (!Rigid[k]->Fixed) Rigid[k]->ApplyExtForce();
@@ -2215,12 +2215,12 @@ void GWorld::Move(bool initFlag)
 			Object[j]->Impulse();
 		}
 		//		}
-		for (j = 0;j < g_ChipCount;j++) {
+		for (j = 0;j < g_World->getChipCount();j++) {
 			k = RndTable[j];
 			if (Rigid[k]->ChipType == GT_COWL) continue;
 			Rigid[k]->Impulse();
 		}
-		for (j = 0;j < g_ChipCount;j++) {
+		for (j = 0;j < g_World->getChipCount();j++) {
 			k = RndTable[j];
 			if (Rigid[k]->HitN>0) {
 				//if(Rigid[k]->Bias.abs()>Rigid[k]->Top->TopBias.abs()) Rigid[k]->Top->TopBias=Rigid[k]->Bias;
@@ -2232,7 +2232,7 @@ void GWorld::Move(bool initFlag)
 			//			if(Rigid[j]->Parent==NULL && Rigid[j]->TotalHitCount>0 && !Rigid[j]->Fixed)
 			//				Rigid[j]->TranslateWithChild(Rigid[j]->Bias/(GFloat)Rigid[j]->TotalHitCount/4.0f);
 		}
-		//b=b/g_ChipCount;
+		//b=b/g_World->getChipCount();
 //		if(ObjectBallFlag) {
 		for (j = 0;j < ObjectCount;j++) {
 			k = j;
@@ -2245,7 +2245,7 @@ void GWorld::Move(bool initFlag)
 		//		FILE *fp=fopen("test.dat","w");
 		for (c = 0;c < lc;c++) {
 			Dt = dt3;
-			for (j = 0;j < g_ChipCount;j++) {
+			for (j = 0;j < g_World->getChipCount();j++) {
 				k = RndTable[j];
 				if (Rigid[k]->Parent == NULL) {
 					CalcLink(Rigid[k]);
@@ -2254,7 +2254,7 @@ void GWorld::Move(bool initFlag)
 			}
 			Dt = dt2;
 
-			for (j = 0;j < g_ChipCount;j++) {
+			for (j = 0;j < g_World->getChipCount();j++) {
 				k = RndTable[j];
 				if (Rigid[k]->ChipType == GT_COWL) continue;
 				Rigid[k]->Calc();
@@ -2265,7 +2265,7 @@ void GWorld::Move(bool initFlag)
 			k = j;
 			Object[k]->Calc();
 		}
-		for (j = 0;j < g_ChipCount;j++) {
+		for (j = 0;j < g_World->getChipCount();j++) {
 			k = RndTable[j];
 			if (Rigid[j]->Parent == NULL) {
 				CalcLinkCowl(Rigid[j]);
@@ -2273,7 +2273,7 @@ void GWorld::Move(bool initFlag)
 
 		}
 		/*
-				for(j=0;j<g_ChipCount;j++) {
+				for(j=0;j<g_World->getChipCount();j++) {
 					k=RndTable[j];
 					if(Rigid[k]->Parent==NULL) {
 						Rigid[k]->CalcTotalCenter();
@@ -2299,14 +2299,14 @@ void GWorld::Move(bool initFlag)
 void GWorld::Disp(BOOL net)
 {
 	int j;
-	if (net != TRUE) for (j = 0;j < g_ChipCount;j++) Rigid[j]->DispShadow();
+	if (net != TRUE) for (j = 0;j < g_World->getChipCount();j++) Rigid[j]->DispShadow();
 	for (j = 0;j < ObjectCount;j++) Object[j]->DispObject();
 	if (net != TRUE) for (j = 0;j < ObjectCount;j++) Object[j]->DispShadow();
 	if (net != TRUE) {
-		for (j = 0;j < g_ChipCount;j++) {
+		for (j = 0;j < g_World->getChipCount();j++) {
 			if (!(Rigid[j]->ChipType == GT_COWL && (((int)Rigid[j]->Effect) & 0xf000))) Rigid[j]->Disp();
 		}
-		for (j = 0;j < g_ChipCount;j++) {
+		for (j = 0;j < g_World->getChipCount();j++) {
 			if (Rigid[j]->ChipType == GT_COWL && (((int)Rigid[j]->Effect) & 0xf000)) Rigid[j]->Disp();
 		}
 	}
@@ -2318,7 +2318,7 @@ void GWorld::Disp(BOOL net)
 void GWorld::Disp2() //CCDカメラ用
 {
 	int j;
-	for (j = 0;j < g_ChipCount;j++) if (Rigid[j] && Rigid[j]->Top != Rigid[0]) Rigid[j]->Disp();
+	for (j = 0;j < g_World->getChipCount();j++) if (Rigid[j] && Rigid[j]->Top != Rigid[0]) Rigid[j]->Disp();
 }
 //************************************************
 // 世界：表示処理
@@ -2335,5 +2335,20 @@ void GWorld::ObjectDisp()
 void GWorld::DispJet(LPDIRECT3DDEVICE8 g_D3DDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag)
 {
 	int j;
-	for (j = 0; j < g_ChipCount; j++) if (Rigid[j])Rigid[j]->DispJet(g_D3DDevice, worldMatrix, jetMesh, fireMesh, JetFlag);
+	for (j = 0; j < g_World->getChipCount(); j++) if (Rigid[j])Rigid[j]->DispJet(g_D3DDevice, worldMatrix, jetMesh, fireMesh, JetFlag);
 }
+
+int GWorld::getChipCount()
+{
+	return this->ChipCount;
+}
+//*
+void GWorld::IncreaseChipCount()
+{
+	this->ChipCount++;
+	if (this->ChipCount > GCHIPMAX)
+	{
+		this->ChipCount = GCHIPMAX;
+	}
+}
+//*/

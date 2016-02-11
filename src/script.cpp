@@ -106,15 +106,15 @@ double  mouseM(void)
 }
 double  ticks(void)
 {
-	return (double)g_TickCount;
+	return (double)GetRCTickCount();
 }
 double  systemTicks(void)
 {
-	return (double)g_SystemTickCount;
+	return (double)GetRCSystemTickCount();
 }
 double  setTicks(double v)
 {
-	g_TickCount = (int)v;
+	SetRCTickCount((int)v);
 	return v;
 }
 double  setCCDZoom(double v)
@@ -183,96 +183,96 @@ double  ObjPosz(double no)
 }
 double  getType(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	return g_Chip[(int)no]->ChipType;
 }
 double  getOption(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	return g_Chip[(int)no]->Option;
 }
 double  getEffect(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	return g_Chip[(int)no]->Effect;
 }
 double  getDir(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	return g_Chip[(int)no]->Dir;
 }
 double  getPower(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	return g_Chip[(int)no]->Power;
 }
 double  getAngle(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	if (g_Chip[(int)no]->LinkInfo) return g_Chip[(int)no]->LinkInfo->Angle;
 	return -1;
 }
 double  getSpring(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	if (g_Chip[(int)no]->LinkInfo) return g_Chip[(int)no]->LinkInfo->SpringK;
 	return -1;
 }
 double  getDamper(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	if (g_Chip[(int)no]->LinkInfo) return g_Chip[(int)no]->LinkInfo->DamperK;
 	return -1;
 }
 double  getBrake(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	if (g_Chip[(int)no]->LinkInfo) return g_Chip[(int)no]->LinkInfo->FrictionK;
 	return -1;
 }
 double  getParent(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return -1;
+	if (no < 0 || no >= g_World->getChipCount()) return -1;
 	if (g_Chip[(int)no]->Parent) return g_Chip[(int)no]->Parent->ID;
 	return -1;
 }
 double  getTop(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return -1;
+	if (no < 0 || no >= g_World->getChipCount()) return -1;
 	if (g_Chip[(int)no]->Top) return g_Chip[(int)no]->Top->ID;
 	return -1;
 }
 double  getFuel(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return -1;
+	if (no < 0 || no >= g_World->getChipCount()) return -1;
 	if (g_Chip[(int)no]->Top) return g_Chip[(int)no]->Top->TotalFuel;
 	return -1;
 }
 double  getFuelMax(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return -1;
+	if (no < 0 || no >= g_World->getChipCount()) return -1;
 	if (g_Chip[(int)no]->Top) return g_Chip[(int)no]->Top->TotalFuelMax;
 	return -1;
 }
 double  getColor(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	return g_Chip[(int)no]->Color;
 }
 double  getEnergy(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	if (g_Chip[(int)no]->Energy <= 0) return 0.0;
 	return g_Chip[(int)no]->Energy;
 }
 double  getM(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	return (g_Chip[(int)no]->M);
 }
 double  getI(double no, double x, double y)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	if (x < 0 || x >= 3) return 0.0;
 	if (y < 0 || y >= 3) return 0.0;
 	return (g_Chip[(int)no]->I.elem[(int)x][(int)y]);
@@ -293,17 +293,17 @@ double  getObjI(double no, double x, double y)
 }
 double  posx(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	return g_Chip[(int)no]->X.x;
 }
 double  posy(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	return g_Chip[(int)no]->X.y;
 }
 double  posz(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	return g_Chip[(int)no]->X.z;
 }
 double  gx(double no)
@@ -396,79 +396,79 @@ double  unLink(double no)
 }
 double  lx(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	GVector l = g_Chip[(int)no]->L*g_Chip[(int)no]->Rt;
 	return l.x;
 }
 double  ly(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	GVector l = g_Chip[(int)no]->L*g_Chip[(int)no]->Rt;
 	return l.y;
 }
 double  lz(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	GVector l = g_Chip[(int)no]->L*g_Chip[(int)no]->Rt;
 	return l.z;
 }
 double  wx(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	GVector l = g_Chip[(int)no]->W*g_Chip[(int)no]->Rt;
 	return l.x;
 }
 double  wy(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	GVector l = g_Chip[(int)no]->W*g_Chip[(int)no]->Rt;
 	return l.y;
 }
 double  wz(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	GVector l = g_Chip[(int)no]->W*g_Chip[(int)no]->Rt;
 	return l.z;
 }
 double  vx(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	GVector l = g_Chip[(int)no]->V*g_Chip[(int)no]->Rt;
 	return l.x;
 }
 double  vy(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	GVector l = g_Chip[(int)no]->V*g_Chip[(int)no]->Rt;
 	return l.y;
 }
 double  vz(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	GVector l = g_Chip[(int)no]->V*g_Chip[(int)no]->Rt;
 	return l.z;
 }
 double  fx(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	GVector l = g_Chip[(int)no]->P*g_Chip[(int)no]->Rt;
 	return l.x;
 }
 double  fy(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	GVector l = g_Chip[(int)no]->P*g_Chip[(int)no]->Rt;
 	return l.y;
 }
 double  fz(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	GVector l = g_Chip[(int)no]->P*g_Chip[(int)no]->Rt;
 	return l.z;
 }
 double  ax(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	GVector vx = GVector(1, 0, 0)*g_Chip[(int)no]->R;
 	GVector vy = GVector(0, 1, 0);
 	GVector vz = GVector(0, 0, 1)*g_Chip[(int)no]->R;
@@ -477,14 +477,14 @@ double  ax(double no)
 }
 double  ay(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	double a = -(GVector(0, 0, 1)*g_Chip[(int)no]->R).Cut2(GVector(0, 1, 0)).angle2(GVector(0, 0, 1), GVector(0, 1, 0));
 	return a;
 }
 
 double  az(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	GVector vx = GVector(1, 0, 0)*g_Chip[(int)no]->R;
 	GVector vy = GVector(0, 1, 0);
 	GVector vz = GVector(0, 0, 1)*g_Chip[(int)no]->R;
@@ -493,7 +493,7 @@ double  az(double no)
 }
 double  ex(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	int n = (int)no;
 	GVector  y_axis, z_axis;
 	z_axis.x = g_Chip[n]->R.elem[2][0];//m[2];
@@ -507,7 +507,7 @@ double  ex(double no)
 }
 double  ey(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	int n = (int)no;
 	GVector  y_axis, z_axis;
 	z_axis.x = g_Chip[n]->R.elem[2][0];//m[2];
@@ -517,7 +517,7 @@ double  ey(double no)
 }
 double  ez(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	int n = (int)no;
 	GVector  y_axis, z_axis;
 	z_axis.x = g_Chip[n]->R.elem[2][0];//m[2];
@@ -539,8 +539,8 @@ double  ez(double no)
 
 double  rx(double rno, double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
-	if (rno < 0 || rno >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
+	if (rno < 0 || rno >= g_World->getChipCount()) return 0.0;
 	int rn = (int)rno;
 	int n = (int)no;
 	GVector  y_axis, z_axis;
@@ -556,8 +556,8 @@ double  rx(double rno, double no)
 }
 double  ry(double rno, double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
-	if (rno < 0 || rno >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
+	if (rno < 0 || rno >= g_World->getChipCount()) return 0.0;
 	int rn = (int)rno;
 	int n = (int)no;
 	GVector  y_axis, z_axis;
@@ -569,8 +569,8 @@ double  ry(double rno, double no)
 }
 double  rz(double rno, double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
-	if (rno < 0 || rno >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
+	if (rno < 0 || rno >= g_World->getChipCount()) return 0.0;
 	int rn = (int)rno;
 	int n = (int)no;
 	GMatrix R = g_Chip[n]->R*g_Chip[rn]->R.transpose();
@@ -595,12 +595,12 @@ double  rz(double rno, double no)
 
 double  vel(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	return g_Chip[(int)no]->V.abs();
 }
 double  chips(void)
 {
-	return g_ChipCount;
+	return g_World->getChipCount();
 }
 double  weight(void)
 {
@@ -650,23 +650,23 @@ double getDt()
 }
 double getWidth()
 {
-	return (double)Width;
+	return (double)GetScreenWidth();
 }
 double getHeight()
 {
-	return (double)Height;
+	return (double)GetScreenHeight();
 }
 double getFps()
 {
-	return (double)g_FPS;
+	return GetFPS();
 }
 double getBase()
 {
-	return (double)g_LimitFPS;
+	return (double)GetLimitFPS();
 }
 double getFaces()
 {
-	return (double)NumFace;
+	return (double)GetLandFaceNumber();
 }
 double sign(double a)
 {
@@ -707,7 +707,7 @@ double torad(double a)
 }
 double getTolerant(double no)
 {
-	if (no < 0 || no >= g_ChipCount) return 0.0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0.0;
 	return g_Chip[(int)no]->Tolerant;
 }
 
@@ -767,15 +767,15 @@ double getPlayerChips(double no)
 	int n = (int)no;
 	if (n < 0 || n >= g_DPlay->GetNumPlayers()) return 0.0;
 	if (g_DPlay->GetLocalPlayerDPNID() == g_PlayerData[n].ReceiveData.info.dpnidPlayer) {
-		return (double)g_ChipCount;
+		return (double)g_World->getChipCount();
 	}
-	return (double)g_PlayerData[n].g_ChipCount;
+	return (double)g_PlayerData[n].ChipCount;
 }
 double getPlayerX(double no)
 {
 	int n = (int)no;
 	if (n < 0 || n >= g_DPlay->GetNumPlayers()) return 0.0;
-	double a = pow((double)g_PlayerData[n].g_ChipCount, 1.0 / 3.0) / 2;
+	double a = pow((double)g_PlayerData[n].ChipCount, 1.0 / 3.0) / 2;
 	if (g_DPlay->GetLocalPlayerDPNID() == g_PlayerData[n].ReceiveData.info.dpnidPlayer) {
 		return (double)g_Chip[0]->X.x;
 	}
@@ -786,7 +786,7 @@ double getPlayerY(double no)
 {
 	int n = (int)no;
 	if (n < 0 || n >= g_DPlay->GetNumPlayers()) return -100000.0;
-	double a = pow((double)g_PlayerData[n].g_ChipCount, 1.0 / 3.0) / 2.0;
+	double a = pow((double)g_PlayerData[n].ChipCount, 1.0 / 3.0) / 2.0;
 	if (g_DPlay->GetLocalPlayerDPNID() == g_PlayerData[n].ReceiveData.info.dpnidPlayer) {
 		return (double)g_Chip[0]->X.y;
 	}
@@ -797,7 +797,7 @@ double getPlayerZ(double no)
 {
 	int n = (int)no;
 	if (n < 0 || n >= g_DPlay->GetNumPlayers()) return 0.0;
-	double a = pow((double)g_PlayerData[n].g_ChipCount, 1.0 / 3.0) / 2.0;
+	double a = pow((double)g_PlayerData[n].ChipCount, 1.0 / 3.0) / 2.0;
 	if (g_DPlay->GetLocalPlayerDPNID() == g_PlayerData[n].ReceiveData.info.dpnidPlayer) {
 		return (double)g_Chip[0]->X.z;
 	}

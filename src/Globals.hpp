@@ -29,45 +29,15 @@ EXTERN HWND g_hWnd;              // The main app window
 EXTERN GDPlay *g_DPlay;
 EXTERN GPLAYERDATA g_PlayerData[GPLAYERMAX];
 EXTERN GMYDATA g_MyPlayerData;
-//受信したメッセージ？
-EXTERN char g_MessageData[MESSAGEMAX + 1];
-EXTERN int g_RecieaveMessageCode[GPLAYERMAX];
-EXTERN char g_RecieaveMessageData[GPLAYERMAX][MESSAGEMAX + 1];
+
 //パーティクル描画関係
 EXTERN GParticle *g_GroundParticle;
 EXTERN GParticle *g_WaterLineParticle;
 EXTERN GParticle *g_JetParticle;
 EXTERN GBullet *g_Bullet;
-//モデル読み込みからのフレーム数
-EXTERN int g_TickCount;
-//起動からのフレーム数
-EXTERN int g_SystemTickCount;
-//現在のモデルのチップ数
-EXTERN int g_ChipCount;
 //現在のモデルのVar数
 EXTERN int g_VarCount;
-//現在のFPS
-EXTERN double g_FPS;
-//正しい初期化位置がわからないので窮余の策
-#ifdef _GLOBAL_BODY
-EXTERN int g_LimitFPS = 30;
-EXTERN float g_FarMax = 600.0f;
-EXTERN float g_MarkerSize = 1.0f;
-EXTERN float g_NameSize = 1.0f;
-EXTERN GFloat TotalPower = 0;
-#else
-//制限FPS
-EXTERN int g_LimitFPS;//=30
-//描画限界距離
-EXTERN float g_FarMax;
-EXTERN float g_MarkerSize;
-EXTERN float g_NameSize;
-EXTERN GFloat TotalPower;
-#endif
 
-//EXTERN bool ObjectBallFlag;
-EXTERN DWORD ShowGhost;
-EXTERN DWORD ShowDustFlag;
 //Script関係（あんまり手を付けたくない）
 EXTERN char *ScriptSource;
 EXTERN int ScriptType;
@@ -89,12 +59,10 @@ EXTERN char *SystemSource;
 EXTERN char SystemOutput[GOUTPUTMAX][512];
 EXTERN int SystemErrorCode;
 EXTERN char SystemErrorStr[512];
-//ネットワークノイズの内、長期のサインカーブの方
+//ネットワークノイズの内、長期のサインカーブの方 ScriptとLuaで共用する必要から、グローバルのまま
 EXTERN int g_RandTime;
+
 //システム情報関連。グローバルである必要あるのか？
-EXTERN int Width;
-EXTERN int Height;
-EXTERN int NumFace;
 EXTERN int CCDImage[CCD_RESOLUTION][CCD_RESOLUTION];
 EXTERN int LastBye;
 EXTERN int Analog[6];
@@ -158,16 +126,6 @@ EXTERN char szTempFileName0[_MAX_PATH];
 EXTERN char szSystemFileName[_MAX_PATH];
 EXTERN char szSystemFileName0[_MAX_PATH];
 #endif
-
-EXTERN bool SystemKeys[GSYSKEYMAX];
-EXTERN bool SystemKeysDown[GSYSKEYMAX];
-EXTERN bool SystemKeysUp[GSYSKEYMAX];
-//各種フォルダのパス。実はグローバルに使ってるのはCurrDataDirだけぽい
-EXTERN TCHAR AppDir[MAX_PATH];
-EXTERN TCHAR ResourceDir[MAX_PATH];
-EXTERN TCHAR DataDir[MAX_PATH];
-EXTERN TCHAR CurrDataDir[MAX_PATH];
-EXTERN TCHAR CurrScenarioDir[MAX_PATH];
 
 EXTERN int scenarioCode;//=0
 //モデル読み込み時のエラーフラグぽい？

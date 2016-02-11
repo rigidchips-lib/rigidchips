@@ -28,199 +28,200 @@
 
 void MakeChip(int type, int rn)
 {
-	if (type == GT_CORE) {  //Core
-		g_Chip[g_ChipCount] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[g_ChipCount]->MeshNo = 0;
-		g_Chip[g_ChipCount]->ChipType = type;
-		g_Chip[g_ChipCount]->FrameFlag = 0;
-		g_Chip[g_ChipCount]->Density = g_Chip[g_ChipCount]->Density*0.7f;
-		g_Chip[g_ChipCount]->Reset();
-		g_Chip[g_ChipCount]->E = 0.2f;
-		g_Chip[g_ChipCount]->Us = 0.3f;
-		g_Chip[g_ChipCount]->Ud = 0.2f;
-		g_Chip[g_ChipCount]->Cd = GDEFCD;
-		g_Chip[g_ChipCount]->X = GVector(0, 5, 0);
-		g_Chip[g_ChipCount]->R = GMatrix();
-		g_Chip[g_ChipCount]->FuelMax = g_Chip[g_ChipCount]->Fuel = 2000000.0f;
+	int cn = g_World->getChipCount();
+	if (type == GT_CORE) {  //Core		
+		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
+		g_Chip[cn]->MeshNo = 0;
+		g_Chip[cn]->ChipType = type;
+		g_Chip[cn]->FrameFlag = 0;
+		g_Chip[cn]->Density = g_Chip[cn]->Density*0.7f;
+		g_Chip[cn]->Reset();
+		g_Chip[cn]->E = 0.2f;
+		g_Chip[cn]->Us = 0.3f;
+		g_Chip[cn]->Ud = 0.2f;
+		g_Chip[cn]->Cd = GDEFCD;
+		g_Chip[cn]->X = GVector(0, 5, 0);
+		g_Chip[cn]->R = GMatrix();
+		g_Chip[cn]->FuelMax = g_Chip[cn]->Fuel = 2000000.0f;
 		rn = 0;
 	}
 	else if (type == GT_CHIP) { //g_Chip
-		g_Chip[g_ChipCount] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[g_ChipCount]->MeshNo = 1;
-		g_Chip[g_ChipCount]->ChipType = type;
-		g_Chip[g_ChipCount]->FrameFlag = 0;
-		g_Chip[g_ChipCount]->Density = g_Chip[g_ChipCount]->Density*0.7f;
-		g_Chip[g_ChipCount]->Reset();
-		g_Chip[g_ChipCount]->E = 0.2f;
-		g_Chip[g_ChipCount]->Us = 0.3f;
-		g_Chip[g_ChipCount]->Ud = 0.2f;
-		g_Chip[g_ChipCount]->Cd = GDEFCD;
-		g_Chip[g_ChipCount]->FuelMax = g_Chip[g_ChipCount]->Fuel = 1000000.0f;
+		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
+		g_Chip[cn]->MeshNo = 1;
+		g_Chip[cn]->ChipType = type;
+		g_Chip[cn]->FrameFlag = 0;
+		g_Chip[cn]->Density = g_Chip[cn]->Density*0.7f;
+		g_Chip[cn]->Reset();
+		g_Chip[cn]->E = 0.2f;
+		g_Chip[cn]->Us = 0.3f;
+		g_Chip[cn]->Ud = 0.2f;
+		g_Chip[cn]->Cd = GDEFCD;
+		g_Chip[cn]->FuelMax = g_Chip[cn]->Fuel = 1000000.0f;
 	}
 	else if (type == GT_CHIPH) { //ChipH
-		g_Chip[g_ChipCount] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[g_ChipCount]->MeshNo = 21;
-		g_Chip[g_ChipCount]->ChipType = type;
-		g_Chip[g_ChipCount]->FrameFlag = 0;
-		g_Chip[g_ChipCount]->Density = g_Chip[g_ChipCount]->Density*0.7f * 4;
-		g_Chip[g_ChipCount]->Reset();
-		g_Chip[g_ChipCount]->E = 0.1f;
-		g_Chip[g_ChipCount]->Us = 2.2f;
-		g_Chip[g_ChipCount]->Ud = 1.0f;
-		g_Chip[g_ChipCount]->Cd = GDEFCD;
-		g_Chip[g_ChipCount]->FuelMax = g_Chip[g_ChipCount]->Fuel = 6000000.0f;
+		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
+		g_Chip[cn]->MeshNo = 21;
+		g_Chip[cn]->ChipType = type;
+		g_Chip[cn]->FrameFlag = 0;
+		g_Chip[cn]->Density = g_Chip[cn]->Density*0.7f * 4;
+		g_Chip[cn]->Reset();
+		g_Chip[cn]->E = 0.1f;
+		g_Chip[cn]->Us = 2.2f;
+		g_Chip[cn]->Ud = 1.0f;
+		g_Chip[cn]->Cd = GDEFCD;
+		g_Chip[cn]->FuelMax = g_Chip[cn]->Fuel = 6000000.0f;
 	}
 	else if (type == GT_COWL) { //cowl
-		g_Chip[g_ChipCount] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[g_ChipCount]->MeshNo = 23;
-		g_Chip[g_ChipCount]->ChipType = type;
-		g_Chip[g_ChipCount]->FrameFlag = 0;
-		g_Chip[g_ChipCount]->Density = 0.00f;
-		g_Chip[g_ChipCount]->Reset();
-		g_Chip[g_ChipCount]->E = 0.2f;
-		g_Chip[g_ChipCount]->Us = 0.0;
-		g_Chip[g_ChipCount]->Ud = 0.0f;
-		g_Chip[g_ChipCount]->Cd = 0;
-		g_Chip[g_ChipCount]->FuelMax = g_Chip[g_ChipCount]->Fuel = 0.0f;
-		g_Chip[g_ChipCount]->Effect = 0x0000fb;
+		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
+		g_Chip[cn]->MeshNo = 23;
+		g_Chip[cn]->ChipType = type;
+		g_Chip[cn]->FrameFlag = 0;
+		g_Chip[cn]->Density = 0.00f;
+		g_Chip[cn]->Reset();
+		g_Chip[cn]->E = 0.2f;
+		g_Chip[cn]->Us = 0.0;
+		g_Chip[cn]->Ud = 0.0f;
+		g_Chip[cn]->Cd = 0;
+		g_Chip[cn]->FuelMax = g_Chip[cn]->Fuel = 0.0f;
+		g_Chip[cn]->Effect = 0x0000fb;
 
 	}
 	else if (type == GT_CHIP2) { //Frame
-		g_Chip[g_ChipCount] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 12, CHIPSIZE);
-		g_Chip[g_ChipCount]->Shape.PointN--;
-		g_Chip[g_ChipCount]->MeshNo = 7;
-		g_Chip[g_ChipCount]->ChipType = type;
-		g_Chip[g_ChipCount]->FrameFlag = 1;
-		g_Chip[g_ChipCount]->Density = g_Chip[g_ChipCount]->Density*0.7f;
-		g_Chip[g_ChipCount]->Reset();
-		g_Chip[g_ChipCount]->E = 0.1f;
-		g_Chip[g_ChipCount]->Us = 0.8f;
-		g_Chip[g_ChipCount]->Ud = 0.6f;
-		g_Chip[g_ChipCount]->Cd = 0.0f;
-		g_Chip[g_ChipCount]->FuelMax = g_Chip[g_ChipCount]->Fuel = 500000.0f;
+		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 12, CHIPSIZE);
+		g_Chip[cn]->Shape.PointN--;
+		g_Chip[cn]->MeshNo = 7;
+		g_Chip[cn]->ChipType = type;
+		g_Chip[cn]->FrameFlag = 1;
+		g_Chip[cn]->Density = g_Chip[cn]->Density*0.7f;
+		g_Chip[cn]->Reset();
+		g_Chip[cn]->E = 0.1f;
+		g_Chip[cn]->Us = 0.8f;
+		g_Chip[cn]->Ud = 0.6f;
+		g_Chip[cn]->Cd = 0.0f;
+		g_Chip[cn]->FuelMax = g_Chip[cn]->Fuel = 500000.0f;
 	}
 	else if (type == GT_RUDDER) { //Rudder
-		g_Chip[g_ChipCount] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[g_ChipCount]->MeshNo = 4;
-		g_Chip[g_ChipCount]->ChipType = type;
-		g_Chip[g_ChipCount]->FrameFlag = 0;
-		g_Chip[g_ChipCount]->Density = g_Chip[g_ChipCount]->Density*0.7f;
-		g_Chip[g_ChipCount]->Reset();
-		g_Chip[g_ChipCount]->E = 0.2f;
-		g_Chip[g_ChipCount]->Us = 0.3f;
-		g_Chip[g_ChipCount]->Ud = 0.2f;
-		g_Chip[g_ChipCount]->Cd = GDEFCD;
-		g_Chip[g_ChipCount]->FuelMax = g_Chip[g_ChipCount]->Fuel = 1000000.0f;
+		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
+		g_Chip[cn]->MeshNo = 4;
+		g_Chip[cn]->ChipType = type;
+		g_Chip[cn]->FrameFlag = 0;
+		g_Chip[cn]->Density = g_Chip[cn]->Density*0.7f;
+		g_Chip[cn]->Reset();
+		g_Chip[cn]->E = 0.2f;
+		g_Chip[cn]->Us = 0.3f;
+		g_Chip[cn]->Ud = 0.2f;
+		g_Chip[cn]->Cd = GDEFCD;
+		g_Chip[cn]->FuelMax = g_Chip[cn]->Fuel = 1000000.0f;
 	}
 	else if (type == GT_RUDDER2) { //Rudder2
-		g_Chip[g_ChipCount] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 12, CHIPSIZE);
-		g_Chip[g_ChipCount]->Shape.PointN--;
-		g_Chip[g_ChipCount]->MeshNo = 16;
-		g_Chip[g_ChipCount]->ChipType = type;
-		g_Chip[g_ChipCount]->FrameFlag = 1;
-		g_Chip[g_ChipCount]->Density = g_Chip[g_ChipCount]->Density*0.7f;
-		g_Chip[g_ChipCount]->Reset();
-		g_Chip[g_ChipCount]->E = 0.1f;
-		g_Chip[g_ChipCount]->Us = 0.8f;
-		g_Chip[g_ChipCount]->Ud = 0.6f;
-		g_Chip[g_ChipCount]->Cd = 0.0f;
-		g_Chip[g_ChipCount]->FuelMax = g_Chip[g_ChipCount]->Fuel = 500000.0f;
+		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 12, CHIPSIZE);
+		g_Chip[cn]->Shape.PointN--;
+		g_Chip[cn]->MeshNo = 16;
+		g_Chip[cn]->ChipType = type;
+		g_Chip[cn]->FrameFlag = 1;
+		g_Chip[cn]->Density = g_Chip[cn]->Density*0.7f;
+		g_Chip[cn]->Reset();
+		g_Chip[cn]->E = 0.1f;
+		g_Chip[cn]->Us = 0.8f;
+		g_Chip[cn]->Ud = 0.6f;
+		g_Chip[cn]->Cd = 0.0f;
+		g_Chip[cn]->FuelMax = g_Chip[cn]->Fuel = 500000.0f;
 	}
 	else if (type == GT_TRIM) { //Trim
-		g_Chip[g_ChipCount] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[g_ChipCount]->MeshNo = 5;
-		g_Chip[g_ChipCount]->ChipType = type;
-		g_Chip[g_ChipCount]->FrameFlag = 0;
-		g_Chip[g_ChipCount]->Density = g_Chip[g_ChipCount]->Density*0.7f;
-		g_Chip[g_ChipCount]->Reset();
-		g_Chip[g_ChipCount]->E = 0.2f;
-		g_Chip[g_ChipCount]->Us = 0.3f;
-		g_Chip[g_ChipCount]->Ud = 0.2f;
-		g_Chip[g_ChipCount]->Cd = GDEFCD;
-		g_Chip[g_ChipCount]->FuelMax = g_Chip[g_ChipCount]->Fuel = 1000000.0f;
+		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
+		g_Chip[cn]->MeshNo = 5;
+		g_Chip[cn]->ChipType = type;
+		g_Chip[cn]->FrameFlag = 0;
+		g_Chip[cn]->Density = g_Chip[cn]->Density*0.7f;
+		g_Chip[cn]->Reset();
+		g_Chip[cn]->E = 0.2f;
+		g_Chip[cn]->Us = 0.3f;
+		g_Chip[cn]->Ud = 0.2f;
+		g_Chip[cn]->Cd = GDEFCD;
+		g_Chip[cn]->FuelMax = g_Chip[cn]->Fuel = 1000000.0f;
 	}
 	else if (type == GT_TRIM2) { //Trim2
-		g_Chip[g_ChipCount] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 12, CHIPSIZE);
-		g_Chip[g_ChipCount]->Shape.PointN--;
-		g_Chip[g_ChipCount]->MeshNo = 17;
-		g_Chip[g_ChipCount]->ChipType = type;
-		g_Chip[g_ChipCount]->FrameFlag = 1;
-		g_Chip[g_ChipCount]->Density = g_Chip[g_ChipCount]->Density*0.7f;
-		g_Chip[g_ChipCount]->Reset();
-		g_Chip[g_ChipCount]->E = 0.1f;
-		g_Chip[g_ChipCount]->Us = 0.8f;
-		g_Chip[g_ChipCount]->Ud = 0.6f;
-		g_Chip[g_ChipCount]->Cd = 0.0f;
-		g_Chip[g_ChipCount]->FuelMax = g_Chip[g_ChipCount]->Fuel = 500000.0f;
+		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 12, CHIPSIZE);
+		g_Chip[cn]->Shape.PointN--;
+		g_Chip[cn]->MeshNo = 17;
+		g_Chip[cn]->ChipType = type;
+		g_Chip[cn]->FrameFlag = 1;
+		g_Chip[cn]->Density = g_Chip[cn]->Density*0.7f;
+		g_Chip[cn]->Reset();
+		g_Chip[cn]->E = 0.1f;
+		g_Chip[cn]->Us = 0.8f;
+		g_Chip[cn]->Ud = 0.6f;
+		g_Chip[cn]->Cd = 0.0f;
+		g_Chip[cn]->FuelMax = g_Chip[cn]->Fuel = 500000.0f;
 	}
 	else if (type == GT_DUMMY) { //Dummy
-		g_Chip[g_ChipCount] = g_World->AddRigid(GTYPE_DISK, false, CHIPSIZE / 2, CHIPSIZE, CHIPSIZE / 2);
-		g_Chip[g_ChipCount]->MeshNo = 6;
-		g_Chip[g_ChipCount]->ChipType = type;
-		g_Chip[g_ChipCount]->Density = g_Chip[g_ChipCount]->Density*1.0f;
-		g_Chip[g_ChipCount]->Reset();
-		g_Chip[g_ChipCount]->E = 0.2f;
-		g_Chip[g_ChipCount]->Us = 0.3f;
-		g_Chip[g_ChipCount]->Ud = 0.2f;
-		g_Chip[g_ChipCount]->Cd = 0.0f;
-		g_Chip[g_ChipCount]->FuelMax = g_Chip[g_ChipCount]->Fuel = 0.0f;
+		g_Chip[cn] = g_World->AddRigid(GTYPE_DISK, false, CHIPSIZE / 2, CHIPSIZE, CHIPSIZE / 2);
+		g_Chip[cn]->MeshNo = 6;
+		g_Chip[cn]->ChipType = type;
+		g_Chip[cn]->Density = g_Chip[cn]->Density*1.0f;
+		g_Chip[cn]->Reset();
+		g_Chip[cn]->E = 0.2f;
+		g_Chip[cn]->Us = 0.3f;
+		g_Chip[cn]->Ud = 0.2f;
+		g_Chip[cn]->Cd = 0.0f;
+		g_Chip[cn]->FuelMax = g_Chip[cn]->Fuel = 0.0f;
 	}
 	else if (type == GT_WHEEL) { //Wheel
-		g_Chip[g_ChipCount] = g_World->AddRigid(GTYPE_DISK, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[g_ChipCount]->MeshNo = 2;
-		g_Chip[g_ChipCount]->ChipType = type;
-		g_Chip[g_ChipCount]->FrameFlag = 0;
-		g_Chip[g_ChipCount]->Density = g_Chip[g_ChipCount]->Density*1.3f;
-		g_Chip[g_ChipCount]->Reset();
-		g_Chip[g_ChipCount]->E = 0.01f;
-		g_Chip[g_ChipCount]->Us = 1.5f;
-		g_Chip[g_ChipCount]->Ud = 0.9f;
-		g_Chip[g_ChipCount]->Cd = 0.05f;
-		g_Chip[g_ChipCount]->FuelMax = g_Chip[g_ChipCount]->Fuel = 0.0f;
+		g_Chip[cn] = g_World->AddRigid(GTYPE_DISK, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
+		g_Chip[cn]->MeshNo = 2;
+		g_Chip[cn]->ChipType = type;
+		g_Chip[cn]->FrameFlag = 0;
+		g_Chip[cn]->Density = g_Chip[cn]->Density*1.3f;
+		g_Chip[cn]->Reset();
+		g_Chip[cn]->E = 0.01f;
+		g_Chip[cn]->Us = 1.5f;
+		g_Chip[cn]->Ud = 0.9f;
+		g_Chip[cn]->Cd = 0.05f;
+		g_Chip[cn]->FuelMax = g_Chip[g_World->getChipCount()]->Fuel = 0.0f;
 	}
 	else if (type == GT_RLW) { //RLW
-		g_Chip[g_ChipCount] = g_World->AddRigid(GTYPE_DISK, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[g_ChipCount]->MeshNo = 3;//無反動ホイール
-		g_Chip[g_ChipCount]->ChipType = type;
-		g_Chip[g_ChipCount]->FrameFlag = 0;
-		g_Chip[g_ChipCount]->Density = g_Chip[g_ChipCount]->Density*1.3f;
-		g_Chip[g_ChipCount]->Reset();
-		g_Chip[g_ChipCount]->E = 0.01f;
-		g_Chip[g_ChipCount]->Us = 1.5f;
-		g_Chip[g_ChipCount]->Ud = 0.9f;
-		g_Chip[g_ChipCount]->Cd = 0.05f;
-		g_Chip[g_ChipCount]->FuelMax = g_Chip[g_ChipCount]->Fuel = 0.0f;
+		g_Chip[g_World->getChipCount()] = g_World->AddRigid(GTYPE_DISK, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
+		g_Chip[g_World->getChipCount()]->MeshNo = 3;//無反動ホイール
+		g_Chip[g_World->getChipCount()]->ChipType = type;
+		g_Chip[g_World->getChipCount()]->FrameFlag = 0;
+		g_Chip[g_World->getChipCount()]->Density = g_Chip[g_World->getChipCount()]->Density*1.3f;
+		g_Chip[g_World->getChipCount()]->Reset();
+		g_Chip[g_World->getChipCount()]->E = 0.01f;
+		g_Chip[g_World->getChipCount()]->Us = 1.5f;
+		g_Chip[g_World->getChipCount()]->Ud = 0.9f;
+		g_Chip[g_World->getChipCount()]->Cd = 0.05f;
+		g_Chip[g_World->getChipCount()]->FuelMax = g_Chip[g_World->getChipCount()]->Fuel = 0.0f;
 	}
 	else if (type == GT_JET) { //Jet
-		g_Chip[g_ChipCount] = g_World->AddRigid(GTYPE_DISK, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[g_ChipCount]->MeshNo = 10;
-		g_Chip[g_ChipCount]->ChipType = type;
-		g_Chip[g_ChipCount]->FrameFlag = 0;
-		g_Chip[g_ChipCount]->Density = g_Chip[g_ChipCount]->Density*1.3f;
-		g_Chip[g_ChipCount]->Reset();
-		g_Chip[g_ChipCount]->E = 0.2f;
-		g_Chip[g_ChipCount]->Us = 0.3f;
-		g_Chip[g_ChipCount]->Ud = 0.1f;
-		g_Chip[g_ChipCount]->Cd = 0.000;
-		g_Chip[g_ChipCount]->FuelMax = g_Chip[g_ChipCount]->Fuel = 0.0f;
+		g_Chip[g_World->getChipCount()] = g_World->AddRigid(GTYPE_DISK, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
+		g_Chip[g_World->getChipCount()]->MeshNo = 10;
+		g_Chip[g_World->getChipCount()]->ChipType = type;
+		g_Chip[g_World->getChipCount()]->FrameFlag = 0;
+		g_Chip[g_World->getChipCount()]->Density = g_Chip[g_World->getChipCount()]->Density*1.3f;
+		g_Chip[g_World->getChipCount()]->Reset();
+		g_Chip[g_World->getChipCount()]->E = 0.2f;
+		g_Chip[g_World->getChipCount()]->Us = 0.3f;
+		g_Chip[g_World->getChipCount()]->Ud = 0.1f;
+		g_Chip[g_World->getChipCount()]->Cd = 0.000;
+		g_Chip[g_World->getChipCount()]->FuelMax = g_Chip[g_World->getChipCount()]->Fuel = 0.0f;
 	}
 	else if (type == GT_ARM) { //Arm
-		g_Chip[g_ChipCount] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[g_ChipCount]->MeshNo = 30;
-		g_Chip[g_ChipCount]->ChipType = type;
-		g_Chip[g_ChipCount]->FrameFlag = 0;
-		g_Chip[g_ChipCount]->Density = g_Chip[g_ChipCount]->Density*0.7f * 2;
-		g_Chip[g_ChipCount]->Reset();
-		g_Chip[g_ChipCount]->E = 0.2f;
-		g_Chip[g_ChipCount]->Us = 0.9f;
-		g_Chip[g_ChipCount]->Ud = 0.6f;
-		g_Chip[g_ChipCount]->Cd = GDEFCD*0.7f;
+		g_Chip[g_World->getChipCount()] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
+		g_Chip[g_World->getChipCount()]->MeshNo = 30;
+		g_Chip[g_World->getChipCount()]->ChipType = type;
+		g_Chip[g_World->getChipCount()]->FrameFlag = 0;
+		g_Chip[g_World->getChipCount()]->Density = g_Chip[g_World->getChipCount()]->Density*0.7f * 2;
+		g_Chip[g_World->getChipCount()]->Reset();
+		g_Chip[g_World->getChipCount()]->E = 0.2f;
+		g_Chip[g_World->getChipCount()]->Us = 0.9f;
+		g_Chip[g_World->getChipCount()]->Ud = 0.6f;
+		g_Chip[g_World->getChipCount()]->Cd = GDEFCD*0.7f;
 		g_MyPlayerData.haveArm++;
 		g_World->haveArm++;
-		g_Chip[g_ChipCount]->FuelMax = g_Chip[g_ChipCount]->Fuel = 0.0f;
+		g_Chip[g_World->getChipCount()]->FuelMax = g_Chip[g_World->getChipCount()]->Fuel = 0.0f;
 	}
-	g_Chip[g_ChipCount]->SetTensor();
-	g_Chip[g_ChipCount]->Dir = rn;
+	g_Chip[g_World->getChipCount()]->SetTensor();
+	g_Chip[g_World->getChipCount()]->Dir = rn;
 }
 
 int getValNo(char *name)
@@ -401,10 +402,10 @@ int readChildData(FILE *fp, int parentNo, int parentType, bool checkFlag)
 		if (type == 'X') {
 			if (!checkFlag) {
 				MakeChip(GT_CORE, 0);
-				cno = g_ChipCount;
+				cno = g_World->getChipCount();
 				g_Chip[cno]->CheckShape = g_Chip[cno]->Shape;
 				g_Chip[cno]->SaveShape = g_Chip[cno]->Shape;
-				g_ChipCount++;if (g_ChipCount >= GCHIPMAX) g_ChipCount = GCHIPMAX - 1;
+				g_World->IncreaseChipCount();//if (g_World->getChipCount() >= GCHIPMAX) g_World->getChipCount() = GCHIPMAX - 1;
 			}
 		}
 		else if (type == 'C' || type == 'c' || type == 'H' || type == 'O' || type == 'R' || type == 'r' || type == 'T' || type == 't' || type == 'J' || type == 'A') {
@@ -420,7 +421,7 @@ int readChildData(FILE *fp, int parentNo, int parentType, bool checkFlag)
 			else if (type == 'A') { if (!checkFlag)MakeChip(GT_ARM, rn);an = 0; }
 
 			if (!checkFlag) {
-				cno = g_ChipCount;
+				cno = g_World->getChipCount();
 				g_Chip[parentNo]->DirCode |= dirCode;
 				if (type == 'C' || type == 'c' || type == 'H' || type == 'O') {
 					if (dirCode == 0x01) {
@@ -465,9 +466,9 @@ int readChildData(FILE *fp, int parentNo, int parentType, bool checkFlag)
 					g_Chip[cno]->CheckShape = g_Chip[cno]->Shape;
 					g_Chip[cno]->SaveShape = g_Chip[cno]->Shape;
 				}
-				if (type == 'O') link2 = g_World->AddCowl(g_Chip[parentNo], offA, g_Chip[g_ChipCount], offB, axis[an], angle);
-				else link2 = g_World->AddHinge(g_Chip[parentNo], offA, g_Chip[g_ChipCount], offB, axis[an], angle, spring, damper);
-				g_ChipCount++;if (g_ChipCount >= GCHIPMAX) g_ChipCount = GCHIPMAX - 1;
+				if (type == 'O') link2 = g_World->AddCowl(g_Chip[parentNo], offA, g_Chip[g_World->getChipCount()], offB, axis[an], angle);
+				else link2 = g_World->AddHinge(g_Chip[parentNo], offA, g_Chip[g_World->getChipCount()], offB, axis[an], angle, spring, damper);
+				g_World->IncreaseChipCount();//if (g_World->getChipCount() >= GCHIPMAX) g_World->getChipCount() = GCHIPMAX - 1;
 			}
 			else {
 				if (parentType == 'O'&& type != 'O') return 104;//The caul cannot be connected with the caul.
@@ -475,38 +476,38 @@ int readChildData(FILE *fp, int parentNo, int parentType, bool checkFlag)
 		}
 		else if (type == 'W') {
 			if (!checkFlag) {
-				cno2 = g_ChipCount;
+				cno2 = g_World->getChipCount();
 				MakeChip(GT_DUMMY, rn);
 				g_Chip[cno2]->CheckShape = g_Chip[cno2]->Shape;
 				g_Chip[cno2]->SaveShape = g_Chip[cno2]->Shape;
 
 				link2 = g_World->AddHinge(g_Chip[parentNo], offA, g_Chip[cno2], offB, axis[0], angle, 1.0, 0.5);
-				g_ChipCount++;if (g_ChipCount >= GCHIPMAX) g_ChipCount = GCHIPMAX - 1;
-				cno = g_ChipCount;
+				g_World->IncreaseChipCount();//if (g_World->getChipCount() >= GCHIPMAX) g_World->getChipCount() = GCHIPMAX - 1;
+				cno = g_World->getChipCount();
 				MakeChip(GT_WHEEL, rn);
 				g_Chip[cno]->CheckShape = g_Chip[cno]->Shape;
 				g_Chip[cno]->SaveShape = g_Chip[cno]->Shape;
 				g_Chip[parentNo]->DirCode |= dirCode;
 				link1 = g_World->AddShaft(g_Chip[cno2], GVector(0, 0, 0), g_Chip[cno], GVector(0, 0, 0), axis[1], 0);
-				g_ChipCount++;if (g_ChipCount >= GCHIPMAX) g_ChipCount = GCHIPMAX - 1;
+				g_World->IncreaseChipCount();//if (g_World->getChipCount() >= GCHIPMAX) g_World->getChipCount() = GCHIPMAX - 1;
 				an = 2;
 			}
 		}
 		else if (type == 'N') {
 			if (!checkFlag) {
-				cno2 = g_ChipCount;
+				cno2 = g_World->getChipCount();
 				MakeChip(GT_DUMMY, rn);
 				g_Chip[cno2]->CheckShape = g_Chip[cno2]->Shape;
 				g_Chip[cno2]->SaveShape = g_Chip[cno2]->Shape;
 				link2 = g_World->AddHinge(g_Chip[parentNo], offA, g_Chip[cno2], offB, axis[0], angle, 1.0, 0.5);
-				g_ChipCount++;if (g_ChipCount >= GCHIPMAX) g_ChipCount = GCHIPMAX - 1;
-				cno = g_ChipCount;
+				g_World->IncreaseChipCount();//if (g_World->getChipCount() >= GCHIPMAX) g_World->getChipCount() = GCHIPMAX - 1;
+				cno = g_World->getChipCount();
 				MakeChip(GT_RLW, rn);
 				g_Chip[cno]->CheckShape = g_Chip[cno]->Shape;
 				g_Chip[cno]->SaveShape = g_Chip[cno]->Shape;
 				g_Chip[parentNo]->DirCode |= dirCode;
 				link1 = g_World->AddShaft(g_Chip[cno2], GVector(0, 0, 0), g_Chip[cno], GVector(0, 0, 0), axis[1], 0);
-				g_ChipCount++;if (g_ChipCount >= GCHIPMAX) g_ChipCount = GCHIPMAX - 1;
+				g_World->IncreaseChipCount();//if (g_World->getChipCount() >= GCHIPMAX) g_World->getChipCount() = GCHIPMAX - 1;
 				an = 2;
 			}
 		}
@@ -706,7 +707,7 @@ int  readData2(FILE *fp, bool checkFlag)
 		for (i = 0;i < GVALMAX;i++) g_ValList[i].RefCount = 0;
 		if (g_ScriptLua) luaScriptEnd(g_ScriptLua);
 		g_ScriptLua = NULL;
-		g_ChipCount = 0;
+		//g_World->getChipCount() = 0;
 		g_VarCount = 0;
 	}
 	cw = getToken(fp, str);
@@ -816,7 +817,7 @@ int  readData2(FILE *fp, bool checkFlag)
 		if (cw == '{') {
 			err = readChildData(fp, 0, 0, checkFlag);
 			if (err) { return err; }
-			for (int i = 0;i < g_ChipCount;i++) {
+			for (int i = 0;i < g_World->getChipCount();i++) {
 				if (g_Chip[i]->ChipType == GT_CORE) g_Chip[i]->Reset();
 			}
 		}
@@ -1109,7 +1110,7 @@ int saveData(char *fname)
 		}
 		fprintf(fp, "}\n");
 		fprintf(fp, "Body {\n");
-		for (int i = 0;i < g_ChipCount;i++) {
+		for (int i = 0;i < g_World->getChipCount();i++) {
 			if (g_Chip[i]->Parent == NULL) saveChips(fp, g_Chip[i], 1);
 		}
 		fprintf(fp, "}\n");

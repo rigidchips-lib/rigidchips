@@ -119,6 +119,40 @@ LPDIRECT3DTEXTURE8 pMyTexture[GTEXMAX];
 
 HMIDIOUT hMidiOut;
 
+static float g_FarMax = 600.0f;
+static float g_MarkerSize = 1.0f;
+static float g_NameSize = 1.0f;
+
+static int s_ScreenWidth;
+static int s_ScreenHeight;
+static int s_NumFace;
+//現在のFPS
+static double s_FPS;
+//現在の制限FPS
+static int s_LimitFPS = 30;
+
+static GFloat s_TotalPower;
+
+//モデル読み込みからのフレーム数
+static int s_TickCount;
+//起動からのフレーム数
+static int s_SystemTickCount;
+
+//受信したメッセージ？
+static char s_MessageData[MESSAGEMAX + 1];
+static int s_RecieaveMessageCode[GPLAYERMAX];
+static char s_RecieaveMessageData[GPLAYERMAX][MESSAGEMAX + 1];
+//SKEYの値
+static bool s_SystemKeys[GSYSKEYMAX];
+static bool s_SystemKeysDown[GSYSKEYMAX];
+static bool s_SystemKeysUp[GSYSKEYMAX];
+
+//各種フォルダのパス。実はグローバルに使ってるのはs_CurrDataDirだけぽい
+static TCHAR s_AppDir[MAX_PATH];
+static TCHAR s_ResourceDir[MAX_PATH];
+static TCHAR s_DataDir[MAX_PATH];
+static TCHAR s_CurrDataDir[MAX_PATH];
+static TCHAR s_CurrScenarioDir[MAX_PATH];
 
 int RecTickCount = 0;
 
@@ -145,22 +179,22 @@ bool HardShadowFlag = false;
 int CallModeChange = 0;
 
 BOOL ShowTitle = FALSE;
-DWORD ShowMeter = TRUE;
-DWORD ShowRegulation = TRUE;
-DWORD ShowMessage = TRUE;
-DWORD ShowData = FALSE;
-DWORD ShowExtra = FALSE;
-DWORD ShowNetwork = FALSE;
-DWORD ShowVariable = TRUE;
-DWORD ShowPower = FALSE;
-DWORD ShowCowl = TRUE;
-//DWORD ShowGhost = FALSE;
-DWORD TextureAlpha = TRUE;
-DWORD BackFaces = FALSE;
-DWORD ShowShadowFlag = TRUE;
-//DWORD ShowDustFlag = TRUE;
-DWORD DitherFlag = TRUE;
-DWORD FastShadow = 1;
+static DWORD ShowMeter = TRUE;
+static DWORD ShowRegulation = TRUE;
+static DWORD ShowMessage = TRUE;
+static DWORD ShowData = FALSE;
+static DWORD ShowExtra = FALSE;
+static DWORD ShowNetwork = FALSE;
+static DWORD ShowVariable = TRUE;
+static DWORD ShowPower = FALSE;
+static DWORD ShowCowl = TRUE;
+static DWORD ShowGhost = FALSE;
+static DWORD TextureAlpha = TRUE;
+static DWORD BackFaces = FALSE;
+static DWORD ShowShadowFlag = TRUE;
+static DWORD ShowDustFlag = TRUE;
+static DWORD DitherFlag = TRUE;
+static DWORD FastShadow = 1;
 bool MoveEnd = false;
 
 TCHAR SessionName[256] = "RigidChips";
@@ -394,7 +428,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 				for (int j = 0;j < s;j++) {
 					((BYTE*)PrePlayerData[i].ReceiveData.data)[j] = ((BYTE*)g_PlayerData[i].ReceiveData.data)[j];
 				}
-				for (int j = 0;j < g_PlayerData[i].g_ChipCount;j++) {
+				for (int j = 0;j < g_PlayerData[i].ChipCount;j++) {
 					PrePlayerData[i].X[j] = g_PlayerData[i].X[j];
 				}
 				for (unsigned int j = 0;j < size;j++) {
@@ -418,10 +452,10 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 	else if (code == 30) { //15B26追加　シナリオメッセージ
 		for (int i = 0;i < g_DPlay->GetMaxPlayers();i++) {
 			if (g_PlayerData[i].ReceiveData.info.dpnidPlayer == playerInfo->dpnidPlayer) {
-				g_RecieaveMessageCode[i] = *((int*)data);
-				if (scenarioCode == g_RecieaveMessageCode[i]) {
+				s_RecieaveMessageCode[i] = *((int*)data);
+				if (scenarioCode == s_RecieaveMessageCode[i]) {
 					char *str = (char*)&data[4];
-					strcpy(g_RecieaveMessageData[i], str);
+					strcpy(s_RecieaveMessageData[i], str);
 				}
 			}
 		}
@@ -666,13 +700,13 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			SendDlgItemMessage(NetworkDlg, IDC_KOKUTI, WM_SETTEXT, 0, (LPARAM)Kokuti);
 		}
 	}
-	else if (code == 57) { //g_FPS
+	else if (code == 57) { //s_FPS
 		if (NetworkDlg) {
 			GSTREAM strm2;
 			strm2.code = 1;
 			char *str = (char*)strm2.data;
-			if (g_World->NetStop) sprintf(str, "g_FPS=Pause (Base=%d) ", g_LimitFPS);
-			else sprintf(str, "g_FPS=%.1f (Base=%d) ", g_FPS, g_LimitFPS);
+			if (g_World->NetStop) sprintf(str, "s_FPS=Pause (Base=%d) ", s_LimitFPS);
+			else sprintf(str, "s_FPS=%.1f (Base=%d) ", s_FPS, s_LimitFPS);
 			DWORD size = strlen(str) + 1 + sizeof(short);
 			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
 		}
@@ -701,13 +735,13 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			int type[16];
 			for (i = 0;i < 16;i++) type[i] = 0;
 			int s = 0;
-			for (i = 0;i < g_ChipCount;i++) {
+			for (i = 0;i < g_World->getChipCount();i++) {
 				if (g_Chip[i]->Parent == NULL) s++;
 				if (g_Chip[i]->ChipType < 11) type[g_Chip[i]->ChipType]++;
 				else type[g_Chip[i]->ChipType - 33 + 11]++;
 			}
 			char buf[30];buf[0] = '\0';
-			sprintf(str, "Chips=%d/%d(%d", g_ChipCount, s, type[0]);
+			sprintf(str, "Chips=%d/%d(%d", g_World->getChipCount(), s, type[0]);
 			for (i = 1;i < 16;i++) {
 				if (i == 9) sprintf(buf, ",Cowl=%d", type[i]);
 				else if (i == 10) sprintf(buf, ",Arm=%d", type[i]);
@@ -885,7 +919,7 @@ void CopyObject(GRigid *rd[], GRigid *rs[])
 	}
 
 }
-char *SearchFolder(char *path, char *filename, char *result)
+char *SearchFolder(const TCHAR *path, char *filename, char *result)
 {
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;
@@ -977,7 +1011,7 @@ void ResetVal()
 }
 void ResetRecVal()
 {
-	g_TickCount = RecTickCount;
+	s_TickCount = RecTickCount;
 	for (int i = 0;i < g_VarCount;i++) {
 		g_ValList[i].Val = g_ValList[i].RecVal;
 		for (int j = 0;j < g_ValList[i].RefCount;j++) {
@@ -1015,7 +1049,7 @@ void ResetRecVal()
 }
 void RecVal()
 {
-	RecTickCount = g_TickCount;
+	RecTickCount = s_TickCount;
 	for (int i = 0;i < g_VarCount;i++) {
 		g_ValList[i].RecUpdated = g_ValList[i].Updated;
 		g_ValList[i].RecVal = g_ValList[i].Val;
@@ -1023,7 +1057,7 @@ void RecVal()
 }
 void ResetChip(int n, GFloat a)
 {
-	g_TickCount = 0;
+	s_TickCount = 0;
 	CCDZoom = 0.3f*180.0f / (GFloat)M_PI;
 	g_Chip[n]->Power = 0.0;
 	g_Chip[n]->PowerSave = 0.0;
@@ -1062,7 +1096,7 @@ void ResetChip(int n, GFloat a)
 void ResetObject(int n, GFloat a)
 {
 	if (g_World->Object[n] == NULL) return;
-	g_TickCount = 0;
+	s_TickCount = 0;
 	g_World->Object[n]->R = GMatrix().rotateY(a);
 	g_World->Object[n]->L.clear();
 	g_World->Object[n]->P.clear();
@@ -1073,7 +1107,7 @@ void ResetObject(int n, GFloat a)
 
 void ResetChip2(int n, GFloat a)
 {
-	g_TickCount = 0;
+	s_TickCount = 0;
 	g_Chip[n]->Power = 0.0;
 	for (int i = 0;i < g_VarCount;i++) {
 		g_ValList[i].Val = g_ValList[i].Def;
@@ -1091,7 +1125,7 @@ void ResetChip2(int n, GFloat a)
 }
 void ResetChip3(int n, GQuat q, GVector x)
 {
-	g_TickCount = 0;
+	s_TickCount = 0;
 	g_Chip[n]->Power = 0.0;
 	g_Chip[n]->PowerSave = 0.0;
 	g_Chip[n]->Power2 = 0.0;
@@ -1683,7 +1717,7 @@ int CALLBACK DlgNetworkProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						id = -1;
 					}
 					else if (str1[1] == 'F' || str1[1] == 'f') {
-						stream.code = 57;//g_FPS
+						stream.code = 57;//s_FPS
 						char *w = (char*)stream.data;
 						sprintf(w, "fps ");
 						size = 5 + sizeof(short);
@@ -1804,7 +1838,7 @@ int CALLBACK DlgNetworkProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			int n = g_DPlay->GetNumPlayers();
 			g_MyPlayerData.ver_team = (15220 << 16) + 0;
-			g_MyPlayerData.base_fps = (g_LimitFPS << 16) + 30;
+			g_MyPlayerData.base_fps = (s_LimitFPS << 16) + 30;
 			g_MyPlayerData.scenarioCode = scenarioCode;
 			g_MyPlayerData.dummyf1 = 0;
 			g_MyPlayerData.dummyf2 = 0;
@@ -2040,7 +2074,7 @@ void GWorld::DispNetChip(int n)
 		}
 
 	}
-	g_PlayerData[n].g_ChipCount = 0;
+	g_PlayerData[n].ChipCount = 0;
 	g_PlayerData[n].w1 = w1;
 	g_PlayerData[n].w2 = w2;
 	g_PlayerData[n].ww1 = ww1;
@@ -2062,8 +2096,8 @@ void GWorld::DispNetChip(int n)
 		int type = chip->data.type & 0x3f;
 		int op1 = (chip->data.type >> 6) & 0x01;
 		int op2 = (chip->data.type >> 7) & 0x01;
-		g_PlayerData[n].Jet[g_PlayerData[n].g_ChipCount] = 0;
-		if (type == GT_COWL&&!ShowCowl) { g_PlayerData[n].g_ChipCount++;continue; }
+		g_PlayerData[n].Jet[g_PlayerData[n].ChipCount] = 0;
+		if (type == GT_COWL&&!ShowCowl) { g_PlayerData[n].ChipCount++;continue; }
 		CD3DMesh* mesh = NULL;
 		int meshNo = 0;
 
@@ -2073,9 +2107,9 @@ void GWorld::DispNetChip(int n)
 		GVector X1 = g_PlayerData[n].X[id];
 		GVector X2 = PrePlayerData[n].X[id];
 		GVector X = (((X1 - X2)*w2 + X1) + g_PlayerData[n].X2[id]) / 2.0f;
-		g_PlayerData[n].X[g_PlayerData[n].g_ChipCount].x = chip->data.pos.x / 100.0f + X1.x;
-		g_PlayerData[n].X[g_PlayerData[n].g_ChipCount].y = chip->data.pos.y / 100.0f + X1.y;
-		g_PlayerData[n].X[g_PlayerData[n].g_ChipCount].z = chip->data.pos.z / 100.0f + X1.z;
+		g_PlayerData[n].X[g_PlayerData[n].ChipCount].x = chip->data.pos.x / 100.0f + X1.x;
+		g_PlayerData[n].X[g_PlayerData[n].ChipCount].y = chip->data.pos.y / 100.0f + X1.y;
+		g_PlayerData[n].X[g_PlayerData[n].ChipCount].z = chip->data.pos.z / 100.0f + X1.z;
 		if (i == 0) {
 			p.x = (chip->data.pos.x / 100.0f + X.x)*ww2 + (chip2->data.pos.x / 100.0f + X.x)*ww1;
 			p.y = (chip->data.pos.y / 100.0f + X.y)*ww2 + (chip2->data.pos.y / 100.0f + X.y)*ww1;
@@ -2086,7 +2120,7 @@ void GWorld::DispNetChip(int n)
 			p.y = (chip->data.pos.y / 100.0f + X.y)*w2 + (chip2->data.pos.y / 100.0f + X.y)*w1;
 			p.z = (chip->data.pos.z / 100.0f + X.z)*w2 + (chip2->data.pos.z / 100.0f + X.z)*w1;
 		}
-		if (g_PlayerData[n].g_ChipCount == 0) { g_PlayerData[n].x = p.x;g_PlayerData[n].y = p.y;g_PlayerData[n].z = p.z; }
+		if (g_PlayerData[n].ChipCount == 0) { g_PlayerData[n].x = p.x;g_PlayerData[n].y = p.y;g_PlayerData[n].z = p.z; }
 		if (p.y > g_PlayerData[n].maxY) g_PlayerData[n].maxY = p.y;
 		q.x = chip->data.quat.x / 100.0f;
 		q.y = chip->data.quat.y / 100.0f;
@@ -2171,7 +2205,7 @@ void GWorld::DispNetChip(int n)
 			g_D3DDevice->SetTransform(D3DTS_WORLD, &mat1);
 			g_D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 			if (type >= GT_CHIP2) {
-				if (chip->data.option >= 1 && !ShowGhost) { g_PlayerData[n].g_ChipCount++;continue; }
+				if (chip->data.option >= 1 && !ShowGhost) { g_PlayerData[n].ChipCount++;continue; }
 			}
 			if (type == GT_COWL) {
 				float r1 = ((((int)chip->color) >> 10) / 32.0f)*w2 + ((((int)chip2->color) >> 10) / 32.0f)*w1;
@@ -2183,7 +2217,7 @@ void GWorld::DispNetChip(int n)
 				float emi = (chip->data.option & 0x10) >> 4;//1bit
 				float emi_ = 1.0f - emi;
 				float alpha = 1.0f - ((chip->data.option & 0xe0) >> 5) / 7.0f;//3bit
-				if (alpha != 1) { g_PlayerData[n].g_ChipCount++;continue; }
+				if (alpha != 1) { g_PlayerData[n].ChipCount++;continue; }
 
 				if (opt == 1) mesh = m_pXMesh[24];
 				else if (opt == 2) mesh = m_pXMesh[25];
@@ -2230,7 +2264,7 @@ void GWorld::DispNetChip(int n)
 					g_D3DDevice->SetTransform(D3DTS_WORLD, &mat1);
 					mesh = m_pXMesh[33];
 				}
-				else if (op1 == 0) g_PlayerData[n].Jet[g_PlayerData[n].g_ChipCount] = i;
+				else if (op1 == 0) g_PlayerData[n].Jet[g_PlayerData[n].ChipCount] = i;
 			}
 			if (type != GT_COWL) {
 				float r1 = ((((int)chip->color) >> 10) / 32.0f)*w2 + ((((int)chip2->color) >> 10) / 32.0f)*w1;
@@ -2245,11 +2279,11 @@ void GWorld::DispNetChip(int n)
 			mesh->Render(g_D3DDevice);
 
 		}
-		g_PlayerData[n].g_ChipCount++;
+		g_PlayerData[n].ChipCount++;
 	}
 	//透明カウルを表示
 	if (ShowCowl) {
-		g_PlayerData[n].g_ChipCount = 0;
+		g_PlayerData[n].ChipCount = 0;
 		for (int i = 0;i < size;i++) {
 			GCHIPDATA *chip = &g_PlayerData[n].ReceiveData.data[i];
 			GCHIPDATA *chip2 = &PrePlayerData[n].ReceiveData.data[i];
@@ -2266,7 +2300,7 @@ void GWorld::DispNetChip(int n)
 			int type = chip->data.type & 0x3f;
 			int op1 = (chip->data.type >> 6) & 0x01;
 			int op2 = (chip->data.type >> 7) & 0x01;
-			if (type != GT_COWL) { g_PlayerData[n].g_ChipCount++;continue; }
+			if (type != GT_COWL) { g_PlayerData[n].ChipCount++;continue; }
 			CD3DMesh* mesh = NULL;
 			int meshNo = 0;
 
@@ -2276,9 +2310,9 @@ void GWorld::DispNetChip(int n)
 			GVector X1 = g_PlayerData[n].X[id];
 			GVector X2 = PrePlayerData[n].X[id];
 			GVector X = (((X1 - X2)*w2 + X1) + g_PlayerData[n].X2[id]) / 2.0f;
-			g_PlayerData[n].X[g_PlayerData[n].g_ChipCount].x = chip->data.pos.x / 100.0f + X1.x;
-			g_PlayerData[n].X[g_PlayerData[n].g_ChipCount].y = chip->data.pos.y / 100.0f + X1.y;
-			g_PlayerData[n].X[g_PlayerData[n].g_ChipCount].z = chip->data.pos.z / 100.0f + X1.z;
+			g_PlayerData[n].X[g_PlayerData[n].ChipCount].x = chip->data.pos.x / 100.0f + X1.x;
+			g_PlayerData[n].X[g_PlayerData[n].ChipCount].y = chip->data.pos.y / 100.0f + X1.y;
+			g_PlayerData[n].X[g_PlayerData[n].ChipCount].z = chip->data.pos.z / 100.0f + X1.z;
 			if (i == 0) {
 				p.x = (chip->data.pos.x / 100.0f + X.x)*ww2 + (chip2->data.pos.x / 100.0f + X.x)*ww1;
 				p.y = (chip->data.pos.y / 100.0f + X.y)*ww2 + (chip2->data.pos.y / 100.0f + X.y)*ww1;
@@ -2289,7 +2323,7 @@ void GWorld::DispNetChip(int n)
 				p.y = (chip->data.pos.y / 100.0f + X.y)*w2 + (chip2->data.pos.y / 100.0f + X.y)*w1;
 				p.z = (chip->data.pos.z / 100.0f + X.z)*w2 + (chip2->data.pos.z / 100.0f + X.z)*w1;
 			}
-			if (g_PlayerData[n].g_ChipCount == 0) { g_PlayerData[n].x = p.x;g_PlayerData[n].y = p.y;g_PlayerData[n].z = p.z; }
+			if (g_PlayerData[n].ChipCount == 0) { g_PlayerData[n].x = p.x;g_PlayerData[n].y = p.y;g_PlayerData[n].z = p.z; }
 			if (p.y > g_PlayerData[n].maxY) g_PlayerData[n].maxY = p.y;
 			q.x = chip->data.quat.x / 100.0f;
 			q.y = chip->data.quat.y / 100.0f;
@@ -2342,7 +2376,7 @@ void GWorld::DispNetChip(int n)
 				else if (opt == 3) mesh = m_pXMesh[26];
 				else if (opt == 4) mesh = m_pXMesh[27];
 				else if (opt == 5) mesh = m_pXMesh[28];
-				if (alpha == 1) { g_PlayerData[n].g_ChipCount++;continue; }
+				if (alpha == 1) { g_PlayerData[n].ChipCount++;continue; }
 				mesh->m_pMaterials[0].Emissive.r = r1*emi;
 				mesh->m_pMaterials[0].Emissive.g = g1*emi;
 				mesh->m_pMaterials[0].Emissive.b = b1*emi;
@@ -2359,11 +2393,11 @@ void GWorld::DispNetChip(int n)
 				mesh->m_pMaterials[0].Power = 50.0f;
 				mesh->Render(g_D3DDevice);
 			}
-			g_PlayerData[n].g_ChipCount++;
+			g_PlayerData[n].ChipCount++;
 		}
 	}
 	g_D3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
-	for (int i = 0;i < g_PlayerData[n].g_ChipCount;i++) {
+	for (int i = 0;i < g_PlayerData[n].ChipCount;i++) {
 		GVector X1 = g_PlayerData[n].X[i];
 		GVector X2 = PrePlayerData[n].X[i];
 		g_PlayerData[n].X2[i] = (X1 - X2)*w2 + X1;
@@ -2376,7 +2410,7 @@ void GWorld::DispNetJetAll()
 		float w1 = g_PlayerData[i].w1;
 		float w2 = g_PlayerData[i].w2;
 
-		for (int j = 0;j < g_PlayerData[i].g_ChipCount;j++) {
+		for (int j = 0;j < g_PlayerData[i].ChipCount;j++) {
 			if (g_PlayerData[i].Jet[j]>0) {
 				//				MessageBox(NULL,"セッションの作成に失敗", "RigidChips Network", MB_OK | MB_ICONWARNING);
 				int n = g_PlayerData[i].Jet[j];
@@ -2480,7 +2514,7 @@ void GWorld::DispNetChipInfo(int n, float zz)
 	g_D3DDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
 	GVector e = EyePos;
 	float x = g_PlayerData[n].x;
-	float hy = g_PlayerData[n].y + (float)pow((double)g_PlayerData[n].g_ChipCount, 0.3333) / 3.0f;
+	float hy = g_PlayerData[n].y + (float)pow((double)g_PlayerData[n].ChipCount, 0.3333) / 3.0f;
 
 	float y = hy + 1.2f;
 	float z = g_PlayerData[n].z;
@@ -3032,10 +3066,10 @@ CMyD3DApplication::CMyD3DApplication()
 #endif
 	g_DPlay = new GDPlay;
 	g_DPlay->Init(g_hInst);
-	g_MessageData[0] = '\0';
+	s_MessageData[0] = '\0';
 	for (i = 0;i < GPLAYERMAX;i++) {
-		g_RecieaveMessageCode[i] = 0;
-		g_RecieaveMessageData[i][0] = '\0';
+		s_RecieaveMessageCode[i] = 0;
+		s_RecieaveMessageData[i][0] = '\0';
 	}
 
 	MouseX = 0;
@@ -3052,7 +3086,7 @@ CMyD3DApplication::CMyD3DApplication()
 	m_strWindowTitle = TEXT("RigidChips 1.5.B27");
 	m_bUseDepthBuffer = TRUE;
 
-	m_dLimidFPS = 1000 / g_LimitFPS;
+	m_dLimidFPS = 1000 / s_LimitFPS;
 	m_inputFocus = true;
 
 	// Create a D3D font using d3dfont.cpp
@@ -3079,29 +3113,29 @@ CMyD3DApplication::CMyD3DApplication()
 	m_pSkyMesh = new CD3DMesh();
 	for (i = 0;i < GTEXMAX;i++) pMyTexture[i] = NULL;
 	// Read settings from registry
-	GetModuleFileName(NULL, AppDir, MAX_PATH);
+	GetModuleFileName(NULL, s_AppDir, MAX_PATH);
 	// Separate the path from the filename
-	TCHAR* strLastSlash = _tcsrchr(AppDir, TEXT('\\'));
+	TCHAR* strLastSlash = _tcsrchr(s_AppDir, TEXT('\\'));
 	*strLastSlash = TEXT('\0');
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;
 	char work[_MAX_PATH];
-	_tcscpy(work, AppDir);
+	_tcscpy(work, s_AppDir);
 	_tcscpy(work, TEXT("\\Resources"));
 	//最初にファイルを探す
 	hFind = FindFirstFile(work, &FindFileData);
 	if (hFind == INVALID_HANDLE_VALUE) {
-		GetCurrentDirectory(MAX_PATH, AppDir);
+		GetCurrentDirectory(MAX_PATH, s_AppDir);
 	}
-	_tcscpy(ResourceDir, AppDir);
-	_tcscat(ResourceDir, _T("\\Resources"));
-	_tcscpy(CurrScenarioDir, ResourceDir);
-	_tcscpy(DataDir, AppDir);
-	_tcscat(DataDir, _T("\\Data"));
-	_tcscpy(CurrDataDir, DataDir);
+	_tcscpy(s_ResourceDir, s_AppDir);
+	_tcscat(s_ResourceDir, _T("\\Resources"));
+	_tcscpy(s_CurrScenarioDir, s_ResourceDir);
+	_tcscpy(s_DataDir, s_AppDir);
+	_tcscat(s_DataDir, _T("\\Data"));
+	_tcscpy(s_CurrDataDir, s_DataDir);
 	ReadSettings();
-	if (SetCurrentDirectory(CurrDataDir) == 0) {
-		_tcscpy(CurrDataDir, DataDir);
+	if (SetCurrentDirectory(s_CurrDataDir) == 0) {
+		_tcscpy(s_CurrDataDir, s_DataDir);
 	}
 	for (i = 0;i < 6;i++) ControlKeysLock[i] = false;
 	LastChatData[0] = '\0';
@@ -3201,7 +3235,7 @@ HRESULT CMyD3DApplication::OneTimeSceneInit()
 	lightColor = GVector(1.00f, 1.00f, 1.00f);
 	FogColor = GVector(200.0f, 230.0f, 255.0f);
 
-	g_World = new GWorld(1 / (float)g_LimitFPS, GDTSTEP);	//ステップ・サブステップ
+	g_World = new GWorld(1 / (float)s_LimitFPS, GDTSTEP);	//ステップ・サブステップ
 	g_GroundParticle = new GParticle(1200);
 	g_WaterLineParticle = new GParticle(300);
 	g_JetParticle = new GParticle(2000);
@@ -3209,22 +3243,22 @@ HRESULT CMyD3DApplication::OneTimeSceneInit()
 
 	AirSpeed.clear();
 
-	if (SetCurrentDirectory(DataDir) == 0) return  E_FAIL;
-	if (SetCurrentDirectory(ResourceDir) == 0) return  E_FAIL;
+	if (SetCurrentDirectory(s_DataDir) == 0) return  E_FAIL;
+	if (SetCurrentDirectory(s_ResourceDir) == 0) return  E_FAIL;
 
 	if (readData("Basic.txt", false)) return  E_FAIL;
 	if (LoadSystem("System.rcs")) return E_FAIL;
 	luaSystemInit();
-	lstrcpy(szUpdateFileName, ResourceDir);
+	lstrcpy(szUpdateFileName, s_ResourceDir);
 	lstrcat(szUpdateFileName, TEXT("\\Basic.txt"));
 	lstrcpy(szUpdateFileName0, TEXT("Basic.txt"));
-	lstrcpy(szLandFileName, ResourceDir);
+	lstrcpy(szLandFileName, s_ResourceDir);
 	lstrcat(szLandFileName, TEXT("\\Land.x"));
 	lstrcpy(szLandFileName0, TEXT("Land.x"));
-	lstrcpy(szSystemFileName, ResourceDir);
+	lstrcpy(szSystemFileName, s_ResourceDir);
 	lstrcat(szSystemFileName, TEXT("\\System.rcs"));
 	lstrcpy(szSystemFileName0, TEXT("System.rcs"));
-	if (g_ChipCount == 0) return E_FAIL;
+	if (g_World->getChipCount() == 0) return E_FAIL;
 	//	g_Chip[0]->X.y=g_World->Land->GetY(0,0);
 	Course[0].Count = 0;
 	for (int i = 0;i < g_VarCount;i++) {
@@ -3238,7 +3272,7 @@ HRESULT CMyD3DApplication::OneTimeSceneInit()
 			else *(g_ValList[i].Ref[j]) = g_ValList[i].Val;
 		}
 	}
-	for (int c = 0;c < g_ChipCount;c++) {
+	for (int c = 0;c < g_World->getChipCount();c++) {
 		if (g_Chip[c]->ChipType == 0) {
 			ResetChip(c, 0);
 		}
@@ -3308,8 +3342,8 @@ VOID CMyD3DApplication::ReadSettings()
 		DXUtil_ReadIntRegKey(hkey, TEXT("ShowGhost"), &ShowGhost, ShowGhost);
 		DXUtil_ReadIntRegKey(hkey, TEXT("LimidFPS"), &m_dLimidFPS, m_dLimidFPS);
 		DXUtil_ReadIntRegKey(hkey, TEXT("FastShadow"), &FastShadow, FastShadow);
-		if (m_dLimidFPS == (1000 / 15)) g_LimitFPS = 15;
-		else  g_LimitFPS = 30;
+		if (m_dLimidFPS == (1000 / 15)) s_LimitFPS = 15;
+		else  s_LimitFPS = 30;
 
 		DXUtil_ReadIntRegKey(hkey, TEXT("TextureAlpha"), &TextureAlpha, TextureAlpha);
 		DXUtil_ReadIntRegKey(hkey, TEXT("BackFaces"), &BackFaces, BackFaces);
@@ -3326,7 +3360,7 @@ VOID CMyD3DApplication::ReadSettings()
 		DXUtil_ReadIntRegKey(hkey, TEXT("NameSize"), &v, v);
 		g_NameSize = (float)(v / 1000.0f);
 
-		DXUtil_ReadStringRegKey(hkey, TEXT("CurrWorkDir"), CurrDataDir, MAX_PATH, DataDir);
+		DXUtil_ReadStringRegKey(hkey, TEXT("CurrWorkDir"), s_CurrDataDir, MAX_PATH, s_DataDir);
 
 		DXUtil_ReadStringRegKey(hkey, TEXT("SessionName"), SessionName, 256, "RigidChips");
 		if (SessionName[0] == '\0') strcpy(SessionName, "RigidChips");
@@ -3387,7 +3421,7 @@ VOID CMyD3DApplication::WriteSettings()
 		DXUtil_WriteIntRegKey(hkey, TEXT("MarkerSize"), v);
 		v = (DWORD)(g_NameSize * 1000);
 		DXUtil_WriteIntRegKey(hkey, TEXT("NameSize"), v);
-		DXUtil_WriteStringRegKey(hkey, TEXT("CurrWorkDir"), CurrDataDir);
+		DXUtil_WriteStringRegKey(hkey, TEXT("CurrWorkDir"), s_CurrDataDir);
 
 		DXUtil_WriteStringRegKey(hkey, TEXT("SessionName"), SessionName);
 		DXUtil_WriteStringRegKey(hkey, TEXT("PlayerName"), PlayerName);
@@ -3500,7 +3534,7 @@ HRESULT CMyD3DApplication::InitAudio( HWND hWnd )
 
 	// Instruct the music manager where to find the files
 	// TODO: Set this to the media directory, or use resources
-	m_pMusicManager->SetSearchDirectory( ResourceDir );
+	m_pMusicManager->SetSearchDirectory( s_ResourceDir );
 
 	// TODO: load the sounds from resources (or files)
 	m_pMusicManager->CreateSegmentFromFile( &m_pBoundSound1, _T("BOUND1.WAV") );
@@ -3546,14 +3580,14 @@ HRESULT CMyD3DApplication::LoadData(char *filename)
 			szDrive, szPath,
 			szTitle, szExt);
 
-		lstrcpy(CurrDataDir, szDrive);
-		lstrcat(CurrDataDir, szPath);
+		lstrcpy(s_CurrDataDir, szDrive);
+		lstrcat(s_CurrDataDir, szPath);
 
 		lstrcpy(szUpdateFileName, filename);
 		lstrcpy(szUpdateFileName0, szTitle);
 		lstrcat(szUpdateFileName0, szExt);
 		readData(filename, false);
-		if (g_ChipCount == 0) return S_OK;
+		if (g_World->getChipCount() == 0) return S_OK;
 		ResetChips(x, z, 0);
 		InitChips(0, 1);
 	}
@@ -3800,7 +3834,7 @@ HRESULT CMyD3DApplication::LoadLog(char *fname)
 	float ver;
 	char *s;
 	//tempモデルファイルにコピー
-	lstrcpy(fn, DataDir);
+	lstrcpy(fn, s_DataDir);
 	lstrcat(fn, "\\temp.txt");
 	if ((fp1 = fopen(fname, "r")) == NULL) return E_FAIL;
 	fgets(str, 1024, fp1);
@@ -3839,7 +3873,7 @@ HRESULT CMyD3DApplication::LoadLog(char *fname)
 	fscanf(fp, "%s", szUpdateFileName0);
 	//****
 	lstrcpy(szUpdateFileName0, TEXT("temp.txt"));
-	lstrcpy(szUpdateFileName, DataDir);
+	lstrcpy(szUpdateFileName, s_DataDir);
 	lstrcat(szUpdateFileName, TEXT("\\"));
 	lstrcat(szUpdateFileName, szUpdateFileName0);
 	fscanf(fp, "%s\n", szTempFileName0);
@@ -3955,7 +3989,7 @@ HRESULT LoadLand(LPDIRECT3DDEVICE8 Device, char *fname)
 
 	int v = g_pLandMesh->GetSysMemMesh()->GetNumVertices();
 	int f = g_pLandMesh->GetSysMemMesh()->GetNumFaces();
-	NumFace = f;
+	s_NumFace = f;
 	g_World->AddLand(v, f);
 	g_World->LandRigid->MeshNo = -1;
 
@@ -4013,7 +4047,7 @@ HRESULT LoadLand(LPDIRECT3DDEVICE8 Device, char *fname)
 	}
 	g_World->Land->Set();
 	g_World->MainStepCount = -1;
-	if (SetCurrentDirectory(CurrDataDir) == 0) return  E_FAIL;
+	if (SetCurrentDirectory(s_CurrDataDir) == 0) return  E_FAIL;
 
 	return S_OK;
 }
@@ -4084,7 +4118,7 @@ HRESULT CMyD3DApplication::InitDeviceObjects()
 	// TODO: create device objects
 	HRESULT hr;
 
-	SetCurrentDirectory(ResourceDir);
+	SetCurrentDirectory(s_ResourceDir);
 	// Init the font
 	m_pFont->InitDeviceObjects(m_pd3dDevice);
 	m_pFontL->InitDeviceObjects(m_pd3dDevice);
@@ -4180,7 +4214,7 @@ HFONT hFont = CreateFont(
 			else *(g_ValList[i].Ref[j]) = g_ValList[i].Val;
 		}
 	}
-	for (int c = 0;c < g_ChipCount;c++) {
+	for (int c = 0;c < g_World->getChipCount();c++) {
 		if (g_Chip[c]->ChipType == 0) {
 			g_Chip[c]->X.y = g_World->Land->GetY(0, 0);
 			float a = -(GVector(0, 0, 1)*g_Chip[c]->R).Cut2(GVector(0, 1, 0)).angle2(GVector(0, 0, 1), GVector(0, 1, 0));
@@ -4207,7 +4241,7 @@ HRESULT CMyD3DApplication::RestoreDeviceObjects()
 {
 	// TODO: setup render states
 	HRESULT hr;
-	SetCurrentDirectory(ResourceDir);
+	SetCurrentDirectory(s_ResourceDir);
 
 	//	SAFE_RELEASE(pPointVB);
 	SAFE_RELEASE(pPointVB);
@@ -4399,7 +4433,7 @@ HRESULT CMyD3DApplication::ResetChips(float x, float z, float a)
 	KeyRecordMax = 0;
 	KeyRecordCount = 0;
 	waitCount = 0;
-	for (int c = 0;c < g_ChipCount;c++) {
+	for (int c = 0;c < g_World->getChipCount();c++) {
 		g_Chip[c]->Crush = false;
 		if (g_Chip[c]->ChipType == 0) {
 			if (g_pLandMesh) {
@@ -4439,7 +4473,7 @@ HRESULT CMyD3DApplication::ResetChips(float y, float a)
 	KeyRecordCount = 0;
 	waitCount = 0;
 	LastBye = 0;
-	for (int c = 0;c < g_ChipCount;c++) {
+	for (int c = 0;c < g_World->getChipCount();c++) {
 		g_Chip[c]->Crush = false;
 		if (g_Chip[c]->ChipType == 0) {
 			g_Chip[c]->X.y = y;
@@ -4468,7 +4502,7 @@ HRESULT CMyD3DApplication::InitChips(float a, int hereFlag)
 	LastBye = 0;
 	waitCount = 0;
 	if (hereFlag == 0) {
-		for (int c = 0;c < g_ChipCount;c++) {
+		for (int c = 0;c < g_World->getChipCount();c++) {
 			g_Chip[c]->Crush = false;
 			g_Chip[c]->Fuel = g_Chip[c]->FuelMax;
 			if (g_Chip[c]->ChipType == 0) {
@@ -4619,44 +4653,44 @@ HRESULT CMyD3DApplication::FrameMove()
 		*/
 		Pause(FALSE);
 	}
-	//g_FPSの監視
+	//s_FPSの監視
 	static int netON = 0;
-	static int saveg_LimitFPS = 30;
+	static int saves_LimitFPS = 30;
 	if (NetworkDlg) {
 		if (g_DPlay->GetLocalPlayerDPNID() == 0) {
-			//g_FPSを元に戻す
+			//s_FPSを元に戻す
 			if (netON) {
-				m_dLimidFPS = saveg_LimitFPS;
+				m_dLimidFPS = saves_LimitFPS;
 				if (m_dLimidFPS == (1000 / 15)) {
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_CHECKED);
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
-					g_LimitFPS = 15;
+					s_LimitFPS = 15;
 				}
 				else if (m_dLimidFPS == (1000 / 30)) {
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_CHECKED);
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
-					g_LimitFPS = 30;
+					s_LimitFPS = 30;
 				}
 				else {
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
-					g_LimitFPS = 30;
+					s_LimitFPS = 30;
 				}
 			}
 			netON = 0;
 		}
 		else {
 			if (netON == 0 || m_dLimidFPS == 0) {
-				saveg_LimitFPS = m_dLimidFPS;
+				saves_LimitFPS = m_dLimidFPS;
 				if (m_dLimidFPS == (1000 / 15)) {
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_CHECKED);
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
-					g_LimitFPS = 15;
+					s_LimitFPS = 15;
 				}
 				else {
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_CHECKED);
-					g_LimitFPS = 30;
+					s_LimitFPS = 30;
 					m_dLimidFPS = 1000L / 30;
 				}
 			}
@@ -4671,23 +4705,23 @@ HRESULT CMyD3DApplication::FrameMove()
 			int n = g_DPlay->GetNumPlayers();
 			if (g_DPlay->GetLocalPlayerDPNID() == 0) {
 				sprintf(str, "Push 'Start' to Hosting or Connecting");
-				//g_FPSを元に戻す
+				//s_FPSを元に戻す
 				if (netON) {
-					m_dLimidFPS = saveg_LimitFPS;
+					m_dLimidFPS = saves_LimitFPS;
 					if (m_dLimidFPS == (1000 / 15)) {
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_CHECKED);
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
-						g_LimitFPS = 15;
+						s_LimitFPS = 15;
 					}
 					else if (m_dLimidFPS == (1000 / 30)) {
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_CHECKED);
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
-						g_LimitFPS = 30;
+						s_LimitFPS = 30;
 					}
 					else {
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
-						g_LimitFPS = 30;
+						s_LimitFPS = 30;
 					}
 				}
 				netON = 0;
@@ -4697,16 +4731,16 @@ HRESULT CMyD3DApplication::FrameMove()
 					sprintf(str, "Hosting. %d players in this session.", n);
 				else sprintf(str, "Connecting. %d players in this session.", n);
 				if (netON == 0 || m_dLimidFPS == 0) {
-					saveg_LimitFPS = m_dLimidFPS;
+					saves_LimitFPS = m_dLimidFPS;
 					if (m_dLimidFPS == (1000 / 15)) {
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_CHECKED);
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
-						g_LimitFPS = 15;
+						s_LimitFPS = 15;
 					}
 					else {
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_CHECKED);
-						g_LimitFPS = 30;
+						s_LimitFPS = 30;
 						m_dLimidFPS = 1000L / 30;
 					}
 				}
@@ -4842,14 +4876,14 @@ HRESULT CMyD3DApplication::FrameMove()
 	}
 	//メッセージの送信
 	if (g_DPlay->GetNumPlayers() > 0 && t - lastT > (DWORD)GNETSPAN && tempMoveEnd) {
-		if (strlen(g_MessageData)) {
+		if (strlen(s_MessageData)) {
 			GSTREAM stream;
 			stream.code = 30;//シナリオメッセージ
 			*((int*)stream.data) = scenarioCode;
-			strcpy((char*)&stream.data[4], g_MessageData);
-			DWORD size = (DWORD)(sizeof(int) + strlen(g_MessageData) + 1 + sizeof(short));
+			strcpy((char*)&stream.data[4], s_MessageData);
+			DWORD size = (DWORD)(sizeof(int) + strlen(s_MessageData) + 1 + sizeof(short));
 			g_DPlay->SendAll((BYTE*)&stream, size);
-			g_MessageData[0] = '\0';
+			s_MessageData[0] = '\0';
 		}
 	}
 
@@ -5045,8 +5079,8 @@ HRESULT CMyD3DApplication::FrameMove()
 					return 1;
 				}
 			}
-			if (SetCurrentDirectory(CurrDataDir) == 0) {
-				_tcscpy(CurrDataDir, DataDir);
+			if (SetCurrentDirectory(s_CurrDataDir) == 0) {
+				_tcscpy(s_CurrDataDir, s_DataDir);
 			}
 			char szFileName[512];
 			char szFilter[] = "Text(*.txt or *.rcd)\0*.txt;*.rcd\0All files(*.*)\0*.*\0";
@@ -5059,7 +5093,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			ofn.nFilterIndex = 1;
 			ofn.lpstrFile = szFileName;
 			ofn.nMaxFile = 512;
-			ofn.lpstrInitialDir = CurrDataDir;
+			ofn.lpstrInitialDir = s_CurrDataDir;
 			ofn.lpstrTitle = "Open Chips-Data";
 			ofn.lpstrDefExt = "txt;RCD";
 			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
@@ -5111,7 +5145,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			int errCode = 0;
 			if ((errCode = readData(szUpdateFileName, true)) == 0) {
 				readData(szUpdateFileName, false);
-				if (g_ChipCount == 0) return S_OK;
+				if (g_World->getChipCount() == 0) return S_OK;
 
 				ResetChips(x, z, a);
 				InitChips(a, 1);
@@ -5159,8 +5193,8 @@ HRESULT CMyD3DApplication::FrameMove()
 					return 1;
 				}
 			}
-			if (SetCurrentDirectory(CurrDataDir) == 0) {
-				_tcscpy(CurrDataDir, DataDir);
+			if (SetCurrentDirectory(s_CurrDataDir) == 0) {
+				_tcscpy(s_CurrDataDir, s_DataDir);
 			}
 			char szFileName[512];
 			char szFilter[] = "Data(*.x)\0*.x\0All files(*.*)\0*.*\0";
@@ -5172,7 +5206,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			ofn.lpstrFilter = szFilter;
 			ofn.nFilterIndex = 1;
 			ofn.lpstrFile = szFileName;
-			ofn.lpstrInitialDir = CurrDataDir;
+			ofn.lpstrInitialDir = s_CurrDataDir;
 			ofn.nMaxFile = 512;
 			ofn.lpstrTitle = "Open Land-Data";
 			ofn.lpstrDefExt = "x";
@@ -5188,14 +5222,14 @@ HRESULT CMyD3DApplication::FrameMove()
 					_splitpath(szFileName,
 						szDrive, szPath,
 						szTitle, szExt);
-					lstrcpy(CurrDataDir, szDrive);
-					lstrcat(CurrDataDir, szPath);
+					lstrcpy(s_CurrDataDir, szDrive);
+					lstrcat(s_CurrDataDir, szPath);
 					lstrcpy(szLandFileName, szFileName);
 					lstrcpy(szLandFileName0, szTitle);
 					lstrcat(szLandFileName0, szExt);
 					KeyRecordMax = 0;
 					KeyRecordCount = 0;
-					for (int i = 0;i < g_ChipCount;i++) {
+					for (int i = 0;i < g_World->getChipCount();i++) {
 						if (g_Chip[i]->ChipType == 0) {
 							GFloat y = g_World->Land->GetY(0, 0);
 							if (y < -9000.0f)y = 0.0f;
@@ -5245,8 +5279,8 @@ HRESULT CMyD3DApplication::FrameMove()
 					return 1;
 				}
 			}
-			if (SetCurrentDirectory(CurrDataDir) == 0) {
-				_tcscpy(CurrDataDir, DataDir);
+			if (SetCurrentDirectory(s_CurrDataDir) == 0) {
+				_tcscpy(s_CurrDataDir, s_DataDir);
 			}
 			char *LandFile;
 			char szFileName[512];
@@ -5259,7 +5293,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			ofn.lpstrFilter = szFilter;
 			ofn.nFilterIndex = 1;
 			ofn.lpstrFile = szFileName;
-			ofn.lpstrInitialDir = CurrDataDir;
+			ofn.lpstrInitialDir = s_CurrDataDir;
 			ofn.nMaxFile = 512;
 			ofn.lpstrTitle = "Open Game-Data";
 			ofn.lpstrDefExt = "rcg";
@@ -5277,10 +5311,10 @@ HRESULT CMyD3DApplication::FrameMove()
 						szDrive, szPath,
 						szTitle, szExt);
 
-					lstrcpy(CurrDataDir, szDrive);
-					lstrcat(CurrDataDir, szPath);
+					lstrcpy(s_CurrDataDir, szDrive);
+					lstrcat(s_CurrDataDir, szPath);
 
-					lstrcpy(szLandFileName, DataDir);
+					lstrcpy(szLandFileName, s_DataDir);
 					lstrcat(szLandFileName, TEXT("\\"));
 					lstrcat(szLandFileName, LandFile);
 					lstrcpy(szLandFileName0, szTitle);
@@ -5313,7 +5347,7 @@ HRESULT CMyD3DApplication::FrameMove()
 		m_UserInput.bDoCloseScenario = FALSE;
 
 		char fn[_MAX_PATH];
-		lstrcpy(fn, ResourceDir);
+		lstrcpy(fn, s_ResourceDir);
 		lstrcat(fn, TEXT("\\System.rcs"));
 		LoadSystem(fn);
 		luaSystemInit();
@@ -5345,8 +5379,8 @@ HRESULT CMyD3DApplication::FrameMove()
 				return 1;
 			}
 		}
-		if (SetCurrentDirectory(CurrDataDir) == 0) {
-			_tcscpy(CurrDataDir, DataDir);
+		if (SetCurrentDirectory(s_CurrDataDir) == 0) {
+			_tcscpy(s_CurrDataDir, s_DataDir);
 		}
 		char szFileName[512];
 		char szFilter[] = "Scenario-Data(*.rcs)\0*.rcs\0All files(*.*)\0*.*\0";
@@ -5358,7 +5392,7 @@ HRESULT CMyD3DApplication::FrameMove()
 		ofn.lpstrFilter = szFilter;
 		ofn.nFilterIndex = 1;
 		ofn.lpstrFile = szFileName;
-		ofn.lpstrInitialDir = CurrDataDir;
+		ofn.lpstrInitialDir = s_CurrDataDir;
 		ofn.nMaxFile = 512;
 		ofn.lpstrTitle = "Open Scenario-Data";
 		ofn.lpstrDefExt = "rcs";
@@ -5375,10 +5409,10 @@ HRESULT CMyD3DApplication::FrameMove()
 				szDrive, szPath,
 				szTitle, szExt);
 
-			lstrcpy(CurrDataDir, szDrive);
-			lstrcat(CurrDataDir, szPath);
+			lstrcpy(s_CurrDataDir, szDrive);
+			lstrcat(s_CurrDataDir, szPath);
 
-			_tcscpy(CurrScenarioDir, CurrDataDir);
+			_tcscpy(s_CurrScenarioDir, s_CurrDataDir);
 			luaSystemInit();
 			InitChips(a, 0);
 			ClearInput(&m_UserInput);
@@ -5419,8 +5453,8 @@ HRESULT CMyD3DApplication::FrameMove()
 				return 1;
 			}
 		}
-		if (SetCurrentDirectory(CurrDataDir) == 0) {
-			_tcscpy(CurrDataDir, DataDir);
+		if (SetCurrentDirectory(s_CurrDataDir) == 0) {
+			_tcscpy(s_CurrDataDir, s_DataDir);
 		}
 		char szFileName[512];
 		char szFilter[] = "Logdata(*.rcl)\0*.rcl\0All files(*.*)\0*.*\0";
@@ -5432,7 +5466,7 @@ HRESULT CMyD3DApplication::FrameMove()
 		ofn.lpstrFilter = szFilter;
 		ofn.nFilterIndex = 1;
 		ofn.lpstrFile = szFileName;
-		ofn.lpstrInitialDir = CurrDataDir;
+		ofn.lpstrInitialDir = s_CurrDataDir;
 		ofn.nMaxFile = 512;
 		ofn.lpstrTitle = "Save Log";
 		ofn.lpstrDefExt = "rcl";
@@ -5448,8 +5482,8 @@ HRESULT CMyD3DApplication::FrameMove()
 				szDrive, szPath,
 				szTitle, szExt);
 
-			lstrcpy(CurrDataDir, szDrive);
-			lstrcat(CurrDataDir, szPath);
+			lstrcpy(s_CurrDataDir, szDrive);
+			lstrcat(s_CurrDataDir, szPath);
 			SaveLog(szFileName);
 
 		}
@@ -5482,8 +5516,8 @@ HRESULT CMyD3DApplication::FrameMove()
 				return 1;
 			}
 		}
-		if (SetCurrentDirectory(CurrDataDir) == 0) {
-			_tcscpy(CurrDataDir, DataDir);
+		if (SetCurrentDirectory(s_CurrDataDir) == 0) {
+			_tcscpy(s_CurrDataDir, s_DataDir);
 		}
 		char szFileName[512];
 		char szFilter[] = "Logdata(*.rcl)\0*.rcl\0All files(*.*)\0*.*\0";
@@ -5496,7 +5530,7 @@ HRESULT CMyD3DApplication::FrameMove()
 		ofn.nFilterIndex = 1;
 		ofn.lpstrFile = szFileName;
 		ofn.nMaxFile = 512;
-		ofn.lpstrInitialDir = CurrDataDir;
+		ofn.lpstrInitialDir = s_CurrDataDir;
 		ofn.lpstrTitle = "Open Log-Data";
 		ofn.lpstrDefExt = "rcl";
 		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
@@ -5513,16 +5547,16 @@ HRESULT CMyD3DApplication::FrameMove()
 				szDrive, szPath,
 				szTitle, szExt);
 
-			lstrcpy(CurrDataDir, szDrive);
-			lstrcat(CurrDataDir, szPath);
+			lstrcpy(s_CurrDataDir, szDrive);
+			lstrcat(s_CurrDataDir, szPath);
 
 			if (LoadLog(szFileName) == 0) {
 				if (strcmp(szTempFileName0, szLandFileName0) != 0) {
 					if (lstrcmp(szTempFileName0, TEXT("Land.x")) == 0) {
-						lstrcpy(szLandFileName, ResourceDir);
+						lstrcpy(szLandFileName, s_ResourceDir);
 					}
 					else {
-						lstrcpy(szLandFileName, CurrDataDir);
+						lstrcpy(szLandFileName, s_CurrDataDir);
 					}
 					lstrcat(szLandFileName, TEXT("\\"));
 					lstrcat(szLandFileName, szTempFileName0);
@@ -5730,7 +5764,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					else *(g_ValList[i].Ref[j]) = g_ValList[i].Val;
 				}
 			}
-			for (int c = 0;c < g_ChipCount;c++) {
+			for (int c = 0;c < g_World->getChipCount();c++) {
 				if (g_Chip[c]->ChipType == 0) {
 					a = -(GVector(0, 0, 1)*g_Chip[c]->R).Cut2(GVector(0, 1, 0)).angle2(GVector(0, 0, 1), GVector(0, 1, 0));
 					ResetChip(c, a);
@@ -5773,11 +5807,11 @@ HRESULT CMyD3DApplication::FrameMove()
 		}
 	}
 	for (i = 0;i < GSYSKEYMAX;i++) {
-		if (SystemKeys[i] == false && m_UserInput.bSystem[i]) SystemKeysDown[i] = true;
-		else  SystemKeysDown[i] = false;
-		if (SystemKeys[i] == true && m_UserInput.bSystem[i] == false) SystemKeysUp[i] = true;
-		else  SystemKeysUp[i] = false;
-		SystemKeys[i] = m_UserInput.bSystem[i] != 0 ? true : false;
+		if (s_SystemKeys[i] == false && m_UserInput.bSystem[i]) s_SystemKeysDown[i] = true;
+		else  s_SystemKeysDown[i] = false;
+		if (s_SystemKeys[i] == true && m_UserInput.bSystem[i] == false) s_SystemKeysUp[i] = true;
+		else  s_SystemKeysUp[i] = false;
+		s_SystemKeys[i] = m_UserInput.bSystem[i] != 0 ? true : false;
 	}
 
 	//変数の更新
@@ -5813,7 +5847,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					}
 					else {
 						val = g_ValList[g_KeyList[i].ValNo[j]].Val;
-						val += g_KeyList[i].Step[j] * 30.0f / g_LimitFPS;
+						val += g_KeyList[i].Step[j] * 30.0f / s_LimitFPS;
 					}
 					if (val > g_ValList[g_KeyList[i].ValNo[j]].Max) val = g_ValList[g_KeyList[i].ValNo[j]].Max;
 					if (val < g_ValList[g_KeyList[i].ValNo[j]].Min) val = g_ValList[g_KeyList[i].ValNo[j]].Min;
@@ -5836,7 +5870,7 @@ HRESULT CMyD3DApplication::FrameMove()
 						}
 						else {
 							val = g_ValList[g_KeyList[i].ValNo[j]].Val;
-							val += g_KeyList[i].Step2[j] * 30.0f / g_LimitFPS;
+							val += g_KeyList[i].Step2[j] * 30.0f / s_LimitFPS;
 						}
 						if (val > g_ValList[g_KeyList[i].ValNo[j]].Max) val = g_ValList[g_KeyList[i].ValNo[j]].Max;
 						if (val < g_ValList[g_KeyList[i].ValNo[j]].Min) val = g_ValList[g_KeyList[i].ValNo[j]].Min;
@@ -5871,8 +5905,8 @@ HRESULT CMyD3DApplication::FrameMove()
 			}
 		}
 
-		TotalPower = 0;
-		for (i = 0;i < g_ChipCount;i++) {
+		s_TotalPower = 0;
+		for (i = 0;i < g_World->getChipCount();i++) {
 			if (g_Chip[i]->Top != g_Chip[0] && g_Chip[i]->Top->ByeFlag >= 1) {
 				g_Chip[i]->Power = g_Chip[i]->PowerSave;
 				if (g_Chip[i]->Top->ByeFlag == 1) g_Chip[i]->PowerSave = g_Chip[i]->PowerSave*0.95f;
@@ -5886,7 +5920,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					if (!EfficientFlag) {
 						double f = g_Chip[i]->CheckFuel(g_Chip[i]->Power / WHL_EFF);
 						g_Chip[i]->PowerByFuel = g_Chip[i]->Power = f*WHL_EFF;
-						g_Chip[i]->Top->UseFuel(f*30.0 / g_LimitFPS);
+						g_Chip[i]->Top->UseFuel(f*30.0 / s_LimitFPS);
 						g_Chip[i]->Top->CalcTotalFuel();
 
 					}
@@ -5894,10 +5928,10 @@ HRESULT CMyD3DApplication::FrameMove()
 					float po = g_Chip[i]->PowerByFuel*s;
 					g_Chip[i]->ApplyLocalTorque(GVector(0, 1, 0)*po / (1 + g_Chip[i]->W.abs() / 100));
 					if (g_Chip[i]->MeshNo == 2 && g_Chip[i]->Parent) g_Chip[i]->Parent->ApplyTorque(-GVector(0, 1, 0)*g_Chip[i]->R*(po / (1 + g_Chip[i]->W.abs() / 100)));
-					TotalPower += (GFloat)fabs(po / (1 + g_Chip[i]->W.abs() / 100));
+					s_TotalPower += (GFloat)fabs(po / (1 + g_Chip[i]->W.abs() / 100));
 				}
 				//ARM弾発射
-				else if (g_Chip[i]->ChipType == 10 && g_Chip[i]->ArmEnergy > 0 && g_Chip[i]->Energy >= g_Chip[i]->ArmEnergy && g_Chip[i]->Power >= g_Chip[i]->ArmEnergy && g_TickCount * 30 / g_LimitFPS > 150) {
+				else if (g_Chip[i]->ChipType == 10 && g_Chip[i]->ArmEnergy > 0 && g_Chip[i]->Energy >= g_Chip[i]->ArmEnergy && g_Chip[i]->Power >= g_Chip[i]->ArmEnergy && !IsInvulnerableTime()) {
 					GVector dir;
 					switch (g_Chip[i]->Dir) {
 					case 1:dir = GVector(1, 0, 0);break;
@@ -5907,8 +5941,8 @@ HRESULT CMyD3DApplication::FrameMove()
 					}
 					GVector d = dir*g_Chip[i]->R;
 					g_Chip[i]->ApplyForce(-d*g_Chip[i]->ArmEnergy*s, g_Chip[i]->X);
-					TotalPower += (GFloat)fabs(g_Chip[i]->ArmEnergy*s);
-					g_Chip[i]->Energy = (float)-5000 * 30 / g_LimitFPS;
+					s_TotalPower += (GFloat)fabs(g_Chip[i]->ArmEnergy*s);
+					g_Chip[i]->Energy = (float)-5000 * 30 / s_LimitFPS;
 					double f = sqrt(fabs(g_Chip[i]->ArmEnergy / 125000.0));if (f > 2.5) f = 2.5;
 					BOOL hit;
 					FLOAT dist;
@@ -5923,13 +5957,13 @@ HRESULT CMyD3DApplication::FrameMove()
 					D3DXVECTOR3 v1, v2;
 					float as = ARMSPEED;
 					if (g_Chip[i]->X.y < WATER_LINE) as = as / 10;
-					GVector dir2 = (d*as*30.0f / (GFloat)g_LimitFPS + g_Chip[i]->V*g_Chip[i]->World->Dt*(GFloat)GDTSTEP).normalize2();
+					GVector dir2 = (d*as*30.0f / (GFloat)s_LimitFPS + g_Chip[i]->V*g_Chip[i]->World->Dt*(GFloat)GDTSTEP).normalize2();
 					v1.x = g_Chip[i]->X.x;v1.y = g_Chip[i]->X.y;v1.z = g_Chip[i]->X.z;
 					v2.x = dir2.x;v2.y = dir2.y;v2.z = dir2.z;
 					D3DXIntersect(g_pLandMesh->GetSysMemMesh(), &v1, &v2, &hit, NULL, NULL, NULL, &dist, NULL, NULL);
 					if (!hit) dist = 100000.0f;
 					GVector p = g_Chip[i]->X + dir2*dist;
-					GBulletVertex *bul = g_Bullet->Add(g_Chip[i], g_Chip[i]->X, d*as*30.0f / (GFloat)g_LimitFPS + g_Chip[i]->V*g_Chip[i]->World->Dt*(GFloat)GDTSTEP, g_Chip[i]->ArmEnergy, (GFloat)f*0.3f, dist, p, -1);
+					GBulletVertex *bul = g_Bullet->Add(g_Chip[i], g_Chip[i]->X, d*as*30.0f / (GFloat)s_LimitFPS + g_Chip[i]->V*g_Chip[i]->World->Dt*(GFloat)GDTSTEP, g_Chip[i]->ArmEnergy, (GFloat)f*0.3f, dist, p, -1);
 					if (g_Chip[i]->X.y < WATER_LINE) bul->Life = 150.0f;
 
 					pVB->Unlock();
@@ -5945,23 +5979,23 @@ HRESULT CMyD3DApplication::FrameMove()
 					if (!EfficientFlag) {
 						double f = g_Chip[i]->CheckFuel(g_Chip[i]->Power / JET_EFF);
 						g_Chip[i]->PowerByFuel = g_Chip[i]->Power = f*JET_EFF;
-						g_Chip[i]->Top->UseFuel(f*30.0 / g_LimitFPS);
+						g_Chip[i]->Top->UseFuel(f*30.0 / s_LimitFPS);
 						g_Chip[i]->Top->CalcTotalFuel();
 					}
 					else g_Chip[i]->PowerByFuel = g_Chip[i]->Power;
 					float po = g_Chip[i]->PowerByFuel*s;
 					if (g_Chip[i]->Option == 1) {
 						if (JetFlag) g_Chip[i]->ApplyForce(GVector(0, 1, 0)*po, g_Chip[i]->X);
-						if (JetFlag) TotalPower += (GFloat)fabs(po);
+						if (JetFlag) s_TotalPower += (GFloat)fabs(po);
 					}
 					else if (g_Chip[i]->Option == 2) {
 						//g_Chip[i]->ApplyForce(GVector(0,1,0)*g_Chip[i]->PowerByFuel,g_Chip[i]->X);
-						if (JetFlag) TotalPower += (GFloat)fabs(po);
+						if (JetFlag) s_TotalPower += (GFloat)fabs(po);
 					}
 					else {
 						if (JetFlag && g_Chip[i]->Power != 0) {
 							g_Chip[i]->ApplyForce(GVector(0, 1, 0)*g_Chip[i]->R*po, g_Chip[i]->X);
-							TotalPower += (GFloat)fabs(po);
+							s_TotalPower += (GFloat)fabs(po);
 						}
 						if (g_Chip[i]->Effect == 1) {
 							int nn = (int)((fabs(po) + 7900) / 8000);
@@ -6016,7 +6050,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			}
 		}
 		if (hMidiOut != NULL && SoundType == 1) {
-			if (TotalPower > 0.1f) {
+			if (s_TotalPower > 0.1f) {
 				if (!preSound) {
 					//音を鳴らす(0x9n,音程,強さ,0) nはチャンネル(0～0xF)
 					long msg = MAKELONG(MAKEWORD(0x90, 80), MAKEWORD(0x1f, 0));
@@ -6082,8 +6116,8 @@ HRESULT CMyD3DApplication::FrameMove()
 				RecState = 3;
 			}
 		}
-		g_TickCount++;
-		g_SystemTickCount++;
+		s_TickCount++;
+		s_SystemTickCount++;
 	}
 	MsgFlag = false;
 	return S_OK;
@@ -6599,7 +6633,7 @@ void CMyD3DApplication::RenderSky() {
 	matView = GMatView;
 	//		m_pd3dDevice->GetTransform( D3DTS_VIEW, &matView );
 	float a = 0.0f;
-	if (g_ChipCount > 0) {
+	if (g_World->getChipCount() > 0) {
 		a = -g_Chip[0]->X.y / 1000.0f; if (a<-0.1) a = -0.1f; if (a>0.5f) a = 0.5f;
 		if (EyePos.y < -3.0) m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_DISABLE);
 
@@ -6657,10 +6691,10 @@ HRESULT CMyD3DApplication::Render()
 	{
 		//スクリプトの呼び出し
 		// TODO: update world
-		g_FPS = m_fFPS;
-		g_MyPlayerData.base_fps = (g_LimitFPS << 16) + (int)(m_fFPS + 0.5);
-		Width = m_d3dsdBackBuffer.Width;
-		Height = m_d3dsdBackBuffer.Height;
+		s_FPS = m_fFPS;
+		g_MyPlayerData.base_fps = (s_LimitFPS << 16) + (int)(m_fFPS + 0.5);
+		s_ScreenWidth = m_d3dsdBackBuffer.Width;
+		s_ScreenHeight = m_d3dsdBackBuffer.Height;
 		if (CallModeChange && g_SystemLua != NULL && (g_World->B26Bullet || g_DPlay->GetNumPlayers() == 0)) {
 			luaSystemRun("OnMode");
 			CallModeChange = 0;
@@ -6712,7 +6746,7 @@ HRESULT CMyD3DApplication::Render()
 //			Line(g_Chip[0]->TotalCenterOfGravity-GVector(0,v,0)*g_Chip[0]->R,g_Chip[0]->TotalCenterOfGravity+GVector(0,v,0)*g_Chip[0]->R,0xffDDDDDD);
 //			Line(g_Chip[0]->TotalCenterOfGravity-GVector(0,0,v)*g_Chip[0]->R,g_Chip[0]->TotalCenterOfGravity+GVector(0,0,v)*g_Chip[0]->R,0xffDDDDDD);
 
-			for (i = 0;i < (unsigned int)g_ChipCount;i++) {
+			for (i = 0;i < (unsigned int)g_World->getChipCount();i++) {
 				//if(g_Chip[i]->Top!=g_Chip[0]) continue;
 				if (g_Chip[i]->Parent == NULL) {
 					v = g_Chip[i]->TotalRadius + 0.3f;
@@ -6769,7 +6803,7 @@ HRESULT CMyD3DApplication::Render()
 			FLOAT *f = (float*)GMatView;
 			GMatrix vm(f);
 			for (i = 0;i < (unsigned int)g_DPlay->GetMaxPlayers();i++) {
-				float hy = g_PlayerData[i].y + (float)pow((double)g_PlayerData[i].g_ChipCount, 0.3333) / 3.0f;
+				float hy = g_PlayerData[i].y + (float)pow((double)g_PlayerData[i].ChipCount, 0.3333) / 3.0f;
 				GVector infoV = GVector(g_PlayerData[i].x, hy + 1.2f, g_PlayerData[i].z)*vm;
 				data[i].z = infoV.z;
 				data[i].n = i;
@@ -7504,7 +7538,7 @@ HRESULT CMyD3DApplication::Render()
 		// 針の影
 		pos.x = w - 94 - 94 - 128 + 24.0f + 3.0f;
 		pos.y = h - 86.0f + 32.0f + 2.0f;
-		d = -(float)log(TotalPower / 100.0f + 1.0f)*180.0f / 10.0f - 90.0f;
+		d = -(float)log(s_TotalPower / 100.0f + 1.0f)*180.0f / 10.0f - 90.0f;
 		pSprite->Draw(pMyTexture[6], NULL, &s2, &v3, D3DXToRadian(d), &pos, 0x77ffffff);
 		// 針
 		pos.x = w - 94.0f - 94.0f - 128.0f + 24.0f;
@@ -7905,7 +7939,7 @@ HRESULT CMyD3DApplication::RenderText()
 		m_pFont->GetTextExtent(szMsg, &size);
 		m_pFont->DrawText(w - 128 - 44.0f - size.cx / 2, h - 60.0f, fontColor2, szMsg);
 
-		float power = (float)TotalPower;
+		float power = (float)s_TotalPower;
 		_stprintf(szMsg, _T("%05.0f"), power);
 		m_pFont->GetTextExtent(szMsg, &size);
 		m_pFont->DrawText(w - 128 - 94 - 44.0f - size.cx / 2, h - 60.0f, fontColor2, szMsg);
@@ -8032,8 +8066,8 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		}
 		return S_OK;
 	}
-	//g_FPSの再設定
-//			if(m_appMax>1) g_LimitFPS=15;else g_LimitFPS=30;
+	//s_FPSの再設定
+//			if(m_appMax>1) s_LimitFPS=15;else s_LimitFPS=30;
 
 	switch (msg)
 	{
@@ -8223,16 +8257,16 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		case IDM_LIMIT30:
 		{
 			HMENU hMenu = GetMenu(hWnd);
-			g_LimitFPS = 30;
-			m_dLimidFPS = (m_dLimidFPS == (1000 / g_LimitFPS)) ? 0L : (1000 / g_LimitFPS);
-			if (g_World) g_World->SetStepTime(1.0f / g_LimitFPS);
-			if (m_dLimidFPS == (1000 / g_LimitFPS)) {
+			s_LimitFPS = 30;
+			m_dLimidFPS = (m_dLimidFPS == (1000 / s_LimitFPS)) ? 0L : (1000 / s_LimitFPS);
+			if (g_World) g_World->SetStepTime(1.0f / s_LimitFPS);
+			if (m_dLimidFPS == (1000 / s_LimitFPS)) {
 				CheckMenuItem(hMenu, IDM_LIMIT30, MF_CHECKED);
 				CheckMenuItem(hMenu, IDM_LIMIT15, MF_UNCHECKED);
 			}
 			else {
 				CheckMenuItem(hMenu, IDM_LIMIT30, MF_UNCHECKED);
-				g_LimitFPS = 30;
+				s_LimitFPS = 30;
 			}
 
 			break;
@@ -8240,18 +8274,18 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		case IDM_LIMIT15:
 		{
 			HMENU hMenu = GetMenu(hWnd);
-			g_LimitFPS = 15;
-			m_dLimidFPS = (m_dLimidFPS == (1000 / g_LimitFPS)) ? 0L : (1000 / g_LimitFPS);
-			if (g_World) g_World->SetStepTime(1.0f / g_LimitFPS);
-			if (m_dLimidFPS == (1000 / g_LimitFPS)) {
+			s_LimitFPS = 15;
+			m_dLimidFPS = (m_dLimidFPS == (1000 / s_LimitFPS)) ? 0L : (1000 / s_LimitFPS);
+			if (g_World) g_World->SetStepTime(1.0f / s_LimitFPS);
+			if (m_dLimidFPS == (1000 / s_LimitFPS)) {
 				CheckMenuItem(hMenu, IDM_LIMIT15, MF_CHECKED);
 				CheckMenuItem(hMenu, IDM_LIMIT30, MF_UNCHECKED);
 			}
 			else {
 				CheckMenuItem(hMenu, IDM_LIMIT15, MF_UNCHECKED);
-				g_LimitFPS = 30;
-				m_dLimidFPS = (m_dLimidFPS == (1000 / g_LimitFPS)) ? 0L : (1000 / g_LimitFPS);
-				if (g_World) g_World->SetStepTime(1.0f / g_LimitFPS);
+				s_LimitFPS = 30;
+				m_dLimidFPS = (m_dLimidFPS == (1000 / s_LimitFPS)) ? 0L : (1000 / s_LimitFPS);
+				if (g_World) g_World->SetStepTime(1.0f / s_LimitFPS);
 			}
 			break;
 		}
@@ -8286,8 +8320,8 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 			CheckMenuItem(hMenu, IDM_SHOWDUST, MF_CHECKED);
 			DitherFlag = 1;
 			CheckMenuItem(hMenu, IDM_DITHER, MF_CHECKED);
-			g_LimitFPS = 30;
-			m_dLimidFPS = (1000 / g_LimitFPS);
+			s_LimitFPS = 30;
+			m_dLimidFPS = (1000 / s_LimitFPS);
 			CheckMenuItem(hMenu, IDM_LIMIT15, MF_UNCHECKED);
 			CheckMenuItem(hMenu, IDM_LIMIT30, MF_CHECKED);
 			FastShadow = 1;
@@ -8932,7 +8966,7 @@ HRESULT CMyD3DApplication::FinalCleanup()
 	for (i = 0;i < GTEXMAX;i++) SAFE_RELEASE(pMyTexture[i]);
 	// Write the settings to the registry
 	WriteSettings();
-	SetCurrentDirectory(AppDir);
+	SetCurrentDirectory(s_AppDir);
 	if (hMidiOut) {
 		midiOutClose(hMidiOut);
 		hMidiOut = NULL;
@@ -8976,7 +9010,101 @@ VOID CMyD3DApplication::CleanupDirectInput()
 	m_pInputDeviceManager = NULL;
 
 }
+bool IsShowDust()
+{
+	return ShowDustFlag;
+}
+int GetScreenWidth()
+{
+	return s_ScreenWidth;
+}
+int GetScreenHeight()
+{
+	return s_ScreenHeight;
+}
+int GetLandFaceNumber()
+{
+	return s_NumFace;
+}
+double GetFPS()
+{
+	return s_FPS;
+}
+int GetLimitFPS()
+{
+	return s_LimitFPS;
+}
+bool IsInvulnerableTime()
+{
+	return  s_TickCount * 30 / s_LimitFPS>150;
+}
+GFloat GetTotalPower()
+{
+	return s_TotalPower;
+}
+void AddTotalPower(GFloat v)
+{
+	s_TotalPower += v;
+}
+int GetRCTickCount()
+{
+	return s_TickCount;
+}
+void SetRCTickCount(int v)
+{
+	s_TickCount = v;
+}
+int GetRCSystemTickCount()
+{
+	return s_SystemTickCount;
+}
+void SetMessageData(const char* str)
+{
+	_tcsncpy(s_MessageData, str, MESSAGEMAX);
+}
+int GetReceiveMessageCode(int playerNumber)
+{
+	return s_RecieaveMessageCode[playerNumber];
+}
+void ClearReceiveMessage(int playerNumber)
+{
+	s_RecieaveMessageData[playerNumber][0] = '\0';
+}
+const char* GetMessageData(int playerNumber)
+{
+	return s_RecieaveMessageData[playerNumber];
+}
+bool GetSkey(int n)
+{
+	return s_SystemKeys[n];
+}
 
+bool GetSkeyUp(int n)
+{
+	return s_SystemKeysUp[n];
+}
 
+bool GetSkeyDown(int n)
+{
+	return s_SystemKeysDown[n];
+}
 
+const TCHAR* GetAppDir(){
+	return s_AppDir;
+};
+const TCHAR* GetResourceDir(){
+	return s_ResourceDir;
+};
 
+const TCHAR* GetDataDir()
+{
+	return s_DataDir;
+};
+const TCHAR* GetCurrentDataDir()
+{
+	return s_CurrDataDir;
+};
+const TCHAR* GetCurrentScenarioDir()
+{
+	return s_CurrScenarioDir;
+};
