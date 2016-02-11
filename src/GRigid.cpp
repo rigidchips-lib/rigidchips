@@ -620,6 +620,7 @@ void GRigid::CollisionCheck(GRigid *rigid)
 						Hit[HitN].Target = rigid;
 						Hit[HitN].Ud = ud;
 						Hit[HitN].Us = us;
+						Hit[HitN].Ux = 0.0f;
 						HitN++;
 						hitFlag = true;
 					}
@@ -637,6 +638,7 @@ void GRigid::CollisionCheck(GRigid *rigid)
 					Hit[HitN].Target = rigid;
 					Hit[HitN].Ud = ud;
 					Hit[HitN].Us = us;
+					Hit[HitN].Ux = 0.0f;
 					HitN++;
 					hitFlag = true;
 				}
@@ -703,6 +705,7 @@ void GRigid::CollisionCheck(GRigid *rigid)
 					Hit[HitN].Target = rigid;
 					Hit[HitN].Ud = ud;
 					Hit[HitN].Us = us;
+					Hit[HitN].Ux = 0.0f;
 					HitN++;
 					hitFlag = true;
 				}
@@ -724,6 +727,7 @@ void GRigid::CollisionCheck(GRigid *rigid)
 				Hit[HitN].Target = rigid;
 				Hit[HitN].Ud = ud;
 				Hit[HitN].Us = us;
+				Hit[HitN].Ux = 0.0f;
 				HitN++;
 				hitFlag = true;
 			}
@@ -736,6 +740,7 @@ void GRigid::CollisionCheck(GRigid *rigid)
 				Hit[HitN].Target = rigid;
 				Hit[HitN].Ud = ud;
 				Hit[HitN].Us = us;
+				Hit[HitN].Ux = 0.0f;
 				HitN++;
 				hitFlag = true;
 			}
@@ -750,6 +755,7 @@ void GRigid::CollisionCheck(GRigid *rigid)
 				Hit[HitN].Target = rigid;
 				Hit[HitN].Ud = ud;
 				Hit[HitN].Us = us;
+				Hit[HitN].Ux = 0.0f;
 				HitN++;
 				hitFlag = true;
 			}
@@ -764,6 +770,7 @@ void GRigid::CollisionCheck(GRigid *rigid)
 				Hit[HitN].Target = rigid;
 				Hit[HitN].Ud = ud;
 				Hit[HitN].Us = us;
+				Hit[HitN].Ux = 0.0f;
 				HitN++;
 				hitFlag = true;
 			}
