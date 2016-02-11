@@ -94,24 +94,25 @@ int CloseFp(int n) {
 int luaSendAllMessage(lua_State *L)
 {
 	char *str = (char *)lua_tostring(L, 1);
-	_tcsncpy(g_MessageData, str, MESSAGEMAX);
+	//_tcsncpy(s_MessageData, str, MESSAGEMAX);
+	SetMessageData(str);
 	return 0;
 }
 int luaReceiveMessage(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_DPlay->GetNumPlayers() || scenarioCode != g_RecieaveMessageCode[no]) {
+	if (no < 0 || no >= g_DPlay->GetNumPlayers() || scenarioCode != GetReceiveMessageCode(no)) {
 		lua_pushstring(L, "");
 		return 1;
 	}
-	lua_pushstring(L, g_RecieaveMessageData[no]);
+	lua_pushstring(L, GetMessageData(no));//s_RecieaveMessageData[no]);
 	return 1;
 }
 int luaReceiveMessageClear(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
 	if (no < 0 || no >= g_DPlay->GetNumPlayers()) return 0;
-	g_RecieaveMessageData[no][0] = '\0';
+	ClearReceiveMessage(no);// [no][0] = '\0';
 	return 0;
 }
 
@@ -191,7 +192,7 @@ int luaKeyLock(lua_State *L)
 }
 int luaGetSystemTickCount(lua_State *L)
 {
-	lua_pushnumber(L, g_SystemTickCount);
+	lua_pushnumber(L, (double)GetRCSystemTickCount());
 	return 1;
 }
 int luaSetView(lua_State *L)

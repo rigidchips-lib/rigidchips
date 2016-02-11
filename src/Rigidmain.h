@@ -206,5 +206,20 @@ bool IsShowDust();
 int GetScreenWidth();
 int GetScreenHeight();
 int GetLandFaceNumber();
-
+double GetFPS();
+int GetLimitFPS();
+//Init直後の無敵時間かどうか
+bool IsInvulnerableTime();
+//総出力
+GFloat GetTotalPower();
+void AddTotalPower(GFloat v);
+//起動からのフレーム数。Win32とかぶるので名前にRC入れてる
+int GetRCTickCount();
+void SetRCTickCount(int v);
+int GetRCSystemTickCount();
+//シナリオから送るメッセージ分を入力
+void SetMessageData(const char* str);
+int GetReceiveMessageCode(int playerNumber);
+void ClearReceiveMessage(int playerNumber);
+const char* GetMessageData(int playerNumber);
 #endif // !defined(AFX_RIGID_H__F533E4AC_435C_4933_8AC7_50A6C021E6DF__INCLUDED_)
