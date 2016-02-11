@@ -3656,7 +3656,7 @@ HRESULT CMyD3DApplication::LoadProp(FILE *fp, int i)
 	GRigid *rs = g_World->Rigid[i];
 	/* 構造体データをファイルから入力 */
 	fread(r, sizeof(GRigid), 1, fp);
-	r->g_World = g_World;
+	r->World = g_World;
 	r->LinkInfo = rs->LinkInfo;
 	//		r->ID=i;
 	//		r->HitN=0;
@@ -4130,7 +4130,7 @@ HFONT hFont = CreateFont(
 	// Load the skybox
 	if (FAILED(hr = m_pSkyMesh->Create(m_pd3dDevice, _T("SkyBox.X")))) return E_FAIL;
 	if (FAILED(hr = m_pXMesh[0]->Create(m_pd3dDevice, _T("Core.X")))) return E_FAIL;
-	if (FAILED(hr = m_pXMesh[1]->Create(m_pd3dDevice, _T("g_Chip.X")))) return E_FAIL;
+	if (FAILED(hr = m_pXMesh[1]->Create(m_pd3dDevice, _T("Chip.X")))) return E_FAIL;
 	if (FAILED(hr = m_pXMesh[2]->Create(m_pd3dDevice, _T("Wheel.X")))) return E_FAIL;
 	if (FAILED(hr = m_pXMesh[3]->Create(m_pd3dDevice, _T("NWheel.X")))) return E_FAIL;
 	if (FAILED(hr = m_pXMesh[4]->Create(m_pd3dDevice, _T("Rudder.X")))) return E_FAIL;
@@ -4161,7 +4161,7 @@ HFONT hFont = CreateFont(
 	if (FAILED(hr = m_pXMesh[29]->Create(m_pd3dDevice, _T("JetEffect.X")))) return E_FAIL;
 	if (FAILED(hr = m_pXMesh[30]->Create(m_pd3dDevice, _T("ARM.X")))) return E_FAIL;
 	if (FAILED(hr = m_pXMesh[31]->Create(m_pd3dDevice, _T("Fire2.X")))) return E_FAIL;
-	if (FAILED(hr = m_pXMesh[32]->Create(m_pd3dDevice, _T("g_Bullet.X")))) return E_FAIL;
+	if (FAILED(hr = m_pXMesh[32]->Create(m_pd3dDevice, _T("Bullet.X")))) return E_FAIL;
 	if (FAILED(hr = m_pXMesh[33]->Create(m_pd3dDevice, _T("Jet2.X")))) return E_FAIL;
 	if (FAILED(hr = m_pXMesh[34]->Create(m_pd3dDevice, _T("user.X")))) return E_FAIL;
 	if (FAILED(hr = m_pXMesh[35]->Create(m_pd3dDevice, _T("Explosion.X")))) return E_FAIL;
@@ -5923,13 +5923,13 @@ HRESULT CMyD3DApplication::FrameMove()
 					D3DXVECTOR3 v1, v2;
 					float as = ARMSPEED;
 					if (g_Chip[i]->X.y < WATER_LINE) as = as / 10;
-					GVector dir2 = (d*as*30.0f / (GFloat)g_LimitFPS + g_Chip[i]->V*g_Chip[i]->g_World->Dt*(GFloat)GDTSTEP).normalize2();
+					GVector dir2 = (d*as*30.0f / (GFloat)g_LimitFPS + g_Chip[i]->V*g_Chip[i]->World->Dt*(GFloat)GDTSTEP).normalize2();
 					v1.x = g_Chip[i]->X.x;v1.y = g_Chip[i]->X.y;v1.z = g_Chip[i]->X.z;
 					v2.x = dir2.x;v2.y = dir2.y;v2.z = dir2.z;
 					D3DXIntersect(g_pLandMesh->GetSysMemMesh(), &v1, &v2, &hit, NULL, NULL, NULL, &dist, NULL, NULL);
 					if (!hit) dist = 100000.0f;
 					GVector p = g_Chip[i]->X + dir2*dist;
-					GBulletVertex *bul = g_Bullet->Add(g_Chip[i], g_Chip[i]->X, d*as*30.0f / (GFloat)g_LimitFPS + g_Chip[i]->V*g_Chip[i]->g_World->Dt*(GFloat)GDTSTEP, g_Chip[i]->ArmEnergy, (GFloat)f*0.3f, dist, p, -1);
+					GBulletVertex *bul = g_Bullet->Add(g_Chip[i], g_Chip[i]->X, d*as*30.0f / (GFloat)g_LimitFPS + g_Chip[i]->V*g_Chip[i]->World->Dt*(GFloat)GDTSTEP, g_Chip[i]->ArmEnergy, (GFloat)f*0.3f, dist, p, -1);
 					if (g_Chip[i]->X.y < WATER_LINE) bul->Life = 150.0f;
 
 					pVB->Unlock();

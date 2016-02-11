@@ -1367,7 +1367,7 @@ GRigid* GWorld::AddRigid(int type, bool fix, GFloat x, GFloat y, GFloat z, GFloa
 	GRigid*  r = Rigid[g_ChipCount++] = new GRigid(type, fix, x, y, z);
 	if (r == NULL) return NULL;
 	r->ID = g_ChipCount - 1;
-	r->g_World = this;
+	r->World = this;
 	//	r->Rb.unity();
 	r->Rb = GMatrix33().rotateX(ax*(GFloat)M_PI / 180.0f).rotateY(ay*(GFloat)M_PI / 180.0f).rotateZ(az*(GFloat)M_PI / 180.0f);
 	r->Ib_ = (r->Rb.transpose())*r->Ib_*r->Rb;
@@ -1416,7 +1416,7 @@ GRigid* GWorld::AddObject(int type, bool fix, GFloat x, GFloat y, GFloat z, GFlo
 	GRigid*  r = Object[ObjectCount++] = new GRigid(type, fix, x, y, z);
 	r->ChipType = GT_BALLOBJ;
 	r->ID = ObjectCount - 1;
-	r->g_World = this;
+	r->World = this;
 	r->Density = r->Density*density;
 	r->Reset();
 	r->E = 0.4f;
@@ -1442,7 +1442,7 @@ GLand *GWorld::AddLand(int vn, int fn)
 {
 	Land = new GLand(vn, fn);
 	LandRigid = new GRigid(-1, true, 500, 500, 500);
-	LandRigid->g_World = this;
+	LandRigid->World = this;
 	LandRigid->X = GVector(0, 0, 0);
 	LandRigid->R = GMatrix33();
 	LandRigid->E = 1.0;

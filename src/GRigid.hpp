@@ -136,7 +136,7 @@ public:
 	GHit Hit[100];
 	bool Fixed;
 	int Ghost;
-	GWorld *g_World;
+	GWorld *World;
 
 	//•¨—“Á«
 	GVector X;		//*dSˆÊ’u
