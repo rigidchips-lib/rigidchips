@@ -650,11 +650,11 @@ double getDt()
 }
 double getWidth()
 {
-	return (double)Width;
+	return (double)GetScreenWidth();
 }
 double getHeight()
 {
-	return (double)Height;
+	return (double)GetScreenHeight();
 }
 double getFps()
 {
@@ -666,7 +666,7 @@ double getBase()
 }
 double getFaces()
 {
-	return (double)NumFace;
+	return (double)GetLandFaceNumber();
 }
 double sign(double a)
 {

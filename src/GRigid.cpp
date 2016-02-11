@@ -1040,7 +1040,7 @@ void GRigid::Impulse() {
 
 				}
 				else {
-					if (ShowDustFlag) {
+					if (IsShowDust()) {
 						//
 						GFloat a = (j2*n2 - j1*(n2*ud + na*ud2)*dd / 2.0f).abs();
 						if ((myrand() % 100) < (int)(V.abs()*(1 + Hit[i].Ux * 50)) && a > 30.0) {
