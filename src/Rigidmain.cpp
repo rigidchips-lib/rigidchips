@@ -6788,7 +6788,7 @@ HRESULT CMyD3DApplication::Render()
 			m_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 			m_pd3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);  //DEST‚ÌÝ’è
 			m_pd3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
-			for (i = 0;i < (unsigned int)g_DPlay->GetCurrentPlayers();i++) {
+			for (i = 0; i < g_DPlay->GetNumPlayers(); i++) {
 				g_World->DispNetChip(i);
 			}
 		}
