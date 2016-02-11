@@ -4212,7 +4212,7 @@ HRESULT CMyD3DApplication::RestoreDeviceObjects()
 	//	SAFE_RELEASE(pPointVB);
 	SAFE_RELEASE(pPointVB);
 	//	m_pd3dDevice->CreateVertexBuffer(sizeof(D3DPOINTVERTEX) * GPARTMAX,0  ,D3DFVF_POINTVERTEX,D3DPOOL_DEFAULT,&pPointVB);
-	m_pd3dDevice->CreateVertexBuffer(sizeof(D3DPOINTVERTEX) * 100, D3DUSAGE_POINTS, D3DFVF_POINTVERTEX, D3DPOOL_DEFAULT, &pPointVB);
+	m_pd3dDevice->CreateVertexBuffer(sizeof(D3DPOINTVERTEX) * 100, D3DUSAGE_POINTS, D3DFVF_POINTVERTEX, D3DPOOL_SYSTEMMEM, &pPointVB);
 	SAFE_RELEASE(pPointTexture);
 	//	D3DXCreateTextureFromFile(m_pd3dDevice,"dustw.png",&pPointTexture);
 		// Setup a material
