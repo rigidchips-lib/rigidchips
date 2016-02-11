@@ -161,6 +161,7 @@ DWORD ShowShadowFlag = TRUE;
 //DWORD ShowDustFlag = TRUE;
 DWORD DitherFlag = TRUE;
 DWORD FastShadow = 1;
+DWORD GraphicBoardType = 0;
 bool MoveEnd = false;
 
 TCHAR SessionName[256] = "RigidChips";
@@ -3340,6 +3341,8 @@ VOID CMyD3DApplication::ReadSettings()
 		if (m_dwCreationWidth < 160) m_dwCreationWidth = 160;
 		if (m_dwCreationHeight < 120) m_dwCreationHeight = 120;
 
+		DXUtil_ReadIntRegKey(hkey, TEXT("GraphicBoardType"), &GraphicBoardType, GraphicBoardType);
+
 		RegCloseKey(hkey);
 	}
 }
@@ -4212,7 +4215,16 @@ HRESULT CMyD3DApplication::RestoreDeviceObjects()
 	//	SAFE_RELEASE(pPointVB);
 	SAFE_RELEASE(pPointVB);
 	//	m_pd3dDevice->CreateVertexBuffer(sizeof(D3DPOINTVERTEX) * GPARTMAX,0  ,D3DFVF_POINTVERTEX,D3DPOOL_DEFAULT,&pPointVB);
-	m_pd3dDevice->CreateVertexBuffer(sizeof(D3DPOINTVERTEX) * 100, D3DUSAGE_POINTS, D3DFVF_POINTVERTEX, D3DPOOL_SYSTEMMEM, &pPointVB);
+	switch (GraphicBoardType)
+	{
+	case 1: //GeForce
+		m_pd3dDevice->CreateVertexBuffer(sizeof(D3DPOINTVERTEX) * 100, D3DUSAGE_POINTS, D3DFVF_POINTVERTEX, D3DPOOL_SYSTEMMEM, &pPointVB);
+		break;
+	case 2: //Radeon
+	default: //Others
+		m_pd3dDevice->CreateVertexBuffer(sizeof(D3DPOINTVERTEX) * 100, D3DUSAGE_POINTS, D3DFVF_POINTVERTEX, D3DPOOL_DEFAULT, &pPointVB);
+		break;
+	}
 	SAFE_RELEASE(pPointTexture);
 	//	D3DXCreateTextureFromFile(m_pd3dDevice,"dustw.png",&pPointTexture);
 		// Setup a material
