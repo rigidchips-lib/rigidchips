@@ -1,6 +1,6 @@
 #ifndef G_READDATA_H
 #define G_READDATA_H
-
+#include "Globals.hpp"
 #include "Rigidmain.h"
 #include "GVector.hpp"
 

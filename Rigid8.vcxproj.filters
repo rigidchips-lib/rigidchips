@@ -94,6 +94,12 @@
     <ClInclude Include="src\Rigidmain.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\Consts.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Globals.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Rigid.ico">
@@ -156,6 +162,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\script.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Globals.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

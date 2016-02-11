@@ -32,9 +32,6 @@
 #define PLAYER_RELEASE( pPlayerInfo )   if( pPlayerInfo ) { pPlayerInfo->lRefCount--; if( pPlayerInfo->lRefCount <= 0 ) SAFE_DELETE( pPlayerInfo ); } pPlayerInfo = NULL;
 #define PLAYER_UNLOCK(x)                 LeaveCriticalSection(  &((x)->m_csPlayerContext) );
 
-#define GPLAYERMAX 30
-
-#define MAX_PLAYER_NAME         128
 
 // ƒvƒŒƒCƒ„[î•ñ
 struct MYAPP_PLAYER_INFO

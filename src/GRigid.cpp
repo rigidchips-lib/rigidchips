@@ -1,3 +1,5 @@
+#include "Globals.hpp"
+#include "Consts.hpp"
 #include "GVector.hpp"
 #include "GRigid.hpp"
 #include "GParticle.hpp"
@@ -15,28 +17,6 @@
 GVector VecX = GVector(1, 0, 0);
 GVector VecY = GVector(0, 1, 0);
 GVector VecZ = GVector(0, 0, 1);
-
-//int GDTSTEP=(int)(10*(0.6f/CHIPSIZE)+0.1);
-int GDTSTEP = 10;
-int GLOOP = 10;
-int LIMITFPS = 30;
-extern GParticle *GroundParticle;
-extern GParticle *WaterLineParticle;
-extern GParticle *JetParticle;
-extern GBullet *Bullet;
-//extern bool ObjectBallFlag;
-extern bool ShowGhost;
-extern DWORD ShowDustFlag;
-extern int TickCount;
-extern int SystemTickCount;
-
-extern bool EfficientFlag;
-extern GFloat TotalPower;
-
-extern double ARM_EFF;
-extern double JET_EFF;
-extern double WHL_EFF;
-
 
 void AttackDataDisp(char *s, DWORD dpnid, int attack);
 static long myrandval = 1L;
@@ -544,7 +524,7 @@ void GRigid::ApplyAngularImpulse(GVector momentum)
 //************************************************
 void GRigid::ApplyForce(GVector force, GVector pos)
 {
-	GVector f = force*World->Dt;
+	GVector f = force*g_World->Dt;
 	P += f;
 	GVector l = (pos - X).cross(f);
 	L += l;
@@ -557,7 +537,7 @@ void GRigid::ApplyForce(GVector force, GVector pos)
 //************************************************
 void GRigid::ApplyTorque(GVector torque)
 {
-	GVector l = torque*World->Dt;
+	GVector l = torque*g_World->Dt;
 	L += l;
 	L2 += l;
 }
@@ -587,7 +567,7 @@ void GRigid::ApplyLocalAngularImpulse(GVector momentum)
 //************************************************
 void GRigid::ApplyLocalForce(GVector force, GVector pos)
 {
-	GVector p = force*R*World->Dt;
+	GVector p = force*R*g_World->Dt;
 	P += p;
 	GVector l = (pos*R).cross(p);
 	L += l;
@@ -599,7 +579,7 @@ void GRigid::ApplyLocalForce(GVector force, GVector pos)
 //************************************************
 void GRigid::ApplyLocalTorque(GVector torque)
 {
-	GVector l = torque*R*World->Dt;
+	GVector l = torque*R*g_World->Dt;
 	L += l;
 	L2 += l;
 }
@@ -622,7 +602,7 @@ void GRigid::CollisionCheck(GRigid *rigid)
 	GFloat ud, us;
 	bool hitFlag = false;
 	GVector normal;
-	GFloat gr = World->G.abs()*World->Dt / 2.0f;
+	GFloat gr = g_World->G.abs()*g_World->Dt / 2.0f;
 	if (rigid->Type == -1) { //地面データ
 		switch (Type) {
 		case GTYPE_FACE:
@@ -631,8 +611,8 @@ void GRigid::CollisionCheck(GRigid *rigid)
 			else {
 				for (j = 0;j < CheckShape.PointN;j++) {
 					GVector p = (CheckShape.Point[j])*TM;
-					GVector v2 = V*World->Dt * 20;
-					if ((d = World->Land->Check(p, v2, normal, ud, us)) < 0) {
+					GVector v2 = V*g_World->Dt * 20;
+					if ((d = g_World->Land->Check(p, v2, normal, ud, us)) < 0) {
 						Hit[HitN].CheckShapeNo = j;
 						Hit[HitN].Pos = p;
 						Hit[HitN].Normal = normal;
@@ -649,7 +629,7 @@ void GRigid::CollisionCheck(GRigid *rigid)
 		case GTYPE_BOX:
 			for (j = 0;j < CheckShape.PointN;j++) {
 				GVector p = (CheckShape.Point[j])*TM;
-				if ((d = World->Land->Check(p, (p - X).normalize2(), normal, ud, us)) < 0) {
+				if ((d = g_World->Land->Check(p, (p - X).normalize2(), normal, ud, us)) < 0) {
 					Hit[HitN].CheckShapeNo = j;
 					Hit[HitN].Pos = p;
 					Hit[HitN].Normal = normal;
@@ -665,11 +645,11 @@ void GRigid::CollisionCheck(GRigid *rigid)
 		case GTYPE_BALL:
 			RSet();
 			r = Param / 2;
-			World->Land->Check2(X, Radius + gr);
-			for (int k = 0;k < World->Land->HitListCount;k++) {
-				normal = World->Land->Face[World->Land->HitList[k]].Normal;
+			g_World->Land->Check2(X, Radius + gr);
+			for (int k = 0;k < g_World->Land->HitListCount;k++) {
+				normal = g_World->Land->Face[g_World->Land->HitList[k]].Normal;
 				GVector  p;
-				d = World->Land->Face[World->Land->HitList[k]].BallCheck(X, Radius, p);
+				d = g_World->Land->Face[g_World->Land->HitList[k]].BallCheck(X, Radius, p);
 				//				if(v.y>0) v=-v;
 				if (d <= 0) {
 					//						if(d>0) continue;
@@ -678,9 +658,9 @@ void GRigid::CollisionCheck(GRigid *rigid)
 					Hit[HitN].Normal = (X - p).normalize2();
 					Hit[HitN].Distance = d;
 					Hit[HitN].Target = rigid;
-					Hit[HitN].Ud = World->Land->Face[World->Land->HitList[k]].Ud;
-					Hit[HitN].Us = World->Land->Face[World->Land->HitList[k]].Us;
-					Hit[HitN].Ux = World->Land->Face[World->Land->HitList[k]].Ux;
+					Hit[HitN].Ud = g_World->Land->Face[g_World->Land->HitList[k]].Ud;
+					Hit[HitN].Us = g_World->Land->Face[g_World->Land->HitList[k]].Us;
+					Hit[HitN].Ux = g_World->Land->Face[g_World->Land->HitList[k]].Ux;
 					HitN++;
 					hitFlag = true;
 				}
@@ -689,33 +669,33 @@ void GRigid::CollisionCheck(GRigid *rigid)
 		case GTYPE_DISK:
 		{
 			RSet();
-			World->Land->Check2(X, Radius + gr);
+			g_World->Land->Check2(X, Radius + gr);
 			GVector n = GVector(R.elem[1][0], R.elem[1][1], R.elem[1][2]);
-			GVector v2 = V*World->Dt * 10;
-			for (int k = 0;k < World->Land->HitListCount;k++) {
+			GVector v2 = V*g_World->Dt * 10;
+			for (int k = 0;k < g_World->Land->HitListCount;k++) {
 
-				GVector n2 = World->Land->Face[World->Land->HitList[k]].Normal;
+				GVector n2 = g_World->Land->Face[g_World->Land->HitList[k]].Normal;
 				GVector nr = n2.cross(n).cross(n).normalize2();
 				if (nr.dot(n2) > 0) nr = -nr;
 				GVector p = X + nr*Radius;
-				//					GVector v2=V*World->Dt*10+W.cross(p-X)*World->Dt*10;
-				if ((d = World->Land->Face[World->Land->HitList[k]].Check2(p, v2, normal)) < 0) {
+				//					GVector v2=V*g_World->Dt*10+W.cross(p-X)*g_World->Dt*10;
+				if ((d = g_World->Land->Face[g_World->Land->HitList[k]].Check2(p, v2, normal)) < 0) {
 					Hit[HitN].CheckShapeNo = -1;
 					Hit[HitN].Pos = p;
 					Hit[HitN].Normal = normal;
 					Hit[HitN].Distance = d;
 					Hit[HitN].Target = rigid;
-					Hit[HitN].Ud = World->Land->Face[World->Land->HitList[k]].Ud;
-					Hit[HitN].Us = World->Land->Face[World->Land->HitList[k]].Us;
-					Hit[HitN].Ux = World->Land->Face[World->Land->HitList[k]].Ux;
+					Hit[HitN].Ud = g_World->Land->Face[g_World->Land->HitList[k]].Ud;
+					Hit[HitN].Us = g_World->Land->Face[g_World->Land->HitList[k]].Us;
+					Hit[HitN].Ux = g_World->Land->Face[g_World->Land->HitList[k]].Ux;
 					HitN++;
 					hitFlag = true;
 				}
 			}
 			for (j = 0;j < CheckShape.PointN;j++) {
 				GVector p = (CheckShape.Point[j])*TM;
-				//					GVector v2=V*World->Dt*10+W.cross(p-X)*World->Dt*10;
-				if ((d = World->Land->Check(p, v2, normal, ud, us)) < 0) {
+				//					GVector v2=V*g_World->Dt*10+W.cross(p-X)*g_World->Dt*10;
+				if ((d = g_World->Land->Check(p, v2, normal, ud, us)) < 0) {
 					Hit[HitN].CheckShapeNo = j;
 					Hit[HitN].Pos = p;
 					Hit[HitN].Normal = normal;
@@ -736,7 +716,7 @@ void GRigid::CollisionCheck(GRigid *rigid)
 			r = Param / 2;r.y = 0;
 			GVector a = GVector(0, Param.y / 2, 0)*Rb*R;
 			GVector p = X + a;
-			if ((d = World->Land->Check(p, (p - X).normalize2(), normal, ud, us)) <= 0) {
+			if ((d = g_World->Land->Check(p, (p - X).normalize2(), normal, ud, us)) <= 0) {
 				Hit[HitN].CheckShapeNo = -1;
 				Hit[HitN].Pos = p;
 				Hit[HitN].Normal = normal;
@@ -748,7 +728,7 @@ void GRigid::CollisionCheck(GRigid *rigid)
 				hitFlag = true;
 			}
 			p = X - a;
-			if ((d = World->Land->Check(p, V.normalize2(), normal, ud, us)) <= 0) {
+			if ((d = g_World->Land->Check(p, V.normalize2(), normal, ud, us)) <= 0) {
 				Hit[HitN].CheckShapeNo = -1;
 				Hit[HitN].Pos = p;
 				Hit[HitN].Normal = normal;
@@ -759,7 +739,7 @@ void GRigid::CollisionCheck(GRigid *rigid)
 				HitN++;
 				hitFlag = true;
 			}
-			d = World->Land->Check((X + a), V.normalize2(), normal, ud, us);
+			d = g_World->Land->Check((X + a), V.normalize2(), normal, ud, us);
 			v = (-normal*Rt*Rb.transpose()*r).normalize()*r*Rb*R;
 			//				if(v.y>0) v=-v;
 			if (d <= v.abs() + gr) {
@@ -773,7 +753,7 @@ void GRigid::CollisionCheck(GRigid *rigid)
 				HitN++;
 				hitFlag = true;
 			}
-			d = World->Land->Check((X - a), V.normalize2(), normal, ud, us);
+			d = g_World->Land->Check((X - a), V.normalize2(), normal, ud, us);
 			v = (-normal*Rt*Rb.transpose()*r).normalize()*r*Rb*R;
 			if (v.y > 0) v = -v;
 			if (d <= -v.y + gr) {
@@ -913,7 +893,7 @@ void GRigid::Impulse() {
 	GVector na;
 	GVector nb;
 	GFloat dmin = 0.0;
-	GFloat Dt = World->Dt;
+	GFloat Dt = g_World->Dt;
 	//もし固定なら動かない
 	if (Fixed == true) {
 		//新しい位置・姿勢用行列の作成
@@ -923,7 +903,7 @@ void GRigid::Impulse() {
 	//新しい並進運動量と回転運動量を求める
 	//力から並進運動量を求める
 	//重力
-	//				ApplyForce(World->G*M,X);
+	//				ApplyForce(g_World->G*M,X);
 	//空気抵抗
 	//				P -= P*0.0001*M*Dt;		// 質量に関係しないようにmで割る
 	//				L -= L*0.0001*M*Dt;		// 回転にたいする空気抵抗：手抜き、速度にたいする空気抵抗のスカラー倍
@@ -1068,7 +1048,7 @@ void GRigid::Impulse() {
 							if (a > 1.0f) a = 1.0f;else if (a <= 0.0f) a = 0.0f;
 							GVector v = j1*n2 / 5 + GVector(0, 0.03f, 0);
 							if (v.abs() > 0.1f) v = v.normalize() / 10.0f;
-							GroundParticle->Add(hitPos - V*Dt*(rand() % 8), v, GVector(0, 0, 0), v.abs()*(1 + Hit[i].Ux * 50), a, 0.02f + (rand() % 10) / 100.0, GVector(1, 1, 1));
+							g_GroundParticle->Add(hitPos - V*Dt*(rand() % 8), v, GVector(0, 0, 0), v.abs()*(1 + Hit[i].Ux * 50), a, 0.02f + (rand() % 10) / 100.0, GVector(1, 1, 1));
 						}
 					}
 					GVector fv = -j1*(n2*ud*dd + na*ud2);
@@ -1105,10 +1085,10 @@ void GRigid::Calc()
 		return;
 	}
 	//	if(P.abs()>4000) {
-	//		World->Stop=true;
+	//		g_World->Stop=true;
 	//		return;
 	//	}
-	GFloat Dt = World->Dt;
+	GFloat Dt = g_World->Dt;
 	//並進運動量から新しい速度を求める
 	preV = V;
 	V = P*M_;
@@ -1137,7 +1117,7 @@ void GRigid::Calc()
 	//新しい姿勢の計算
 	Q = (Q + (GQuat(W.x, W.y, W.z, 0)*Q / 2 * Dt)).unit();	//角速度*Dtを加える
 	/*
-	if(World->Method==0) {//オイラー法
+	if(g_World->Method==0) {//オイラー法
 		Q=(Q+(GQuat(W.x,W.y,W.z,0)*Q/2*Dt)).unit();	//角速度*Dtを加える
 	}
 	else {	//ルンゲ・クッタ法
@@ -1172,7 +1152,7 @@ void GRigid::CalcLight()
 {
 	if (ChipType == GT_COWL) return;
 
-	GFloat Dt = World->Dt;
+	GFloat Dt = g_World->Dt;
 	//並進運動量から新しい速度を求める
 	preV = V;
 	V = P*M_;
@@ -1236,18 +1216,18 @@ GMatrix33	GRigid::CalcMassMat(GVector &p)
 	return mm;
 }
 
-void GRigid::DispJet(LPDIRECT3DDEVICE8 g3dDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag)
+void GRigid::DispJet(LPDIRECT3DDEVICE8 g_D3DDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag)
 {
 	//ジェットの表示
-	//	G3dDevice->SetTexture(0,NULL);
-	g3dDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
-	g3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// カリングモード
-	g3dDevice->SetRenderState(D3DRS_SPECULARENABLE, FALSE);
-	g3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	g3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-	g3dDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);   //SRCの設定
-	g3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);  //DESTの設定
-	//G3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);// 引数の成分を乗算する
+	//	g_D3DDevice->SetTexture(0,NULL);
+	g_D3DDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
+	g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// カリングモード
+	g_D3DDevice->SetRenderState(D3DRS_SPECULARENABLE, FALSE);
+	g_D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	g_D3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+	g_D3DDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);   //SRCの設定
+	g_D3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);  //DESTの設定
+	//g_D3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);// 引数の成分を乗算する
 	if (JetFlag && MeshNo == 10 && PowerByFuel != 0 && Top != NULL &&  Option == 0) {
 		GMatrix m(TM);
 		D3DXMATRIX mat1;
@@ -1257,7 +1237,7 @@ void GRigid::DispJet(LPDIRECT3DDEVICE8 g3dDevice, D3DXMATRIX worldMatrix, CD3DMe
 			(FLOAT)m.elem[3][0], (FLOAT)m.elem[3][1], (FLOAT)m.elem[3][2], (FLOAT)m.elem[3][3]);
 		D3DXMatrixIdentity(&mat1);
 		double f = fabs(PowerByFuel / 2000.0); if (f > 2.5) f = 2.5;
-		if (Top != World->Rigid[0] && Top->ByeFlag >= 1) f = fabs(PowerSave / 2000.0); if (f > 2.5) f = 2.5;
+		if (Top != g_World->Rigid[0] && Top->ByeFlag >= 1) f = fabs(PowerSave / 2000.0); if (f > 2.5) f = 2.5;
 		if (Power < 0) {
 			D3DXMatrixRotationX(&mat1, (FLOAT)M_PI);
 			D3DXMatrixMultiply(&matLocal, &mat1, &matLocal);
@@ -1269,8 +1249,8 @@ void GRigid::DispJet(LPDIRECT3DDEVICE8 g3dDevice, D3DXMATRIX worldMatrix, CD3DMe
 		D3DXMatrixTranslation(&mat1, 0.0f, -0.32f, 0.0f);
 		D3DXMatrixMultiply(&matLocal, &mat1, &matLocal);
 		D3DXMatrixMultiply(&matLocal, &matLocal, &worldMatrix);
-		g3dDevice->SetTransform(D3DTS_WORLD, &matLocal);
-		fireMesh->Render(g3dDevice);
+		g_D3DDevice->SetTransform(D3DTS_WORLD, &matLocal);
+		fireMesh->Render(g_D3DDevice);
 	}
 	else if (ChipType == 10 && Power != 0 && Energy <= 0.1) { //ARM
 		GMatrix m(TM);
@@ -1290,10 +1270,10 @@ void GRigid::DispJet(LPDIRECT3DDEVICE8 g3dDevice, D3DXMATRIX worldMatrix, CD3DMe
 		D3DXMatrixTranslation(&mat1, 0.0f, 0.0f, 0.3f);
 		D3DXMatrixMultiply(&matLocal, &mat1, &matLocal);
 		D3DXMatrixMultiply(&matLocal, &matLocal, &worldMatrix);
-		g3dDevice->SetTransform(D3DTS_WORLD, &matLocal);
-		jetMesh->Render(g3dDevice);
+		g_D3DDevice->SetTransform(D3DTS_WORLD, &matLocal);
+		jetMesh->Render(g_D3DDevice);
 	}
-	g3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);  //DESTの設定
+	g_D3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);  //DESTの設定
 }
 //***************************************************************
 //	世界クラスメソッド
@@ -1312,7 +1292,7 @@ GWorld::GWorld(GFloat steptime, int substep)
 	SubStep = substep;
 	Dt = StepTime / SubStep;
 	MainStepCount = 0;
-	ChipCount = 0;
+	g_ChipCount = 0;
 	ObjectCount = 0;
 	G = GVector(0, -9.807f, 0);
 	for (int i = 0;i < GCHIPMAX;i++) {
@@ -1336,7 +1316,7 @@ GWorld::~GWorld()
 }
 void GWorld::InitRndTable()
 {
-	for (int i = 0;i < ChipCount;i++) {
+	for (int i = 0;i < g_ChipCount;i++) {
 		RndTable[i] = i;
 	}
 }
@@ -1360,7 +1340,7 @@ void GWorld::DeleteLand() {
 }
 
 void GWorld::DeleteRigids() {
-	for (int i = 0;i < ChipCount;i++) {
+	for (int i = 0;i < g_ChipCount;i++) {
 		if (Rigid[i]) delete Rigid[i];
 		if (RecRigid[i]) delete RecRigid[i];
 		Rigid[i] = NULL;
@@ -1383,10 +1363,10 @@ void GWorld::DeleteObjects() {
 //************************************************
 GRigid* GWorld::AddRigid(int type, bool fix, GFloat x, GFloat y, GFloat z, GFloat ax, GFloat ay, GFloat az)
 {
-	if (ChipCount >= GCHIPMAX) return NULL;
+	if (g_ChipCount >= GCHIPMAX) return NULL;
 	GRigid*  r = Rigid[ChipCount++] = new GRigid(type, fix, x, y, z);
 	if (r == NULL) return NULL;
-	r->ID = ChipCount - 1;
+	r->ID = g_ChipCount - 1;
 	r->World = this;
 	//	r->Rb.unity();
 	r->Rb = GMatrix33().rotateX(ax*(GFloat)M_PI / 180.0f).rotateY(ay*(GFloat)M_PI / 180.0f).rotateZ(az*(GFloat)M_PI / 180.0f);
@@ -1875,7 +1855,7 @@ GFloat  GWorld::CalcShaft(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVec
 GFloat GWorld::CalcHinge(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVector &offsetB, GVector &axis, GFloat angle = 0, GFloat k = 1, GFloat damper = 0)
 {
 
-	float h = 10.0f / (GFloat)GLOOP*(GFloat)30.0f / (GFloat)LIMITFPS*10.0f / (GFloat)GDTSTEP;
+	float h = 10.0f / (GFloat)GLOOP*(GFloat)30.0f / (GFloat)g_LimitFPS*10.0f / (GFloat)GDTSTEP;
 	k = k*h*0.6f / (GFloat)CHIPSIZE;if (k > 1.0f*10.0f / (GFloat)GDTSTEP) k = 1.0f*10.0f / (GFloat)GDTSTEP;else if (k < 0) k = 0.0f;
 	damper = damper*h;if (damper > 0.5*10.0f / (GFloat)GDTSTEP) damper = 0.5f*10.0f / (GFloat)GDTSTEP;else if (damper < 0) damper = 0.0f;
 	angle = angle*(GFloat)M_PI / 180.0f + (GFloat)M_PI;
@@ -1948,7 +1928,7 @@ void GWorld::Move(bool initFlag)
 	int c, i, j, k;
 	Dt = StepTime / SubStep;
 	if (Stop || NetStop) return;
-	for (j = 0;j < ChipCount;j++) {
+	for (j = 0;j < g_ChipCount;j++) {
 		Rigid[j]->preX = Rigid[j]->X;
 		Rigid[j]->HitChip = 0;
 		Rigid[j]->HitLand = 0;
@@ -1974,18 +1954,18 @@ void GWorld::Move(bool initFlag)
 	}
 	//	}
 	//	if(ObjectBallFlag) { //オブジェクトとの当たり判定
-	for (i = 0;i < Bullet->MaxVertex;i++) {
-		if (Bullet->Vertex[i].Life>0) {
+	for (i = 0;i < g_Bullet->MaxVertex;i++) {
+		if (g_Bullet->Vertex[i].Life>0) {
 			for (j = 0;j < ObjectCount;j++) {
-				GFloat t = Object[j]->X.distanceOnBallAndLine(Object[j]->Radius, Bullet->Vertex[i].Pos, Bullet->Vertex[i].Vec.normalize2());
-				if (t >= 0 && t < Bullet->Vertex[i].Vec.abs()) {
+				GFloat t = Object[j]->X.distanceOnBallAndLine(Object[j]->Radius, g_Bullet->Vertex[i].Pos, g_Bullet->Vertex[i].Vec.normalize2());
+				if (t >= 0 && t < g_Bullet->Vertex[i].Vec.abs()) {
 					Object[j]->HitBullet++;
-					Bullet->Vertex[i].Life = -1;
-					GVector x = Bullet->Vertex[i].Pos + t*Bullet->Vertex[i].Vec.normalize2();
-					Object[j]->ApplyForce(Bullet->Vertex[i].Vec.normalize2()*Bullet->Vertex[i].Power, x);
-					Object[j]->ApplyForce((Object[j]->X - x).normalize2()*Bullet->Vertex[i].Power, x);
-					GFloat p = (GFloat)pow((double)Bullet->Vertex[i].Power / 15000.0, 1.0 / 3.0);
-					JetParticle->Add(2, x, GVector(0, 0, 0), GVector(0, 0, 0), (0.2f + (myrand() % 50 / 200.0f))*p*0.08f, p, 0.04f, GVector(1, 1, 1), Bullet->Vertex[i].dpnid);
+					g_Bullet->Vertex[i].Life = -1;
+					GVector x = g_Bullet->Vertex[i].Pos + t*g_Bullet->Vertex[i].Vec.normalize2();
+					Object[j]->ApplyForce(g_Bullet->Vertex[i].Vec.normalize2()*g_Bullet->Vertex[i].Power, x);
+					Object[j]->ApplyForce((Object[j]->X - x).normalize2()*g_Bullet->Vertex[i].Power, x);
+					GFloat p = (GFloat)pow((double)g_Bullet->Vertex[i].Power / 15000.0, 1.0 / 3.0);
+					g_JetParticle->Add(2, x, GVector(0, 0, 0), GVector(0, 0, 0), (0.2f + (myrand() % 50 / 200.0f))*p*0.08f, p, 0.04f, GVector(1, 1, 1), g_Bullet->Vertex[i].dpnid);
 				}
 			}
 		}
@@ -1994,38 +1974,38 @@ void GWorld::Move(bool initFlag)
 		//チップとの当たり判定
 	GFloat t, t2;
 	GRigid *r = NULL;
-	if (haveArm && TickCount * 30 / LIMITFPS>150) {
-		for (i = 0;i < Bullet->MaxVertex;i++) {
-			if (Bullet->Vertex[i].Life>0) {
+	if (haveArm && g_TickCount * 30 / g_LimitFPS>150) {
+		for (i = 0;i < g_Bullet->MaxVertex;i++) {
+			if (g_Bullet->Vertex[i].Life>0) {
 				r = NULL;
 				t2 = 100000.0f;
-				for (j = 0;j < ChipCount;j++) {
-					if (Bullet->Vertex[i].Rigid != Rigid[j] && Rigid[j]->ChipType != 9 && (Rigid[j]->ChipType < 32 || myrand() % 100 >= 70)) {
-						t = Rigid[j]->X.distanceOnBallAndLine(0.3f, Bullet->Vertex[i].Pos, Bullet->Vertex[i].Vec.normalize2());
-						if (t >= 0 && t < Bullet->Vertex[i].Vec.abs() && t < t2) {
+				for (j = 0;j < g_ChipCount;j++) {
+					if (g_Bullet->Vertex[i].Rigid != Rigid[j] && Rigid[j]->ChipType != 9 && (Rigid[j]->ChipType < 32 || myrand() % 100 >= 70)) {
+						t = Rigid[j]->X.distanceOnBallAndLine(0.3f, g_Bullet->Vertex[i].Pos, g_Bullet->Vertex[i].Vec.normalize2());
+						if (t >= 0 && t < g_Bullet->Vertex[i].Vec.abs() && t < t2) {
 							t2 = t;
 							r = Rigid[j];
 						}
 					}
 				}
 				if (r != NULL) {
-					Bullet->Vertex[i].Life = -1;
+					g_Bullet->Vertex[i].Life = -1;
 					r->HitBullet++;
-					GVector x = Bullet->Vertex[i].Pos + t2*Bullet->Vertex[i].Vec.normalize2();
-					r->ApplyForce(Bullet->Vertex[i].Vec.normalize2()*Bullet->Vertex[i].Power, x);
-					r->ApplyForce((r->X - x).normalize2()*Bullet->Vertex[i].Power, x);
-					if (r->ChipType == GT_CHIPH) r->Tolerant -= (Bullet->Vertex[i].Power / 10.0f*25.2f / (r->M*4.0f));
-					else r->Tolerant -= (Bullet->Vertex[i].Power / 10.0f*25.2f / r->M);
+					GVector x = g_Bullet->Vertex[i].Pos + t2*g_Bullet->Vertex[i].Vec.normalize2();
+					r->ApplyForce(g_Bullet->Vertex[i].Vec.normalize2()*g_Bullet->Vertex[i].Power, x);
+					r->ApplyForce((r->X - x).normalize2()*g_Bullet->Vertex[i].Power, x);
+					if (r->ChipType == GT_CHIPH) r->Tolerant -= (g_Bullet->Vertex[i].Power / 10.0f*25.2f / (r->M*4.0f));
+					else r->Tolerant -= (g_Bullet->Vertex[i].Power / 10.0f*25.2f / r->M);
 
-					GFloat p = (GFloat)pow((double)Bullet->Vertex[i].Power / 15000.0, 1.0 / 3.0);
+					GFloat p = (GFloat)pow((double)g_Bullet->Vertex[i].Power / 15000.0, 1.0 / 3.0);
 					if (r->Tolerant < 1) {
 						if (r->Crush) {
-							JetParticle->Add(2, x, GVector(0, 0, 0), GVector(0, 0, 0), (0.4f + (myrand() % 50 / 200.0f))*p*0.08f, p, 0.04f, GVector(1, 1, 1), Bullet->Vertex[i].dpnid);
-							AttackDataDisp("X << Hit ", Bullet->Vertex[i].dpnid, 1);
+							g_JetParticle->Add(2, x, GVector(0, 0, 0), GVector(0, 0, 0), (0.4f + (myrand() % 50 / 200.0f))*p*0.08f, p, 0.04f, GVector(1, 1, 1), g_Bullet->Vertex[i].dpnid);
+							AttackDataDisp("X << Hit ", g_Bullet->Vertex[i].dpnid, 1);
 						}
 						else {
-							JetParticle->Add(1, x, GVector(0, 0, 0), GVector(0, 0, 0), (0.4f + (myrand() % 50 / 200.0f))*p*0.08f, p, 0.04f, GVector(1, 1, 1), Bullet->Vertex[i].dpnid);
-							AttackDataDisp("X << Crush ", Bullet->Vertex[i].dpnid, 1);
+							g_JetParticle->Add(1, x, GVector(0, 0, 0), GVector(0, 0, 0), (0.4f + (myrand() % 50 / 200.0f))*p*0.08f, p, 0.04f, GVector(1, 1, 1), g_Bullet->Vertex[i].dpnid);
+							AttackDataDisp("X << Crush ", g_Bullet->Vertex[i].dpnid, 1);
 						}
 						if (r->Parent == NULL) {
 							int c = r->ChildCount;
@@ -2046,34 +2026,34 @@ void GWorld::Move(bool initFlag)
 						r->Crush = true;
 					}
 					else {
-						JetParticle->Add(2, x, GVector(0, 0, 0), GVector(0, 0, 0), (0.4f + (myrand() % 50 / 200.0f))*p*0.08f, p, 0.04f, GVector(1, 1, 1), Bullet->Vertex[i].dpnid);
-						AttackDataDisp("X << Hit ", (DWORD)Bullet->Vertex[i].dpnid, 1);
+						g_JetParticle->Add(2, x, GVector(0, 0, 0), GVector(0, 0, 0), (0.4f + (myrand() % 50 / 200.0f))*p*0.08f, p, 0.04f, GVector(1, 1, 1), g_Bullet->Vertex[i].dpnid);
+						AttackDataDisp("X << Hit ", (DWORD)g_Bullet->Vertex[i].dpnid, 1);
 					}
 				}
 			}
 		}
 	}
 	//Arm弾による土煙
-	for (i = 0;i < Bullet->MaxVertex;i++) {
-		if (Bullet->Vertex[i].Life>0 && Bullet->Vertex[i].Dist < 0) {
-			GFloat p = (GFloat)pow((double)Bullet->Vertex[i].Power / 5000.0, 1.0 / 5.0);
-			JetParticle->Add(Bullet->Vertex[i].Tar, GVector(0, 0, 0), GVector(0, 0, 0), p*0.06f, p, 0.04f, GVector(0.5, 0.48f, 0.4f));
+	for (i = 0;i < g_Bullet->MaxVertex;i++) {
+		if (g_Bullet->Vertex[i].Life>0 && g_Bullet->Vertex[i].Dist < 0) {
+			GFloat p = (GFloat)pow((double)g_Bullet->Vertex[i].Power / 5000.0, 1.0 / 5.0);
+			g_JetParticle->Add(g_Bullet->Vertex[i].Tar, GVector(0, 0, 0), GVector(0, 0, 0), p*0.06f, p, 0.04f, GVector(0.5, 0.48f, 0.4f));
 			continue;
 		}
-		GVector v = Bullet->Vertex[i].Pos + Bullet->Vertex[i].Vec;
-		if (Bullet->Vertex[i].Life > 0 && Bullet->Vertex[i].Pos.y*v.y < 0) { //水面に入るor出る
-			GVector x = Bullet->Vertex[i].Pos.pointOnFaceAndLine(GVector(0, 1, 0), -0.45f, -Bullet->Vertex[i].Vec.normalize());
-			GVector w = Bullet->Vertex[i].Vec.normalize() / 3.0f;
-			if (Bullet->Vertex[i].Pos.y >= 0.0f)w.y = -w.y;
-			WaterLineParticle->Add(x, w, GVector(0, -0.01f, 0), Bullet->Vertex[i].Size / 2, 2.0f, 0.04f, GVector(1, 1, 1));
+		GVector v = g_Bullet->Vertex[i].Pos + g_Bullet->Vertex[i].Vec;
+		if (g_Bullet->Vertex[i].Life > 0 && g_Bullet->Vertex[i].Pos.y*v.y < 0) { //水面に入るor出る
+			GVector x = g_Bullet->Vertex[i].Pos.pointOnFaceAndLine(GVector(0, 1, 0), -0.45f, -g_Bullet->Vertex[i].Vec.normalize());
+			GVector w = g_Bullet->Vertex[i].Vec.normalize() / 3.0f;
+			if (g_Bullet->Vertex[i].Pos.y >= 0.0f)w.y = -w.y;
+			g_WaterLineParticle->Add(x, w, GVector(0, -0.01f, 0), g_Bullet->Vertex[i].Size / 2, 2.0f, 0.04f, GVector(1, 1, 1));
 		}
 	}
 
-	GroundParticle->Move();
-	WaterLineParticle->Move();
-	JetParticle->Move();
-	Bullet->Move();
-	for (j = 0;j < ChipCount;j++) {
+	g_GroundParticle->Move();
+	g_WaterLineParticle->Move();
+	g_JetParticle->Move();
+	g_Bullet->Move();
+	for (j = 0;j < g_ChipCount;j++) {
 		if (Rigid[j]->ChipType == GT_COWL) continue;
 		Rigid[j]->RSet();
 		Rigid[j]->MaxImpulse = 0.0;
@@ -2081,7 +2061,7 @@ void GWorld::Move(bool initFlag)
 		Rigid[j]->L2.clear();
 		Rigid[j]->Hit[0].FricV.clear();
 		if (Rigid[j]->ChipType == 10) {
-			double e = 5000.0*30.0 / LIMITFPS;
+			double e = 5000.0*30.0 / g_LimitFPS;
 			if (!EfficientFlag) e = Rigid[j]->Top->CheckFuel(e / ARM_EFF)*ARM_EFF;
 			Rigid[j]->Energy += (GFloat)e;
 			if (Rigid[j]->Energy >= Rigid[j]->ArmEnergy) {
@@ -2107,7 +2087,7 @@ void GWorld::Move(bool initFlag)
 		//移動処理
 	if (MainStepCount <= 0) {
 		Land->List3Reset();
-		for (j = 0;j < ChipCount;j++) {
+		for (j = 0;j < g_ChipCount;j++) {
 			if (Rigid[j]->Parent == NULL) {
 				Land->List3up(Rigid[j]->TotalCenter, Rigid[j]->TotalRadius + 7.0f / StepTime);
 			}
@@ -2121,7 +2101,7 @@ void GWorld::Move(bool initFlag)
 		//		}
 	}
 	Land->List2Reset();
-	for (j = 0;j < ChipCount;j++) {
+	for (j = 0;j < g_ChipCount;j++) {
 		Rigid[j]->preX = Rigid[j]->X;
 		if (Rigid[j]->Parent == NULL) {
 			Land->List2up(Rigid[j]->TotalCenter, Rigid[j]->TotalRadius + 7.0f);
@@ -2140,15 +2120,15 @@ void GWorld::Move(bool initFlag)
 	GFloat dt3 = StepTime / SubStep;
 	GVector xmax, x;
 	for (i = 0;i < SubStep;i++) {
-		for (int ii = 0;ii < ChipCount / 12 + 2;ii++) {
-			j = myRand() % ChipCount;
-			k = myRand() % ChipCount;
+		for (int ii = 0;ii < g_ChipCount / 12 + 2;ii++) {
+			j = myRand() % g_ChipCount;
+			k = myRand() % g_ChipCount;
 			int n = RndTable[j];
 			RndTable[j] = RndTable[k];
 			RndTable[k] = n;
 		}
 		//		if(i%3==0) {
-		for (j = 0;j < ChipCount;j++) {
+		for (j = 0;j < g_ChipCount;j++) {
 			k = RndTable[j];
 			if (Rigid[k]->Parent == NULL) {
 				Rigid[k]->TranslateWithParentAll(Rigid[k]->TopBias);
@@ -2174,7 +2154,7 @@ void GWorld::Move(bool initFlag)
 			Object[k]->HitN = 0;
 		}
 		//		}
-		for (j = 0;j < ChipCount;j++) {
+		for (j = 0;j < g_ChipCount;j++) {
 			k = RndTable[j];
 			Rigid[k]->HitN = 0;
 			if (Rigid[k]->ChipType == GT_COWL) continue;
@@ -2195,7 +2175,7 @@ void GWorld::Move(bool initFlag)
 			}
 		}
 		//		}
-		for (j = 0;j < ChipCount;j++) {
+		for (j = 0;j < g_ChipCount;j++) {
 			k = RndTable[j];
 			if (Rigid[k]->ChipType == GT_COWL) continue;
 			Rigid[k]->Bias.clear();
@@ -2204,7 +2184,7 @@ void GWorld::Move(bool initFlag)
 				Check(Rigid[k]);
 			}
 		}
-		for (j = 0;j < ChipCount;j++) {
+		for (j = 0;j < g_ChipCount;j++) {
 			k = RndTable[j];
 			if (Rigid[k]->ChipType == GT_COWL) continue;
 			CheckObject(Rigid[k]);
@@ -2217,7 +2197,7 @@ void GWorld::Move(bool initFlag)
 		}
 		//		}
 		if (!initFlag) {
-			for (j = 0;j < ChipCount;j++) {
+			for (j = 0;j < g_ChipCount;j++) {
 				k = RndTable[j];
 				if (Rigid[k]->ChipType == GT_COWL) continue;
 				if (!Rigid[k]->Fixed) Rigid[k]->ApplyExtForce();
@@ -2228,12 +2208,12 @@ void GWorld::Move(bool initFlag)
 			Object[j]->Impulse();
 		}
 		//		}
-		for (j = 0;j < ChipCount;j++) {
+		for (j = 0;j < g_ChipCount;j++) {
 			k = RndTable[j];
 			if (Rigid[k]->ChipType == GT_COWL) continue;
 			Rigid[k]->Impulse();
 		}
-		for (j = 0;j < ChipCount;j++) {
+		for (j = 0;j < g_ChipCount;j++) {
 			k = RndTable[j];
 			if (Rigid[k]->HitN>0) {
 				//if(Rigid[k]->Bias.abs()>Rigid[k]->Top->TopBias.abs()) Rigid[k]->Top->TopBias=Rigid[k]->Bias;
@@ -2245,7 +2225,7 @@ void GWorld::Move(bool initFlag)
 			//			if(Rigid[j]->Parent==NULL && Rigid[j]->TotalHitCount>0 && !Rigid[j]->Fixed)
 			//				Rigid[j]->TranslateWithChild(Rigid[j]->Bias/(GFloat)Rigid[j]->TotalHitCount/4.0f);
 		}
-		//b=b/ChipCount;
+		//b=b/g_ChipCount;
 //		if(ObjectBallFlag) {
 		for (j = 0;j < ObjectCount;j++) {
 			k = j;
@@ -2258,7 +2238,7 @@ void GWorld::Move(bool initFlag)
 		//		FILE *fp=fopen("test.dat","w");
 		for (c = 0;c < lc;c++) {
 			Dt = dt3;
-			for (j = 0;j < ChipCount;j++) {
+			for (j = 0;j < g_ChipCount;j++) {
 				k = RndTable[j];
 				if (Rigid[k]->Parent == NULL) {
 					CalcLink(Rigid[k]);
@@ -2267,7 +2247,7 @@ void GWorld::Move(bool initFlag)
 			}
 			Dt = dt2;
 
-			for (j = 0;j < ChipCount;j++) {
+			for (j = 0;j < g_ChipCount;j++) {
 				k = RndTable[j];
 				if (Rigid[k]->ChipType == GT_COWL) continue;
 				Rigid[k]->Calc();
@@ -2278,7 +2258,7 @@ void GWorld::Move(bool initFlag)
 			k = j;
 			Object[k]->Calc();
 		}
-		for (j = 0;j < ChipCount;j++) {
+		for (j = 0;j < g_ChipCount;j++) {
 			k = RndTable[j];
 			if (Rigid[j]->Parent == NULL) {
 				CalcLinkCowl(Rigid[j]);
@@ -2286,7 +2266,7 @@ void GWorld::Move(bool initFlag)
 
 		}
 		/*
-				for(j=0;j<ChipCount;j++) {
+				for(j=0;j<g_ChipCount;j++) {
 					k=RndTable[j];
 					if(Rigid[k]->Parent==NULL) {
 						Rigid[k]->CalcTotalCenter();
@@ -2312,14 +2292,14 @@ void GWorld::Move(bool initFlag)
 void GWorld::Disp(BOOL net)
 {
 	int j;
-	if (net != TRUE) for (j = 0;j < ChipCount;j++) Rigid[j]->DispShadow();
+	if (net != TRUE) for (j = 0;j < g_ChipCount;j++) Rigid[j]->DispShadow();
 	for (j = 0;j < ObjectCount;j++) Object[j]->DispObject();
 	if (net != TRUE) for (j = 0;j < ObjectCount;j++) Object[j]->DispShadow();
 	if (net != TRUE) {
-		for (j = 0;j < ChipCount;j++) {
+		for (j = 0;j < g_ChipCount;j++) {
 			if (!(Rigid[j]->ChipType == GT_COWL && (((int)Rigid[j]->Effect) & 0xf000))) Rigid[j]->Disp();
 		}
-		for (j = 0;j < ChipCount;j++) {
+		for (j = 0;j < g_ChipCount;j++) {
 			if (Rigid[j]->ChipType == GT_COWL && (((int)Rigid[j]->Effect) & 0xf000)) Rigid[j]->Disp();
 		}
 	}
@@ -2331,7 +2311,7 @@ void GWorld::Disp(BOOL net)
 void GWorld::Disp2() //CCDカメラ用
 {
 	int j;
-	for (j = 0;j < ChipCount;j++) if (Rigid[j] && Rigid[j]->Top != Rigid[0]) Rigid[j]->Disp();
+	for (j = 0;j < g_ChipCount;j++) if (Rigid[j] && Rigid[j]->Top != Rigid[0]) Rigid[j]->Disp();
 }
 //************************************************
 // 世界：表示処理
@@ -2345,8 +2325,8 @@ void GWorld::ObjectDisp()
 //************************************************
 // 世界：JET表示処理
 //************************************************
-void GWorld::DispJet(LPDIRECT3DDEVICE8 g3dDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag)
+void GWorld::DispJet(LPDIRECT3DDEVICE8 g_D3DDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag)
 {
 	int j;
-	for (j = 0; j < ChipCount; j++) if (Rigid[j])Rigid[j]->DispJet(g3dDevice, worldMatrix, jetMesh, fireMesh, JetFlag);
+	for (j = 0; j < g_ChipCount; j++) if (Rigid[j])Rigid[j]->DispJet(g_D3DDevice, worldMatrix, jetMesh, fireMesh, JetFlag);
 }

@@ -176,6 +176,7 @@
     <ClInclude Include="Lua\include\lauxlib.h" />
     <ClInclude Include="Lua\include\lua.h" />
     <ClInclude Include="Lua\include\lualib.h" />
+    <ClInclude Include="src\Consts.hpp" />
     <ClInclude Include="src\d3dapp.h" />
     <ClInclude Include="src\d3dfile.h" />
     <ClInclude Include="src\d3dfont.h" />
@@ -187,6 +188,7 @@
     <ClInclude Include="src\dxutil.h" />
     <ClInclude Include="src\GDPlay.hpp" />
     <ClInclude Include="src\GLand.hpp" />
+    <ClInclude Include="src\Globals.hpp" />
     <ClInclude Include="src\GParticle.hpp" />
     <ClInclude Include="src\GPlayers.h" />
     <ClInclude Include="src\GRigid.hpp" />
@@ -214,6 +216,7 @@
     <ClCompile Include="src\dmutil.cpp" />
     <ClCompile Include="src\dsutil.cpp" />
     <ClCompile Include="src\dxutil.cpp" />
+    <ClCompile Include="src\Globals.cpp" />
     <ClCompile Include="src\GRigid.cpp" />
     <ClCompile Include="src\GVector.cpp" />
     <ClCompile Include="src\luaScript.cpp" />

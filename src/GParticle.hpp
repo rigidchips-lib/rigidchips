@@ -1,3 +1,7 @@
+#ifndef G_PARTICLE_H
+#define G_PARTICLE_H
+#include "Consts.hpp"
+
 #include "GVector.hpp"
 #include "GRigid.hpp"
 //メモリリーク検出用
@@ -10,11 +14,6 @@
 #endif
 #endif 
 #include "stdlib.h"
-
-#define GPARTMAX 10000
-extern float ARMSPEED;
-
-extern GFloat WaterLine;
 
 int myrand();
 class GParticleVertex {
@@ -95,7 +94,7 @@ public:
 		for (int i = 0;i < MaxVertex;i++) {
 			if (Vertex[i].Life > 0) {
 				float y = Vertex[i].Pos.y;
-				if (y > WaterLine && Vertex[i].Pos.y + Vertex[i].Vec.y < WaterLine) {
+				if (y > WATER_LINE && Vertex[i].Pos.y + Vertex[i].Vec.y < WATER_LINE) {
 					Vertex[i].Vec.x = (GFloat)(Vertex[i].Vec.x + ((myrand() % 100) / 100.0 - 0.5)*Vertex[i].Vec.y);
 					Vertex[i].Vec.z = (GFloat)(Vertex[i].Vec.z + ((myrand() % 100) / 100.0 - 0.5)*Vertex[i].Vec.y);
 					Vertex[i].Vec.y = (GFloat)(-Vertex[i].Vec.y / 10.0);
@@ -182,3 +181,5 @@ public:
 		}
 	}
 };
+
+#endif
