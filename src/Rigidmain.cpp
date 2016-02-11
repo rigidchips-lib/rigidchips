@@ -400,7 +400,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 				for (int j = 0;j < s;j++) {
 					((BYTE*)PrePlayerData[i].ReceiveData.data)[j] = ((BYTE*)g_PlayerData[i].ReceiveData.data)[j];
 				}
-				for (int j = 0;j < g_PlayerData[i].g_ChipCount;j++) {
+				for (int j = 0;j < g_PlayerData[i].ChipCount;j++) {
 					PrePlayerData[i].X[j] = g_PlayerData[i].X[j];
 				}
 				for (unsigned int j = 0;j < size;j++) {
@@ -707,13 +707,13 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			int type[16];
 			for (i = 0;i < 16;i++) type[i] = 0;
 			int s = 0;
-			for (i = 0;i < g_ChipCount;i++) {
+			for (i = 0;i < g_World->getChipCount();i++) {
 				if (g_Chip[i]->Parent == NULL) s++;
 				if (g_Chip[i]->ChipType < 11) type[g_Chip[i]->ChipType]++;
 				else type[g_Chip[i]->ChipType - 33 + 11]++;
 			}
 			char buf[30];buf[0] = '\0';
-			sprintf(str, "Chips=%d/%d(%d", g_ChipCount, s, type[0]);
+			sprintf(str, "Chips=%d/%d(%d", g_World->getChipCount(), s, type[0]);
 			for (i = 1;i < 16;i++) {
 				if (i == 9) sprintf(buf, ",Cowl=%d", type[i]);
 				else if (i == 10) sprintf(buf, ",Arm=%d", type[i]);
@@ -2046,7 +2046,7 @@ void GWorld::DispNetChip(int n)
 		}
 
 	}
-	g_PlayerData[n].g_ChipCount = 0;
+	g_PlayerData[n].ChipCount = 0;
 	g_PlayerData[n].w1 = w1;
 	g_PlayerData[n].w2 = w2;
 	g_PlayerData[n].ww1 = ww1;
@@ -2068,8 +2068,8 @@ void GWorld::DispNetChip(int n)
 		int type = chip->data.type & 0x3f;
 		int op1 = (chip->data.type >> 6) & 0x01;
 		int op2 = (chip->data.type >> 7) & 0x01;
-		g_PlayerData[n].Jet[g_PlayerData[n].g_ChipCount] = 0;
-		if (type == GT_COWL&&!ShowCowl) { g_PlayerData[n].g_ChipCount++;continue; }
+		g_PlayerData[n].Jet[g_PlayerData[n].ChipCount] = 0;
+		if (type == GT_COWL&&!ShowCowl) { g_PlayerData[n].ChipCount++;continue; }
 		CD3DMesh* mesh = NULL;
 		int meshNo = 0;
 
@@ -2079,9 +2079,9 @@ void GWorld::DispNetChip(int n)
 		GVector X1 = g_PlayerData[n].X[id];
 		GVector X2 = PrePlayerData[n].X[id];
 		GVector X = (((X1 - X2)*w2 + X1) + g_PlayerData[n].X2[id]) / 2.0f;
-		g_PlayerData[n].X[g_PlayerData[n].g_ChipCount].x = chip->data.pos.x / 100.0f + X1.x;
-		g_PlayerData[n].X[g_PlayerData[n].g_ChipCount].y = chip->data.pos.y / 100.0f + X1.y;
-		g_PlayerData[n].X[g_PlayerData[n].g_ChipCount].z = chip->data.pos.z / 100.0f + X1.z;
+		g_PlayerData[n].X[g_PlayerData[n].ChipCount].x = chip->data.pos.x / 100.0f + X1.x;
+		g_PlayerData[n].X[g_PlayerData[n].ChipCount].y = chip->data.pos.y / 100.0f + X1.y;
+		g_PlayerData[n].X[g_PlayerData[n].ChipCount].z = chip->data.pos.z / 100.0f + X1.z;
 		if (i == 0) {
 			p.x = (chip->data.pos.x / 100.0f + X.x)*ww2 + (chip2->data.pos.x / 100.0f + X.x)*ww1;
 			p.y = (chip->data.pos.y / 100.0f + X.y)*ww2 + (chip2->data.pos.y / 100.0f + X.y)*ww1;
@@ -2092,7 +2092,7 @@ void GWorld::DispNetChip(int n)
 			p.y = (chip->data.pos.y / 100.0f + X.y)*w2 + (chip2->data.pos.y / 100.0f + X.y)*w1;
 			p.z = (chip->data.pos.z / 100.0f + X.z)*w2 + (chip2->data.pos.z / 100.0f + X.z)*w1;
 		}
-		if (g_PlayerData[n].g_ChipCount == 0) { g_PlayerData[n].x = p.x;g_PlayerData[n].y = p.y;g_PlayerData[n].z = p.z; }
+		if (g_PlayerData[n].ChipCount == 0) { g_PlayerData[n].x = p.x;g_PlayerData[n].y = p.y;g_PlayerData[n].z = p.z; }
 		if (p.y > g_PlayerData[n].maxY) g_PlayerData[n].maxY = p.y;
 		q.x = chip->data.quat.x / 100.0f;
 		q.y = chip->data.quat.y / 100.0f;
@@ -2177,7 +2177,7 @@ void GWorld::DispNetChip(int n)
 			g_D3DDevice->SetTransform(D3DTS_WORLD, &mat1);
 			g_D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 			if (type >= GT_CHIP2) {
-				if (chip->data.option >= 1 && !ShowGhost) { g_PlayerData[n].g_ChipCount++;continue; }
+				if (chip->data.option >= 1 && !ShowGhost) { g_PlayerData[n].ChipCount++;continue; }
 			}
 			if (type == GT_COWL) {
 				float r1 = ((((int)chip->color) >> 10) / 32.0f)*w2 + ((((int)chip2->color) >> 10) / 32.0f)*w1;
@@ -2189,7 +2189,7 @@ void GWorld::DispNetChip(int n)
 				float emi = (chip->data.option & 0x10) >> 4;//1bit
 				float emi_ = 1.0f - emi;
 				float alpha = 1.0f - ((chip->data.option & 0xe0) >> 5) / 7.0f;//3bit
-				if (alpha != 1) { g_PlayerData[n].g_ChipCount++;continue; }
+				if (alpha != 1) { g_PlayerData[n].ChipCount++;continue; }
 
 				if (opt == 1) mesh = m_pXMesh[24];
 				else if (opt == 2) mesh = m_pXMesh[25];
@@ -2236,7 +2236,7 @@ void GWorld::DispNetChip(int n)
 					g_D3DDevice->SetTransform(D3DTS_WORLD, &mat1);
 					mesh = m_pXMesh[33];
 				}
-				else if (op1 == 0) g_PlayerData[n].Jet[g_PlayerData[n].g_ChipCount] = i;
+				else if (op1 == 0) g_PlayerData[n].Jet[g_PlayerData[n].ChipCount] = i;
 			}
 			if (type != GT_COWL) {
 				float r1 = ((((int)chip->color) >> 10) / 32.0f)*w2 + ((((int)chip2->color) >> 10) / 32.0f)*w1;
@@ -2251,11 +2251,11 @@ void GWorld::DispNetChip(int n)
 			mesh->Render(g_D3DDevice);
 
 		}
-		g_PlayerData[n].g_ChipCount++;
+		g_PlayerData[n].ChipCount++;
 	}
 	//透明カウルを表示
 	if (ShowCowl) {
-		g_PlayerData[n].g_ChipCount = 0;
+		g_PlayerData[n].ChipCount = 0;
 		for (int i = 0;i < size;i++) {
 			GCHIPDATA *chip = &g_PlayerData[n].ReceiveData.data[i];
 			GCHIPDATA *chip2 = &PrePlayerData[n].ReceiveData.data[i];
@@ -2272,7 +2272,7 @@ void GWorld::DispNetChip(int n)
 			int type = chip->data.type & 0x3f;
 			int op1 = (chip->data.type >> 6) & 0x01;
 			int op2 = (chip->data.type >> 7) & 0x01;
-			if (type != GT_COWL) { g_PlayerData[n].g_ChipCount++;continue; }
+			if (type != GT_COWL) { g_PlayerData[n].ChipCount++;continue; }
 			CD3DMesh* mesh = NULL;
 			int meshNo = 0;
 
@@ -2282,9 +2282,9 @@ void GWorld::DispNetChip(int n)
 			GVector X1 = g_PlayerData[n].X[id];
 			GVector X2 = PrePlayerData[n].X[id];
 			GVector X = (((X1 - X2)*w2 + X1) + g_PlayerData[n].X2[id]) / 2.0f;
-			g_PlayerData[n].X[g_PlayerData[n].g_ChipCount].x = chip->data.pos.x / 100.0f + X1.x;
-			g_PlayerData[n].X[g_PlayerData[n].g_ChipCount].y = chip->data.pos.y / 100.0f + X1.y;
-			g_PlayerData[n].X[g_PlayerData[n].g_ChipCount].z = chip->data.pos.z / 100.0f + X1.z;
+			g_PlayerData[n].X[g_PlayerData[n].ChipCount].x = chip->data.pos.x / 100.0f + X1.x;
+			g_PlayerData[n].X[g_PlayerData[n].ChipCount].y = chip->data.pos.y / 100.0f + X1.y;
+			g_PlayerData[n].X[g_PlayerData[n].ChipCount].z = chip->data.pos.z / 100.0f + X1.z;
 			if (i == 0) {
 				p.x = (chip->data.pos.x / 100.0f + X.x)*ww2 + (chip2->data.pos.x / 100.0f + X.x)*ww1;
 				p.y = (chip->data.pos.y / 100.0f + X.y)*ww2 + (chip2->data.pos.y / 100.0f + X.y)*ww1;
@@ -2295,7 +2295,7 @@ void GWorld::DispNetChip(int n)
 				p.y = (chip->data.pos.y / 100.0f + X.y)*w2 + (chip2->data.pos.y / 100.0f + X.y)*w1;
 				p.z = (chip->data.pos.z / 100.0f + X.z)*w2 + (chip2->data.pos.z / 100.0f + X.z)*w1;
 			}
-			if (g_PlayerData[n].g_ChipCount == 0) { g_PlayerData[n].x = p.x;g_PlayerData[n].y = p.y;g_PlayerData[n].z = p.z; }
+			if (g_PlayerData[n].ChipCount == 0) { g_PlayerData[n].x = p.x;g_PlayerData[n].y = p.y;g_PlayerData[n].z = p.z; }
 			if (p.y > g_PlayerData[n].maxY) g_PlayerData[n].maxY = p.y;
 			q.x = chip->data.quat.x / 100.0f;
 			q.y = chip->data.quat.y / 100.0f;
@@ -2348,7 +2348,7 @@ void GWorld::DispNetChip(int n)
 				else if (opt == 3) mesh = m_pXMesh[26];
 				else if (opt == 4) mesh = m_pXMesh[27];
 				else if (opt == 5) mesh = m_pXMesh[28];
-				if (alpha == 1) { g_PlayerData[n].g_ChipCount++;continue; }
+				if (alpha == 1) { g_PlayerData[n].ChipCount++;continue; }
 				mesh->m_pMaterials[0].Emissive.r = r1*emi;
 				mesh->m_pMaterials[0].Emissive.g = g1*emi;
 				mesh->m_pMaterials[0].Emissive.b = b1*emi;
@@ -2365,11 +2365,11 @@ void GWorld::DispNetChip(int n)
 				mesh->m_pMaterials[0].Power = 50.0f;
 				mesh->Render(g_D3DDevice);
 			}
-			g_PlayerData[n].g_ChipCount++;
+			g_PlayerData[n].ChipCount++;
 		}
 	}
 	g_D3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
-	for (int i = 0;i < g_PlayerData[n].g_ChipCount;i++) {
+	for (int i = 0;i < g_PlayerData[n].ChipCount;i++) {
 		GVector X1 = g_PlayerData[n].X[i];
 		GVector X2 = PrePlayerData[n].X[i];
 		g_PlayerData[n].X2[i] = (X1 - X2)*w2 + X1;
@@ -2382,7 +2382,7 @@ void GWorld::DispNetJetAll()
 		float w1 = g_PlayerData[i].w1;
 		float w2 = g_PlayerData[i].w2;
 
-		for (int j = 0;j < g_PlayerData[i].g_ChipCount;j++) {
+		for (int j = 0;j < g_PlayerData[i].ChipCount;j++) {
 			if (g_PlayerData[i].Jet[j]>0) {
 				//				MessageBox(NULL,"セッションの作成に失敗", "RigidChips Network", MB_OK | MB_ICONWARNING);
 				int n = g_PlayerData[i].Jet[j];
@@ -2486,7 +2486,7 @@ void GWorld::DispNetChipInfo(int n, float zz)
 	g_D3DDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
 	GVector e = EyePos;
 	float x = g_PlayerData[n].x;
-	float hy = g_PlayerData[n].y + (float)pow((double)g_PlayerData[n].g_ChipCount, 0.3333) / 3.0f;
+	float hy = g_PlayerData[n].y + (float)pow((double)g_PlayerData[n].ChipCount, 0.3333) / 3.0f;
 
 	float y = hy + 1.2f;
 	float z = g_PlayerData[n].z;
@@ -3230,7 +3230,7 @@ HRESULT CMyD3DApplication::OneTimeSceneInit()
 	lstrcpy(szSystemFileName, ResourceDir);
 	lstrcat(szSystemFileName, TEXT("\\System.rcs"));
 	lstrcpy(szSystemFileName0, TEXT("System.rcs"));
-	if (g_ChipCount == 0) return E_FAIL;
+	if (g_World->getChipCount() == 0) return E_FAIL;
 	//	g_Chip[0]->X.y=g_World->Land->GetY(0,0);
 	Course[0].Count = 0;
 	for (int i = 0;i < g_VarCount;i++) {
@@ -3244,7 +3244,7 @@ HRESULT CMyD3DApplication::OneTimeSceneInit()
 			else *(g_ValList[i].Ref[j]) = g_ValList[i].Val;
 		}
 	}
-	for (int c = 0;c < g_ChipCount;c++) {
+	for (int c = 0;c < g_World->getChipCount();c++) {
 		if (g_Chip[c]->ChipType == 0) {
 			ResetChip(c, 0);
 		}
@@ -3559,7 +3559,7 @@ HRESULT CMyD3DApplication::LoadData(char *filename)
 		lstrcpy(szUpdateFileName0, szTitle);
 		lstrcat(szUpdateFileName0, szExt);
 		readData(filename, false);
-		if (g_ChipCount == 0) return S_OK;
+		if (g_World->getChipCount() == 0) return S_OK;
 		ResetChips(x, z, 0);
 		InitChips(0, 1);
 	}
@@ -4186,7 +4186,7 @@ HFONT hFont = CreateFont(
 			else *(g_ValList[i].Ref[j]) = g_ValList[i].Val;
 		}
 	}
-	for (int c = 0;c < g_ChipCount;c++) {
+	for (int c = 0;c < g_World->getChipCount();c++) {
 		if (g_Chip[c]->ChipType == 0) {
 			g_Chip[c]->X.y = g_World->Land->GetY(0, 0);
 			float a = -(GVector(0, 0, 1)*g_Chip[c]->R).Cut2(GVector(0, 1, 0)).angle2(GVector(0, 0, 1), GVector(0, 1, 0));
@@ -4405,7 +4405,7 @@ HRESULT CMyD3DApplication::ResetChips(float x, float z, float a)
 	KeyRecordMax = 0;
 	KeyRecordCount = 0;
 	waitCount = 0;
-	for (int c = 0;c < g_ChipCount;c++) {
+	for (int c = 0;c < g_World->getChipCount();c++) {
 		g_Chip[c]->Crush = false;
 		if (g_Chip[c]->ChipType == 0) {
 			if (g_pLandMesh) {
@@ -4445,7 +4445,7 @@ HRESULT CMyD3DApplication::ResetChips(float y, float a)
 	KeyRecordCount = 0;
 	waitCount = 0;
 	LastBye = 0;
-	for (int c = 0;c < g_ChipCount;c++) {
+	for (int c = 0;c < g_World->getChipCount();c++) {
 		g_Chip[c]->Crush = false;
 		if (g_Chip[c]->ChipType == 0) {
 			g_Chip[c]->X.y = y;
@@ -4474,7 +4474,7 @@ HRESULT CMyD3DApplication::InitChips(float a, int hereFlag)
 	LastBye = 0;
 	waitCount = 0;
 	if (hereFlag == 0) {
-		for (int c = 0;c < g_ChipCount;c++) {
+		for (int c = 0;c < g_World->getChipCount();c++) {
 			g_Chip[c]->Crush = false;
 			g_Chip[c]->Fuel = g_Chip[c]->FuelMax;
 			if (g_Chip[c]->ChipType == 0) {
@@ -5117,7 +5117,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			int errCode = 0;
 			if ((errCode = readData(szUpdateFileName, true)) == 0) {
 				readData(szUpdateFileName, false);
-				if (g_ChipCount == 0) return S_OK;
+				if (g_World->getChipCount() == 0) return S_OK;
 
 				ResetChips(x, z, a);
 				InitChips(a, 1);
@@ -5201,7 +5201,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					lstrcat(szLandFileName0, szExt);
 					KeyRecordMax = 0;
 					KeyRecordCount = 0;
-					for (int i = 0;i < g_ChipCount;i++) {
+					for (int i = 0;i < g_World->getChipCount();i++) {
 						if (g_Chip[i]->ChipType == 0) {
 							GFloat y = g_World->Land->GetY(0, 0);
 							if (y < -9000.0f)y = 0.0f;
@@ -5736,7 +5736,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					else *(g_ValList[i].Ref[j]) = g_ValList[i].Val;
 				}
 			}
-			for (int c = 0;c < g_ChipCount;c++) {
+			for (int c = 0;c < g_World->getChipCount();c++) {
 				if (g_Chip[c]->ChipType == 0) {
 					a = -(GVector(0, 0, 1)*g_Chip[c]->R).Cut2(GVector(0, 1, 0)).angle2(GVector(0, 0, 1), GVector(0, 1, 0));
 					ResetChip(c, a);
@@ -5878,7 +5878,7 @@ HRESULT CMyD3DApplication::FrameMove()
 		}
 
 		TotalPower = 0;
-		for (i = 0;i < g_ChipCount;i++) {
+		for (i = 0;i < g_World->getChipCount();i++) {
 			if (g_Chip[i]->Top != g_Chip[0] && g_Chip[i]->Top->ByeFlag >= 1) {
 				g_Chip[i]->Power = g_Chip[i]->PowerSave;
 				if (g_Chip[i]->Top->ByeFlag == 1) g_Chip[i]->PowerSave = g_Chip[i]->PowerSave*0.95f;
@@ -6605,7 +6605,7 @@ void CMyD3DApplication::RenderSky() {
 	matView = GMatView;
 	//		m_pd3dDevice->GetTransform( D3DTS_VIEW, &matView );
 	float a = 0.0f;
-	if (g_ChipCount > 0) {
+	if (g_World->getChipCount() > 0) {
 		a = -g_Chip[0]->X.y / 1000.0f; if (a<-0.1) a = -0.1f; if (a>0.5f) a = 0.5f;
 		if (EyePos.y < -3.0) m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_DISABLE);
 
@@ -6718,7 +6718,7 @@ HRESULT CMyD3DApplication::Render()
 //			Line(g_Chip[0]->TotalCenterOfGravity-GVector(0,v,0)*g_Chip[0]->R,g_Chip[0]->TotalCenterOfGravity+GVector(0,v,0)*g_Chip[0]->R,0xffDDDDDD);
 //			Line(g_Chip[0]->TotalCenterOfGravity-GVector(0,0,v)*g_Chip[0]->R,g_Chip[0]->TotalCenterOfGravity+GVector(0,0,v)*g_Chip[0]->R,0xffDDDDDD);
 
-			for (i = 0;i < (unsigned int)g_ChipCount;i++) {
+			for (i = 0;i < (unsigned int)g_World->getChipCount();i++) {
 				//if(g_Chip[i]->Top!=g_Chip[0]) continue;
 				if (g_Chip[i]->Parent == NULL) {
 					v = g_Chip[i]->TotalRadius + 0.3f;
@@ -6775,7 +6775,7 @@ HRESULT CMyD3DApplication::Render()
 			FLOAT *f = (float*)GMatView;
 			GMatrix vm(f);
 			for (i = 0;i < (unsigned int)g_DPlay->GetMaxPlayers();i++) {
-				float hy = g_PlayerData[i].y + (float)pow((double)g_PlayerData[i].g_ChipCount, 0.3333) / 3.0f;
+				float hy = g_PlayerData[i].y + (float)pow((double)g_PlayerData[i].ChipCount, 0.3333) / 3.0f;
 				GVector infoV = GVector(g_PlayerData[i].x, hy + 1.2f, g_PlayerData[i].z)*vm;
 				data[i].z = infoV.z;
 				data[i].n = i;

@@ -285,7 +285,8 @@ public:
 //	ê¢äEÉNÉâÉX
 //***************************************************************
 
-class GWorld {
+class GWorld
+{
 public:
 	GFloat StepTime;
 	int SubStep;
@@ -359,5 +360,8 @@ public:
 	GFloat CalcShaft(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVector &offsetB, GVector &axis, GFloat friction);
 	GFloat CalcHinge(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVector &offsetB, GVector &axis, GFloat angle, GFloat k, GFloat damper);
 	GFloat CalcCowl(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVector &offsetB, GVector &axis, GFloat angle);
+
+	int getChipCount();
+	void IncreaseChipCount();
 };
 #endif

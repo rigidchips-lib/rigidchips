@@ -73,7 +73,7 @@ typedef struct {
 	DWORD time;
 	DWORD time2;
 	GRECEIVEDATA	ReceiveData;
-	int g_ChipCount;
+	int ChipCount;
 
 	int Jet[GRECEIVEMAX];
 	GVector	X[GRECEIVEMAX];

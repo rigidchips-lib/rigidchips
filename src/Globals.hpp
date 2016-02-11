@@ -42,8 +42,6 @@ EXTERN GBullet *g_Bullet;
 EXTERN int g_TickCount;
 //起動からのフレーム数
 EXTERN int g_SystemTickCount;
-//現在のモデルのチップ数
-EXTERN int g_ChipCount;
 //現在のモデルのVar数
 EXTERN int g_VarCount;
 //現在のFPS
