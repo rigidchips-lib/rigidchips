@@ -4003,7 +4003,8 @@ HRESULT LoadLand(LPDIRECT3DDEVICE8 Device, char *fname)
 	LPD3DXMESH lpMeshC;
 	g_pLandMesh->GetSysMemMesh()->Optimize(D3DXMESHOPT_ATTRSORT, NULL, NULL, NULL, NULL, &lpMeshC);
 	lpMeshC->GetAttributeTable(NULL, &(g_World->Land->AttribTableSize));
-	D3DXATTRIBUTERANGE AttribTable[100];
+	//D3DXATTRIBUTERANGE AttribTable[100];
+	D3DXATTRIBUTERANGE* AttribTable = new D3DXATTRIBUTERANGE[g_World->Land->AttribTableSize];
 	lpMeshC->GetAttributeTable(AttribTable, &(g_World->Land->AttribTableSize));
 	pMeshVB->Lock(0, 0, (BYTE**)&pVertex, D3DLOCK_READONLY);
 	landCode = 0;
@@ -4042,6 +4043,7 @@ HRESULT LoadLand(LPDIRECT3DDEVICE8 Device, char *fname)
 	}
 	pMeshIB->Unlock();
 	pMeshIB->Release();
+	delete[] AttribTable;
 	if (lpMeshC != NULL) lpMeshC->Release();
 
 	for (unsigned int j = 0;j < g_World->Land->AttribTableSize;j++) {
