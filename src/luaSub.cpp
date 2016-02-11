@@ -99,13 +99,13 @@ int luaGetMouseM(lua_State *L)
 }
 int luaGetTickCount(lua_State *L)
 {
-	lua_pushnumber(L, g_TickCount);
+	lua_pushnumber(L, (double)GetRCTickCount());
 	return 1;
 }
 int luaSetTicks(lua_State *L)
 {
-	g_TickCount = (int)lua_tonumber(L, 1);
-	lua_pushnumber(L, g_TickCount);
+	SetRCTickCount((int)lua_tonumber(L, 1));
+	lua_pushnumber(L, GetRCTickCount());
 	return 1;
 }
 int luaSetCCDZoom(lua_State *L)
@@ -799,12 +799,12 @@ int luaGetHeight(lua_State *L)
 }
 int luaGetFps(lua_State *L)
 {
-	lua_pushnumber(L, (double)g_FPS);
+	lua_pushnumber(L, GetFPS());
 	return 1;
 }
 int luaGetBase(lua_State *L)
 {
-	lua_pushnumber(L, (double)g_LimitFPS);
+	lua_pushnumber(L, (double)GetLimitFPS());
 	return 1;
 }
 int luaGetFaces(lua_State *L)

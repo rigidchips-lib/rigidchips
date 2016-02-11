@@ -29,34 +29,15 @@ EXTERN HWND g_hWnd;              // The main app window
 EXTERN GDPlay *g_DPlay;
 EXTERN GPLAYERDATA g_PlayerData[GPLAYERMAX];
 EXTERN GMYDATA g_MyPlayerData;
-//受信したメッセージ？
-EXTERN char g_MessageData[MESSAGEMAX + 1];
-EXTERN int g_RecieaveMessageCode[GPLAYERMAX];
-EXTERN char g_RecieaveMessageData[GPLAYERMAX][MESSAGEMAX + 1];
+
 //パーティクル描画関係
 EXTERN GParticle *g_GroundParticle;
 EXTERN GParticle *g_WaterLineParticle;
 EXTERN GParticle *g_JetParticle;
 EXTERN GBullet *g_Bullet;
-//モデル読み込みからのフレーム数
-EXTERN int g_TickCount;
-//起動からのフレーム数
-EXTERN int g_SystemTickCount;
 //現在のモデルのVar数
 EXTERN int g_VarCount;
-//現在のFPS
-EXTERN double g_FPS;
-//正しい初期化位置がわからないので窮余の策
-#ifdef _GLOBAL_BODY
-EXTERN int g_LimitFPS = 30;
-EXTERN GFloat TotalPower = 0;
-#else
-//制限FPS
-EXTERN int g_LimitFPS;//=30
-EXTERN GFloat TotalPower;
-#endif
 
-//EXTERN bool ObjectBallFlag;
 //Script関係（あんまり手を付けたくない）
 EXTERN char *ScriptSource;
 EXTERN int ScriptType;

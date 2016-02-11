@@ -1862,7 +1862,7 @@ GFloat  GWorld::CalcShaft(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVec
 GFloat GWorld::CalcHinge(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVector &offsetB, GVector &axis, GFloat angle = 0, GFloat k = 1, GFloat damper = 0)
 {
 
-	float h = 10.0f / (GFloat)GLOOP*(GFloat)30.0f / (GFloat)g_LimitFPS*10.0f / (GFloat)GDTSTEP;
+	float h = 10.0f / (GFloat)GLOOP*(GFloat)30.0f / (GFloat)GetLimitFPS()*10.0f / (GFloat)GDTSTEP;
 	k = k*h*0.6f / (GFloat)CHIPSIZE;if (k > 1.0f*10.0f / (GFloat)GDTSTEP) k = 1.0f*10.0f / (GFloat)GDTSTEP;else if (k < 0) k = 0.0f;
 	damper = damper*h;if (damper > 0.5*10.0f / (GFloat)GDTSTEP) damper = 0.5f*10.0f / (GFloat)GDTSTEP;else if (damper < 0) damper = 0.0f;
 	angle = angle*(GFloat)M_PI / 180.0f + (GFloat)M_PI;
@@ -1981,7 +1981,7 @@ void GWorld::Move(bool initFlag)
 		//ƒ`ƒbƒv‚Æ‚Ì“–‚½‚è”»’è
 	GFloat t, t2;
 	GRigid *r = NULL;
-	if (haveArm && g_TickCount * 30 / g_LimitFPS>150) {
+	if (haveArm && !IsInvulnerableTime()) {
 		for (i = 0;i < g_Bullet->MaxVertex;i++) {
 			if (g_Bullet->Vertex[i].Life>0) {
 				r = NULL;
@@ -2068,14 +2068,14 @@ void GWorld::Move(bool initFlag)
 		Rigid[j]->L2.clear();
 		Rigid[j]->Hit[0].FricV.clear();
 		if (Rigid[j]->ChipType == 10) {
-			double e = 5000.0*30.0 / g_LimitFPS;
+			double e = 5000.0*30.0 / GetLimitFPS();
 			if (!EfficientFlag) e = Rigid[j]->Top->CheckFuel(e / ARM_EFF)*ARM_EFF;
 			Rigid[j]->Energy += (GFloat)e;
 			if (Rigid[j]->Energy >= Rigid[j]->ArmEnergy) {
 				Rigid[j]->Energy = Rigid[j]->ArmEnergy;
 			}
 			else {
-				TotalPower += (GFloat)fabs(e);
+				AddTotalPower((GFloat)fabs(e));
 				if (!EfficientFlag) {
 					Rigid[j]->Top->UseFuel(e / ARM_EFF);
 					Rigid[j]->CalcTotalFuel();

@@ -106,15 +106,15 @@ double  mouseM(void)
 }
 double  ticks(void)
 {
-	return (double)g_TickCount;
+	return (double)GetRCTickCount();
 }
 double  systemTicks(void)
 {
-	return (double)g_SystemTickCount;
+	return (double)GetRCSystemTickCount();
 }
 double  setTicks(double v)
 {
-	g_TickCount = (int)v;
+	SetRCTickCount((int)v);
 	return v;
 }
 double  setCCDZoom(double v)
@@ -658,11 +658,11 @@ double getHeight()
 }
 double getFps()
 {
-	return (double)g_FPS;
+	return GetFPS();
 }
 double getBase()
 {
-	return (double)g_LimitFPS;
+	return (double)GetLimitFPS();
 }
 double getFaces()
 {
