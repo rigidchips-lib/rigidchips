@@ -47,7 +47,7 @@ GRigid::GRigid(int type, bool fix, GFloat x, GFloat y, GFloat z) {
 	Param = GVector(x, y, z);
 	Density = 1000;
 	CheckShape = Shape;
-	g_World = NULL;
+	World = NULL;
 	ChildCount = 0;
 	Parent = NULL;
 	LinkInfo = NULL;
@@ -1347,7 +1347,7 @@ void GWorld::DeleteRigids() {
 		RecRigid[i] = NULL;
 		RndTable[i] = i;
 	}
-	g_ChipCount = 0;
+	ChipCount = 0;
 }
 void GWorld::DeleteObjects() {
 	for (int i = 0;i < ObjectCount;i++) {
@@ -1364,7 +1364,7 @@ void GWorld::DeleteObjects() {
 GRigid* GWorld::AddRigid(int type, bool fix, GFloat x, GFloat y, GFloat z, GFloat ax, GFloat ay, GFloat az)
 {
 	if (g_ChipCount >= GCHIPMAX) return NULL;
-	GRigid*  r = Rigid[g_ChipCount++] = new GRigid(type, fix, x, y, z);
+	GRigid*  r = Rigid[ChipCount++] = new GRigid(type, fix, x, y, z);
 	if (r == NULL) return NULL;
 	r->ID = g_ChipCount - 1;
 	r->World = this;
