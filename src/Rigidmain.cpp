@@ -179,6 +179,7 @@ bool HardShadowFlag = false;
 int CallModeChange = 0;
 
 BOOL ShowTitle = FALSE;
+
 static DWORD ShowMeter = TRUE;
 static DWORD ShowRegulation = TRUE;
 static DWORD ShowMessage = TRUE;
@@ -196,7 +197,7 @@ static DWORD ShowDustFlag = TRUE;
 static DWORD DitherFlag = TRUE;
 static DWORD FastShadow = 1;
 static DWORD GraphicBoardType = 0;
-static DWORD GraphicBoardType = 0;
+
 bool MoveEnd = false;
 
 TCHAR SessionName[256] = "RigidChips";
