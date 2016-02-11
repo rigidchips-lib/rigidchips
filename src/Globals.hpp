@@ -59,10 +59,10 @@ EXTERN char *SystemSource;
 EXTERN char SystemOutput[GOUTPUTMAX][512];
 EXTERN int SystemErrorCode;
 EXTERN char SystemErrorStr[512];
-//ネットワークノイズの内、長期のサインカーブの方
+//ネットワークノイズの内、長期のサインカーブの方 ScriptとLuaで共用する必要から、グローバルのまま
 EXTERN int g_RandTime;
-//システム情報関連。グローバルである必要あるのか？
 
+//システム情報関連。グローバルである必要あるのか？
 EXTERN int CCDImage[CCD_RESOLUTION][CCD_RESOLUTION];
 EXTERN int LastBye;
 EXTERN int Analog[6];
@@ -126,16 +126,6 @@ EXTERN char szTempFileName0[_MAX_PATH];
 EXTERN char szSystemFileName[_MAX_PATH];
 EXTERN char szSystemFileName0[_MAX_PATH];
 #endif
-
-EXTERN bool SystemKeys[GSYSKEYMAX];
-EXTERN bool SystemKeysDown[GSYSKEYMAX];
-EXTERN bool SystemKeysUp[GSYSKEYMAX];
-//各種フォルダのパス。実はグローバルに使ってるのはCurrDataDirだけぽい
-EXTERN TCHAR AppDir[MAX_PATH];
-EXTERN TCHAR ResourceDir[MAX_PATH];
-EXTERN TCHAR DataDir[MAX_PATH];
-EXTERN TCHAR CurrDataDir[MAX_PATH];
-EXTERN TCHAR CurrScenarioDir[MAX_PATH];
 
 EXTERN int scenarioCode;//=0
 //モデル読み込み時のエラーフラグぽい？
