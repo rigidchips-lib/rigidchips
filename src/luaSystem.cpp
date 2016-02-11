@@ -164,7 +164,7 @@ int luaFileGets(lua_State *L)
 int luaReset(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) return 0;
+	if (no < 0 || no >= g_World->getChipCount()) return 0;
 	g_World->RestoreLink(g_Chip[no], g_Chip[no]->Top);
 	g_Chip[no]->CalcTotalCenter();
 	return 0;
@@ -370,7 +370,7 @@ int luaUpdateChips(lua_State *L)
 	int errCode = 0;
 	if ((errCode = readData(szUpdateFileName, true)) == 0) {
 		readData(szUpdateFileName, false);
-		if (g_ChipCount == 0) errCode = -1;
+		if (g_World->getChipCount() == 0) errCode = -1;
 		//		if(g_SystemLua!=NULL) luaSystemRun("OnOpenChips");
 		if (g_pLandMesh) g_pApp->ResetChips(x, z, 0);
 	}
@@ -702,7 +702,7 @@ int luaEnervateObj(lua_State *L)
 int luaPause(lua_State *L)
 {
 	g_World->Stop = true;
-	for (int i = 0;i < g_ChipCount;i++) g_World->Rigid[i]->preX = g_World->Rigid[i]->X;
+	for (int i = 0;i < g_World->getChipCount();i++) g_World->Rigid[i]->preX = g_World->Rigid[i]->X;
 	for (int i = 0;i < GOBJMAX;i++) if (g_World->Object[i]) g_World->Object[i]->preX = g_World->Object[i]->X;
 	return 0;
 }
@@ -825,7 +825,7 @@ int luaAddChip(lua_State *L)
 	char *news = (char*)lua_tostring(L, 3);
 	float angle = (float)lua_tonumber(L, 4);
 
-	if (parentNo < 0 || parentNo >= g_ChipCount) {
+	if (parentNo < 0 || parentNo >= g_World->getChipCount()) {
 		lua_pushnumber(L, -1);
 		return 1;
 	}
@@ -915,7 +915,7 @@ int luaAddChip(lua_State *L)
 		flag = 1;
 	}
 	if (flag > 0) {
-		int cno = g_ChipCount;
+		int cno = g_World->getChipCount();
 		g_Chip[parentNo]->DirCode |= dirCode;
 		if (flag == 2) {
 			if (dirCode == 0x01) {
@@ -960,47 +960,47 @@ int luaAddChip(lua_State *L)
 			g_Chip[cno]->CheckShape = g_Chip[cno]->Shape;
 			g_Chip[cno]->SaveShape = g_Chip[cno]->Shape;
 		}
-		if (strcmp(type, "COWL") == 0) link2 = g_World->AddCowl(g_Chip[parentNo], offA, g_Chip[g_ChipCount], offB, axis[an], angle);
-		else link2 = g_World->AddHinge(g_Chip[parentNo], offA, g_Chip[g_ChipCount], offB, axis[an], angle, 1, 0.5);
-		g_ChipCount++;if (g_ChipCount >= GCHIPMAX) g_ChipCount = GCHIPMAX - 1;
+		if (strcmp(type, "COWL") == 0) link2 = g_World->AddCowl(g_Chip[parentNo], offA, g_Chip[g_World->getChipCount()], offB, axis[an], angle);
+		else link2 = g_World->AddHinge(g_Chip[parentNo], offA, g_Chip[g_World->getChipCount()], offB, axis[an], angle, 1, 0.5);
+		g_World->IncreaseChipCount();//if (g_World->getChipCount() >= GCHIPMAX) g_World->getChipCount() = GCHIPMAX - 1;
 	}
 	else {
 		if (strcmp(type, "WHEEL") == 0) {
-			int cno2 = g_ChipCount;
+			int cno2 = g_World->getChipCount();
 			MakeChip(GT_DUMMY, rn);
 			g_Chip[cno2]->CheckShape = g_Chip[cno2]->Shape;
 			g_Chip[cno2]->SaveShape = g_Chip[cno2]->Shape;
 			link2 = g_World->AddHinge(g_Chip[parentNo], offA, g_Chip[cno2], offB, axis[0], angle, 1.0, 0.5);
-			g_ChipCount++;if (g_ChipCount >= GCHIPMAX) g_ChipCount = GCHIPMAX - 1;
-			int cno = g_ChipCount;
+			g_World->IncreaseChipCount();//if (g_World->getChipCount() >= GCHIPMAX) g_World->getChipCount() = GCHIPMAX - 1;
+			int cno = g_World->getChipCount();
 			MakeChip(GT_WHEEL, rn);
 			g_Chip[cno]->CheckShape = g_Chip[cno]->Shape;
 			g_Chip[cno]->SaveShape = g_Chip[cno]->Shape;
 			g_Chip[parentNo]->DirCode |= dirCode;
 			link1 = g_World->AddShaft(g_Chip[cno2], GVector(0, 0, 0), g_Chip[cno], GVector(0, 0, 0), axis[1], 0);
-			g_ChipCount++;if (g_ChipCount >= GCHIPMAX) g_ChipCount = GCHIPMAX - 1;
+			g_World->IncreaseChipCount();//if (g_World->getChipCount() >= GCHIPMAX) g_World->getChipCount() = GCHIPMAX - 1;
 			an = 2;
 		}
 		else if (strcmp(type, "RLW") == 0) {
-			int cno2 = g_ChipCount;
+			int cno2 = g_World->getChipCount();
 			MakeChip(GT_DUMMY, rn);
 			g_Chip[cno2]->CheckShape = g_Chip[cno2]->Shape;
 			g_Chip[cno2]->SaveShape = g_Chip[cno2]->Shape;
 			link2 = g_World->AddHinge(g_Chip[parentNo], offA, g_Chip[cno2], offB, axis[0], angle, 1.0, 0.5);
-			g_ChipCount++;if (g_ChipCount >= GCHIPMAX) g_ChipCount = GCHIPMAX - 1;
-			int cno = g_ChipCount;
+			g_World->IncreaseChipCount();//if (g_World->getChipCount() >= GCHIPMAX) g_World->getChipCount() = GCHIPMAX - 1;
+			int cno = g_World->getChipCount();
 			MakeChip(GT_RLW, rn);
 			g_Chip[cno]->CheckShape = g_Chip[cno]->Shape;
 			g_Chip[cno]->SaveShape = g_Chip[cno]->Shape;
 			g_Chip[parentNo]->DirCode |= dirCode;
 			link1 = g_World->AddShaft(g_Chip[cno2], GVector(0, 0, 0), g_Chip[cno], GVector(0, 0, 0), axis[1], 0);
-			g_ChipCount++;if (g_ChipCount >= GCHIPMAX) g_ChipCount = GCHIPMAX - 1;
+			g_World->IncreaseChipCount();//if (g_World->getChipCount() >= GCHIPMAX) g_World->getChipCount() = GCHIPMAX - 1;
 			an = 2;
 		}
 	}
 	//g_World->CalcLink(g_Chip[parentNo]);
 	g_World->RestoreLink(g_Chip[0], g_Chip[0]);
-	lua_pushnumber(L, g_ChipCount - 1);
+	lua_pushnumber(L, g_World->getChipCount() - 1);
 	return 1;
 }
 int luaGetChild(lua_State *L)

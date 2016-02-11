@@ -197,56 +197,56 @@ int luaHat(lua_State *L)
 int luaGetType(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	lua_pushnumber(L, g_Chip[(int)no]->ChipType);
 	return 1;
 }
 int luaGetDir(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	lua_pushnumber(L, g_Chip[(int)no]->Dir);
 	return 1;
 }
 int luaGetOption(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	lua_pushnumber(L, g_Chip[(int)no]->Option);
 	return 1;
 }
 int luaGetEffect(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	lua_pushnumber(L, g_Chip[(int)no]->Effect);
 	return 1;
 }
 int luaGetUserOption(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	lua_pushnumber(L, g_Chip[(int)no]->UserOption);
 	return 1;
 }
 int luaGetUserEffect(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	lua_pushnumber(L, g_Chip[(int)no]->UserEffect);
 	return 1;
 }
 int luaGetPower(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	lua_pushnumber(L, g_Chip[(int)no]->Power);
 	return 1;
 }
 int luaGetAngle(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	if (g_Chip[(int)no]->LinkInfo) lua_pushnumber(L, g_Chip[(int)no]->LinkInfo->Angle);
 	else lua_pushnumber(L, -1);
 	return 1;
@@ -254,7 +254,7 @@ int luaGetAngle(lua_State *L)
 int luaGetSpring(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	if (g_Chip[(int)no]->LinkInfo) lua_pushnumber(L, g_Chip[(int)no]->LinkInfo->SpringK);
 	else lua_pushnumber(L, -1);
 	return 1;
@@ -262,7 +262,7 @@ int luaGetSpring(lua_State *L)
 int luaGetDamper(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	if (g_Chip[(int)no]->LinkInfo) lua_pushnumber(L, g_Chip[(int)no]->LinkInfo->DamperK);
 	else lua_pushnumber(L, -1);
 	return 1;
@@ -270,7 +270,7 @@ int luaGetDamper(lua_State *L)
 int luaGetBrake(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	if (g_Chip[(int)no]->LinkInfo) lua_pushnumber(L, g_Chip[(int)no]->LinkInfo->FrictionK);
 	else lua_pushnumber(L, -1);
 	return 1;
@@ -278,7 +278,7 @@ int luaGetBrake(lua_State *L)
 int luaGetParent(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, -1);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, -1);return 1; }
 	if (g_Chip[(int)no]->Parent) lua_pushnumber(L, g_Chip[(int)no]->Parent->ID);
 	else lua_pushnumber(L, -1);
 	return 1;
@@ -286,7 +286,7 @@ int luaGetParent(lua_State *L)
 int luaGetTop(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, -1);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, -1);return 1; }
 	if (g_Chip[(int)no]->Top) lua_pushnumber(L, g_Chip[(int)no]->Top->ID);
 	else lua_pushnumber(L, -1);
 	return 1;
@@ -294,14 +294,14 @@ int luaGetTop(lua_State *L)
 int luaGetColor(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	lua_pushnumber(L, g_Chip[(int)no]->Color);
 	return 1;
 }
 int luaGetEnergy(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	double e = g_Chip[(int)no]->Energy;
 	if (e <= 0) e = 0;
 	lua_pushnumber(L, e);
@@ -310,7 +310,7 @@ int luaGetEnergy(lua_State *L)
 int luaGetM(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	lua_pushnumber(L, g_Chip[(int)no]->M);
 	return 1;
 }
@@ -339,7 +339,7 @@ int luaGetI(lua_State *L)
 	int no = (int)lua_tonumber(L, 1);
 	int x = (int)lua_tonumber(L, 2);
 	int y = (int)lua_tonumber(L, 3);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	if (x < 0 || x >= 3) { lua_pushnumber(L, 0);return 1; }
 	if (y < 0 || y >= 3) { lua_pushnumber(L, 0);return 1; }
 	lua_pushnumber(L, g_Chip[(int)no]->I.elem[x][y]);
@@ -348,21 +348,21 @@ int luaGetI(lua_State *L)
 int luaPosx(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	lua_pushnumber(L, g_Chip[(int)no]->X.x);
 	return 1;
 }
 int luaPosy(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	lua_pushnumber(L, g_Chip[(int)no]->X.y);
 	return 1;
 }
 int luaPosz(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	lua_pushnumber(L, g_Chip[(int)no]->X.z);
 	return 1;
 }
@@ -397,7 +397,7 @@ int luaUnLink(lua_State *L)
 int luaLx(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector l = g_Chip[(int)no]->L*g_Chip[(int)no]->Rt;
 	lua_pushnumber(L, l.x);
 	return 1;
@@ -405,7 +405,7 @@ int luaLx(lua_State *L)
 int luaLy(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector l = g_Chip[(int)no]->L*g_Chip[(int)no]->Rt;
 	lua_pushnumber(L, l.y);
 	return 1;
@@ -413,7 +413,7 @@ int luaLy(lua_State *L)
 int luaLz(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector l = g_Chip[(int)no]->L*g_Chip[(int)no]->Rt;
 	lua_pushnumber(L, l.z);
 	return 1;
@@ -421,7 +421,7 @@ int luaLz(lua_State *L)
 int luaWx(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector l = g_Chip[(int)no]->W*g_Chip[(int)no]->Rt;
 	lua_pushnumber(L, l.x);
 	return 1;
@@ -429,7 +429,7 @@ int luaWx(lua_State *L)
 int luaWy(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector l = g_Chip[(int)no]->W*g_Chip[(int)no]->Rt;
 	lua_pushnumber(L, l.y);
 	return 1;
@@ -437,7 +437,7 @@ int luaWy(lua_State *L)
 int luaWz(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector l = g_Chip[(int)no]->W*g_Chip[(int)no]->Rt;
 	lua_pushnumber(L, l.z);
 	return 1;
@@ -445,7 +445,7 @@ int luaWz(lua_State *L)
 int luaVx(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector l = g_Chip[(int)no]->V*g_Chip[(int)no]->Rt;
 	lua_pushnumber(L, l.x);
 	return 1;
@@ -453,7 +453,7 @@ int luaVx(lua_State *L)
 int luaVy(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector l = g_Chip[(int)no]->V*g_Chip[(int)no]->Rt;
 	lua_pushnumber(L, l.y);
 	return 1;
@@ -461,7 +461,7 @@ int luaVy(lua_State *L)
 int luaVz(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector l = g_Chip[(int)no]->V*g_Chip[(int)no]->Rt;
 	lua_pushnumber(L, l.z);
 	return 1;
@@ -469,7 +469,7 @@ int luaVz(lua_State *L)
 int luaFx(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector l = g_Chip[(int)no]->P*g_Chip[(int)no]->Rt;
 	lua_pushnumber(L, l.x);
 	return 1;
@@ -477,7 +477,7 @@ int luaFx(lua_State *L)
 int luaFy(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector l = g_Chip[(int)no]->P*g_Chip[(int)no]->Rt;
 	lua_pushnumber(L, l.y);
 	return 1;
@@ -485,7 +485,7 @@ int luaFy(lua_State *L)
 int luaFz(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector l = g_Chip[(int)no]->P*g_Chip[(int)no]->Rt;
 	lua_pushnumber(L, l.z);
 	return 1;
@@ -493,7 +493,7 @@ int luaFz(lua_State *L)
 int luaAx(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector vx = GVector(1, 0, 0)*g_Chip[(int)no]->R;
 	GVector vy = GVector(0, 1, 0);
 	GVector vz = GVector(0, 0, 1)*g_Chip[(int)no]->R;
@@ -504,7 +504,7 @@ int luaAx(lua_State *L)
 int luaAy(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	double a = -(GVector(0, 0, 1)*g_Chip[(int)no]->R).Cut2(GVector(0, 1, 0)).angle2(GVector(0, 0, 1), GVector(0, 1, 0));
 	lua_pushnumber(L, a);
 	return 1;
@@ -512,7 +512,7 @@ int luaAy(lua_State *L)
 int luaAz(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector vx = GVector(1, 0, 0)*g_Chip[(int)no]->R;
 	GVector vy = GVector(0, 1, 0);
 	GVector vz = GVector(0, 0, 1)*g_Chip[(int)no]->R;
@@ -523,7 +523,7 @@ int luaAz(lua_State *L)
 int luaEx(lua_State *L)
 {
 	int n = (int)lua_tonumber(L, 1);
-	if (n < 0 || n >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (n < 0 || n >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector  y_axis, z_axis;
 	z_axis.x = g_Chip[n]->R.elem[2][0];//m[2];
 	z_axis.y = g_Chip[n]->R.elem[2][1];//m[5];
@@ -538,7 +538,7 @@ int luaEx(lua_State *L)
 int luaEy(lua_State *L)
 {
 	int n = (int)lua_tonumber(L, 1);
-	if (n < 0 || n >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (n < 0 || n >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector  y_axis, z_axis;
 	z_axis.x = g_Chip[n]->R.elem[2][0];//m[2];
 	z_axis.z = g_Chip[n]->R.elem[2][2];//m[8];
@@ -549,7 +549,7 @@ int luaEy(lua_State *L)
 int luaEz(lua_State *L)
 {
 	int n = (int)lua_tonumber(L, 1);
-	if (n < 0 || n >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (n < 0 || n >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector  y_axis, z_axis;
 	z_axis.x = g_Chip[n]->R.elem[2][0];//m[2];
 	z_axis.y = g_Chip[n]->R.elem[2][1];//m[5];
@@ -573,8 +573,8 @@ int luaRx(lua_State *L)
 {
 	int n = (int)lua_tonumber(L, 1);
 	int rn = (int)lua_tonumber(L, 2);
-	if (n < 0 || n >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
-	if (rn < 0 || rn >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (n < 0 || n >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
+	if (rn < 0 || rn >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector  y_axis, z_axis;
 	GMatrix R = g_Chip[n]->R*g_Chip[rn]->R.transpose();
 	z_axis.x = R.elem[2][0];//m[2];
@@ -591,8 +591,8 @@ int luaRy(lua_State *L)
 {
 	int n = (int)lua_tonumber(L, 1);
 	int rn = (int)lua_tonumber(L, 2);
-	if (n < 0 || n >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
-	if (rn < 0 || rn >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (n < 0 || n >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
+	if (rn < 0 || rn >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GVector  y_axis, z_axis;
 	GMatrix R = g_Chip[n]->R*g_Chip[rn]->R.inverse();
 	z_axis.x = R.elem[2][0];//m[2];
@@ -605,8 +605,8 @@ int luaRz(lua_State *L)
 {
 	int n = (int)lua_tonumber(L, 1);
 	int rn = (int)lua_tonumber(L, 2);
-	if (n < 0 || n >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
-	if (rn < 0 || rn >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (n < 0 || n >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
+	if (rn < 0 || rn >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	GMatrix R = g_Chip[n]->R*g_Chip[rn]->R.transpose();
 	GVector  y_axis, z_axis;
 	z_axis.x = R.elem[2][0];//m[2];
@@ -629,112 +629,112 @@ int luaRz(lua_State *L)
 int luaGx(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->Top->TotalCenterOfGravity.x);
 	return 1;
 }
 int luaGy(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->Top->TotalCenterOfGravity.y);
 	return 1;
 }
 int luaGz(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->Top->TotalCenterOfGravity.z);
 	return 1;
 }
 int luaXx(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->R.elem[0][0]);
 	return 1;
 }
 int luaXy(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->R.elem[0][1]);
 	return 1;
 }
 int luaXz(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->R.elem[0][2]);
 	return 1;
 }
 int luaYx(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->R.elem[1][0]);
 	return 1;
 }
 int luaYy(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->R.elem[1][1]);
 	return 1;
 }
 int luaYz(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->R.elem[1][2]);
 	return 1;
 }
 int luaZx(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->R.elem[2][0]);
 	return 1;
 }
 int luaZy(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->R.elem[2][1]);
 	return 1;
 }
 int luaZz(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->R.elem[2][2]);
 	return 1;
 }
 int luaQx(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->Q.x);
 	return 1;
 }
 int luaQy(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->Q.y);
 	return 1;
 }
 int luaQz(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->Q.z);
 	return 1;
 }
 int luaQw(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->Q.w);
 	return 1;
 }
@@ -762,13 +762,13 @@ int luaObjPosz(lua_State *L)
 int luaVel(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, 0);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, 0);return 1; }
 	lua_pushnumber(L, g_Chip[(int)no]->V.abs());
 	return 1;
 }
 int luaChips(lua_State *L)
 {
-	lua_pushnumber(L, (double)g_ChipCount);
+	lua_pushnumber(L, (double)g_World->getChipCount());
 	return 1;
 }
 int luaWeight(lua_State *L)
@@ -815,7 +815,7 @@ int luaGetFaces(lua_State *L)
 int luaGetTolerant(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) lua_pushnumber(L, 0);
+	if (no < 0 || no >= g_World->getChipCount()) lua_pushnumber(L, 0);
 	else lua_pushnumber(L, g_Chip[(int)no]->Tolerant);
 	return 1;
 }
@@ -996,10 +996,10 @@ int luaGetPlayerChips(lua_State *L)
 		return 1;
 	}
 	if (g_DPlay->GetLocalPlayerDPNID() == g_PlayerData[n].ReceiveData.info.dpnidPlayer) {
-		lua_pushnumber(L, (double)g_ChipCount);
+		lua_pushnumber(L, (double)g_World->getChipCount());
 		return 1;
 	}
-	lua_pushnumber(L, (double)g_PlayerData[n].g_ChipCount);
+	lua_pushnumber(L, (double)g_PlayerData[n].ChipCount);
 	return 1;
 }
 int luaGetPlayerX(lua_State *L)
@@ -1009,7 +1009,7 @@ int luaGetPlayerX(lua_State *L)
 		lua_pushnumber(L, 0.0);
 		return 1;
 	}
-	double a = pow((double)g_PlayerData[n].g_ChipCount, 1.0 / 3.0) / 2.0;
+	double a = pow((double)g_PlayerData[n].ChipCount, 1.0 / 3.0) / 2.0;
 	if (g_DPlay->GetLocalPlayerDPNID() == g_PlayerData[n].ReceiveData.info.dpnidPlayer) {
 		lua_pushnumber(L, (double)g_Chip[0]->X.x);
 		return 1;
@@ -1025,7 +1025,7 @@ int luaGetPlayerY(lua_State *L)
 		lua_pushnumber(L, -100000.0);
 		return 1;
 	}
-	double a = pow((double)g_PlayerData[n].g_ChipCount, 1.0 / 3.0) / 2.0;
+	double a = pow((double)g_PlayerData[n].ChipCount, 1.0 / 3.0) / 2.0;
 	if (g_DPlay->GetLocalPlayerDPNID() == g_PlayerData[n].ReceiveData.info.dpnidPlayer) {
 		lua_pushnumber(L, (double)g_Chip[0]->X.y);
 		return 1;
@@ -1041,7 +1041,7 @@ int luaGetPlayerZ(lua_State *L)
 		lua_pushnumber(L, 0.0);
 		return 1;
 	}
-	double a = pow((double)g_PlayerData[n].g_ChipCount, 1.0 / 3.0) / 2.0;
+	double a = pow((double)g_PlayerData[n].ChipCount, 1.0 / 3.0) / 2.0;
 	if (g_DPlay->GetLocalPlayerDPNID() == g_PlayerData[n].ReceiveData.info.dpnidPlayer) {
 		lua_pushnumber(L, (double)g_Chip[0]->X.z);
 		return 1;
@@ -1091,14 +1091,14 @@ int luaGetPlayerName(lua_State *L)
 int luaGetFuel(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, -1);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, -1);return 1; }
 	lua_pushnumber(L, g_Chip[(int)no]->Top->TotalFuel);
 	return 1;
 }
 int luaGetFuelMax(lua_State *L)
 {
 	int no = (int)lua_tonumber(L, 1);
-	if (no < 0 || no >= g_ChipCount) { lua_pushnumber(L, -1);return 1; }
+	if (no < 0 || no >= g_World->getChipCount()) { lua_pushnumber(L, -1);return 1; }
 	lua_pushnumber(L, g_Chip[(int)no]->Top->TotalFuelMax);
 	return 1;
 }
