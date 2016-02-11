@@ -789,12 +789,12 @@ int luaGetDt(lua_State *L)
 }
 int luaGetWidth(lua_State *L)
 {
-	lua_pushnumber(L, (double)Width);
+	lua_pushnumber(L, (double)GetScreenWidth());
 	return 1;
 }
 int luaGetHeight(lua_State *L)
 {
-	lua_pushnumber(L, (double)Height);
+	lua_pushnumber(L, (double)GetScreenHeight());
 	return 1;
 }
 int luaGetFps(lua_State *L)
@@ -809,7 +809,7 @@ int luaGetBase(lua_State *L)
 }
 int luaGetFaces(lua_State *L)
 {
-	lua_pushnumber(L, (double)NumFace);
+	lua_pushnumber(L, (double)GetLandFaceNumber());
 	return 1;
 }
 int luaGetTolerant(lua_State *L)

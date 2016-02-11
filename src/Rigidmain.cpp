@@ -119,7 +119,13 @@ LPDIRECT3DTEXTURE8 pMyTexture[GTEXMAX];
 
 HMIDIOUT hMidiOut;
 
+static float g_FarMax = 600.0f;
+static float g_MarkerSize = 1.0f;
+static float g_NameSize = 1.0f;
 
+static int s_ScreenWidth;
+static int s_ScreenHeight;
+static int s_NumFace;
 int RecTickCount = 0;
 
 bool LockGravityFlag = FALSE;
@@ -145,22 +151,22 @@ bool HardShadowFlag = false;
 int CallModeChange = 0;
 
 BOOL ShowTitle = FALSE;
-DWORD ShowMeter = TRUE;
-DWORD ShowRegulation = TRUE;
-DWORD ShowMessage = TRUE;
-DWORD ShowData = FALSE;
-DWORD ShowExtra = FALSE;
-DWORD ShowNetwork = FALSE;
-DWORD ShowVariable = TRUE;
-DWORD ShowPower = FALSE;
-DWORD ShowCowl = TRUE;
-//DWORD ShowGhost = FALSE;
-DWORD TextureAlpha = TRUE;
-DWORD BackFaces = FALSE;
-DWORD ShowShadowFlag = TRUE;
-//DWORD ShowDustFlag = TRUE;
-DWORD DitherFlag = TRUE;
-DWORD FastShadow = 1;
+static DWORD ShowMeter = TRUE;
+static DWORD ShowRegulation = TRUE;
+static DWORD ShowMessage = TRUE;
+static DWORD ShowData = FALSE;
+static DWORD ShowExtra = FALSE;
+static DWORD ShowNetwork = FALSE;
+static DWORD ShowVariable = TRUE;
+static DWORD ShowPower = FALSE;
+static DWORD ShowCowl = TRUE;
+static DWORD ShowGhost = FALSE;
+static DWORD TextureAlpha = TRUE;
+static DWORD BackFaces = FALSE;
+static DWORD ShowShadowFlag = TRUE;
+static DWORD ShowDustFlag = TRUE;
+static DWORD DitherFlag = TRUE;
+static DWORD FastShadow = 1;
 bool MoveEnd = false;
 
 TCHAR SessionName[256] = "RigidChips";
@@ -3955,7 +3961,7 @@ HRESULT LoadLand(LPDIRECT3DDEVICE8 Device, char *fname)
 
 	int v = g_pLandMesh->GetSysMemMesh()->GetNumVertices();
 	int f = g_pLandMesh->GetSysMemMesh()->GetNumFaces();
-	NumFace = f;
+	s_NumFace = f;
 	g_World->AddLand(v, f);
 	g_World->LandRigid->MeshNo = -1;
 
@@ -6659,8 +6665,8 @@ HRESULT CMyD3DApplication::Render()
 		// TODO: update world
 		g_FPS = m_fFPS;
 		g_MyPlayerData.base_fps = (g_LimitFPS << 16) + (int)(m_fFPS + 0.5);
-		Width = m_d3dsdBackBuffer.Width;
-		Height = m_d3dsdBackBuffer.Height;
+		s_ScreenWidth = m_d3dsdBackBuffer.Width;
+		s_ScreenHeight = m_d3dsdBackBuffer.Height;
 		if (CallModeChange && g_SystemLua != NULL && (g_World->B26Bullet || g_DPlay->GetNumPlayers() == 0)) {
 			luaSystemRun("OnMode");
 			CallModeChange = 0;
@@ -8976,7 +8982,19 @@ VOID CMyD3DApplication::CleanupDirectInput()
 	m_pInputDeviceManager = NULL;
 
 }
-
-
-
-
+bool IsShowDust()
+{
+	return ShowDustFlag;
+}
+int GetScreenWidth()
+{
+	return s_ScreenWidth;
+}
+int GetScreenHeight()
+{
+	return s_ScreenHeight;
+}
+int GetLandFaceNumber()
+{
+	return s_NumFace;
+}

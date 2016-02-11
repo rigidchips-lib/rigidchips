@@ -202,5 +202,9 @@ public:
 	static BOOL CALLBACK StaticConfigureInputDevicesCB(IUnknown* pUnknown, VOID* pUserData);
 };
 
+bool IsShowDust();
+int GetScreenWidth();
+int GetScreenHeight();
+int GetLandFaceNumber();
 
 #endif // !defined(AFX_RIGID_H__F533E4AC_435C_4933_8AC7_50A6C021E6DF__INCLUDED_)

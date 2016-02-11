@@ -51,23 +51,14 @@ EXTERN double g_FPS;
 //正しい初期化位置がわからないので窮余の策
 #ifdef _GLOBAL_BODY
 EXTERN int g_LimitFPS = 30;
-EXTERN float g_FarMax = 600.0f;
-EXTERN float g_MarkerSize = 1.0f;
-EXTERN float g_NameSize = 1.0f;
 EXTERN GFloat TotalPower = 0;
 #else
 //制限FPS
 EXTERN int g_LimitFPS;//=30
-//描画限界距離
-EXTERN float g_FarMax;
-EXTERN float g_MarkerSize;
-EXTERN float g_NameSize;
 EXTERN GFloat TotalPower;
 #endif
 
 //EXTERN bool ObjectBallFlag;
-EXTERN DWORD ShowGhost;
-EXTERN DWORD ShowDustFlag;
 //Script関係（あんまり手を付けたくない）
 EXTERN char *ScriptSource;
 EXTERN int ScriptType;
@@ -92,9 +83,7 @@ EXTERN char SystemErrorStr[512];
 //ネットワークノイズの内、長期のサインカーブの方
 EXTERN int g_RandTime;
 //システム情報関連。グローバルである必要あるのか？
-EXTERN int Width;
-EXTERN int Height;
-EXTERN int NumFace;
+
 EXTERN int CCDImage[CCD_RESOLUTION][CCD_RESOLUTION];
 EXTERN int LastBye;
 EXTERN int Analog[6];
