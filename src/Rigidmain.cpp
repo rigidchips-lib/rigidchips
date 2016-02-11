@@ -3985,7 +3985,7 @@ HRESULT LoadLand(LPDIRECT3DDEVICE8 Device, char *fname)
 	LPDIRECT3DVERTEXBUFFER8 pMeshVB;
 	LPDIRECT3DINDEXBUFFER8 pMeshIB;
 	D3DVERTEX             *pVertex;
-	struct { short p1, p2, p3; } *pIndex;
+	struct {unsigned short p1, p2, p3; } *pIndex;
 
 	for (i = 0;i < (signed int)g_pLandMesh->m_dwNumMaterials;i++) {
 		g_pLandMesh->m_pMaterials[i].Diffuse.a = 0.5;

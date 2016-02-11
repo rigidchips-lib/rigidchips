@@ -26,7 +26,7 @@ public:
 };
 class GLandFace {
 public:
-	short Index[3];
+	unsigned short Index[3];
 	GVector Vertex[3];
 	GVector Normal;
 	GVector Center;
