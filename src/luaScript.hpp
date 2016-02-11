@@ -8,9 +8,9 @@
 #define lua_c
 
 extern "C" {
-    #include "lua.h"
-    #include "lualib.h"
-    #include "lauxlib.h"
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
 }
 
 #ifndef M_PI
@@ -54,5 +54,5 @@ extern DWORD UseLuaExternal;
 
 lua_State *luaScriptInit(char *buff);
 void luaScriptEnd(lua_State *L);
-int luaScriptRun (lua_State *L,char *funcName);
+int luaScriptRun(lua_State *L, char *funcName);
 #endif
