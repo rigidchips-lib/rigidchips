@@ -14,17 +14,10 @@
 #endif 
 //--メモリリーク検出用
 
-extern CMyD3DApplication* g_pApp;
-extern int ViewUpdate;
-extern GDPlay *DPlay;
-extern GPLAYERDATA PlayerData[];
-extern GMYDATA MyPlayerData;
 
 
-float luaL3dx, luaL3dy, luaL3dz;
+
 float luaL2dx, luaL2dy;
-int luaGraColor;
-extern int randTime;
 void Line(GVector &p1, GVector &p2, unsigned int col);
 void Line2D(GFloat x0, GFloat y0, GFloat x1, GFloat y1, int col);
 
@@ -106,13 +99,13 @@ int luaGetMouseM(lua_State *L)
 }
 int luaGetTickCount(lua_State *L)
 {
-	lua_pushnumber(L, TickCount);
+	lua_pushnumber(L, g_TickCount);
 	return 1;
 }
 int luaSetTicks(lua_State *L)
 {
-	TickCount = (int)lua_tonumber(L, 1);
-	lua_pushnumber(L, TickCount);
+	g_TickCount = (int)lua_tonumber(L, 1);
+	lua_pushnumber(L, g_TickCount);
 	return 1;
 }
 int luaSetCCDZoom(lua_State *L)
@@ -811,7 +804,7 @@ int luaGetFps(lua_State *L)
 }
 int luaGetBase(lua_State *L)
 {
-	lua_pushnumber(L, (double)LIMITFPS);
+	lua_pushnumber(L, (double)g_LimitFPS);
 	return 1;
 }
 int luaGetFaces(lua_State *L)

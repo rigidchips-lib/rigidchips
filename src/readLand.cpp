@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include "Globals.hpp"
 #include "GVector.hpp"
 #include "GRigid.hpp"
 #include "readLand.hpp"
@@ -8,8 +9,6 @@
 
 
 
-extern int ChipCount;
-extern int ValCount;
 #define GDEFCD 1.0
 
 

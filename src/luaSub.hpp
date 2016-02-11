@@ -1,5 +1,6 @@
 #ifndef G_LUASUB_H
 #define G_LUASUB_H
+#include "Consts.hpp"
 #include "luaScript.hpp"
 #include "resource.h"
 int luaGetSMouseX(lua_State *L);

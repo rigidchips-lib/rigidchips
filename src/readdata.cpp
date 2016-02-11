@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <float.h>
+#include "Globals.hpp"
 #include "GVector.hpp"
 #include "GRigid.hpp"
 #include "readData.hpp"
@@ -27,22 +28,6 @@
 #define GDEFCD 1.0
 
 
-extern int dataCode;
-extern GValList ValList[];
-extern GKeyList KeyList[];
-extern GWorld *World;
-extern GRigid *Chip[];
-extern int DataCheck;
-extern int ChipCount;
-extern int VarCount;
-extern char *ScriptSource;
-extern int ScriptType;
-extern int ScriptPc;
-extern GMYDATA MyPlayerData;
-
-
-
-lua_State *ScriptL = NULL;
 
 void MakeChip(int type, int rn)
 {

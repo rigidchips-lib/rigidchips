@@ -25,9 +25,11 @@
 #include <locale.h>
 #include "string.h"
 #include "ctype.h"
+#include "Globals.hpp"
 #include "readData.hpp"
 #include "luaSystem.hpp"
 #include "luaSub.hpp"
+
 #include "GDPlay.hpp"
 #include "GPlayers.h"
 
@@ -42,47 +44,13 @@
 #endif 
 //--メモリリーク検出用
 
-extern CMyD3DApplication* g_pApp;
-extern char szUpdateFileName0[];
-extern float luaL3dx, luaL3dy, luaL3dz;
-extern int luaGraColor;
-extern GVector CompassTarget;
-extern int ViewUpdate;
 
 
-char SystemOutput[GOUTPUTMAX][512];
-char *SystemSource = NULL;
-int SystemErrorCode;
-char SystemErrorStr[512];
-lua_State *SystemL = NULL;
-
-extern int scenarioCode;
-
-
-extern bool GravityFlag;
-extern bool AirFlag;
-extern bool TorqueFlag;
-extern bool JetFlag;
-extern bool UnbreakableFlag;
-extern bool ScriptFlag;
-extern bool CCDFlag;
-extern bool EfficientFlag;
-
-extern GRing Ring[];
-
-extern int ChipCount;
-extern float Zoom;
-
-extern GDPlay *DPlay;
-extern GPLAYERDATA PlayerData[];
-extern GMYDATA MyPlayerData;
-
-extern char LastChatData[];
 
 
 #define FILEMAX 32
 FILE *FpTable[32];
-extern bool ControlKeysLock[];//0:Init,1:Reset,2:Open,3:Update,4:OpenLand,5:OpenGame,6:YForce,7:Title
+
 
 int luaGetLastChat(lua_State *L)
 {
@@ -223,7 +191,7 @@ int luaKeyLock(lua_State *L)
 }
 int luaGetSystemTickCount(lua_State *L)
 {
-	lua_pushnumber(L, SystemTickCount);
+	lua_pushnumber(L, g_SystemTickCount);
 	return 1;
 }
 int luaSetView(lua_State *L)

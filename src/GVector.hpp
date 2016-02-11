@@ -2,9 +2,7 @@
 #define G_VECTOR_H
 #define GSINGLE_PRECISION
 #include <math.h>
-#ifndef M_PI
-#define M_PI        3.14159265358979323846
-#endif
+#include "Consts.hpp"
 //#define GSINGLE_PRECISION
 #ifdef GSINGLE_PRECISION
 #define gEpsilon  1E-4

@@ -9,6 +9,7 @@
 #include <DXErr8.h>
 #include <tchar.h>
 #include <dinput.h>
+#include "Consts.hpp"
 #include "D3DApp.h"
 #include "D3DFont.h"
 #include "D3DFile.h"
@@ -25,6 +26,7 @@
 #include <locale.h>
 #include "string.h"
 #include "ctype.h"
+#include "Globals.hpp"
 #include "readData.hpp"
 #include "luaScript.hpp"
 #include "luaSub.hpp"
@@ -40,10 +42,7 @@
 #endif 
 //--メモリリーク検出用
 
-extern char szUpdateFileName0[];
-extern float luaL3dx, luaL3dy, luaL3dz;
-extern int luaGraColor;
-extern int randTime;
+
 
 // Luaに登録するCの関数は、intを返し、lua_State*を受け取るものである必要がある。
 // 返す値は戻り値の数。この場合数値を1個返す（スタックに積む）ので1。

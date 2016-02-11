@@ -1,6 +1,7 @@
 #ifndef G_GPLAYERS_H
 #define G_GPLAYERS_H
 #include "GRigid.hpp"
+#include "GDPlay.hpp"
 #define GRECEIVEMAX 513
 typedef struct {
 	short		code;

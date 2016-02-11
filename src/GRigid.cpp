@@ -1,3 +1,5 @@
+#include "Globals.hpp"
+#include "Consts.hpp"
 #include "GVector.hpp"
 #include "GRigid.hpp"
 #include "GParticle.hpp"
@@ -17,25 +19,11 @@ GVector VecY = GVector(0, 1, 0);
 GVector VecZ = GVector(0, 0, 1);
 
 //int GDTSTEP=(int)(10*(0.6f/CHIPSIZE)+0.1);
-int GDTSTEP = 10;
-int GLOOP = 10;
-int LIMITFPS = 30;
-extern GParticle *GroundParticle;
-extern GParticle *WaterLineParticle;
-extern GParticle *JetParticle;
-extern GBullet *Bullet;
+
+
 //extern bool ObjectBallFlag;
-extern bool ShowGhost;
-extern DWORD ShowDustFlag;
-extern int TickCount;
-extern int SystemTickCount;
 
-extern bool EfficientFlag;
-extern GFloat TotalPower;
 
-extern double ARM_EFF;
-extern double JET_EFF;
-extern double WHL_EFF;
 
 
 void AttackDataDisp(char *s, DWORD dpnid, int attack);
@@ -1875,7 +1863,7 @@ GFloat  GWorld::CalcShaft(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVec
 GFloat GWorld::CalcHinge(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVector &offsetB, GVector &axis, GFloat angle = 0, GFloat k = 1, GFloat damper = 0)
 {
 
-	float h = 10.0f / (GFloat)GLOOP*(GFloat)30.0f / (GFloat)LIMITFPS*10.0f / (GFloat)GDTSTEP;
+	float h = 10.0f / (GFloat)GLOOP*(GFloat)30.0f / (GFloat)g_LimitFPS*10.0f / (GFloat)GDTSTEP;
 	k = k*h*0.6f / (GFloat)CHIPSIZE;if (k > 1.0f*10.0f / (GFloat)GDTSTEP) k = 1.0f*10.0f / (GFloat)GDTSTEP;else if (k < 0) k = 0.0f;
 	damper = damper*h;if (damper > 0.5*10.0f / (GFloat)GDTSTEP) damper = 0.5f*10.0f / (GFloat)GDTSTEP;else if (damper < 0) damper = 0.0f;
 	angle = angle*(GFloat)M_PI / 180.0f + (GFloat)M_PI;
@@ -1994,7 +1982,7 @@ void GWorld::Move(bool initFlag)
 		//ƒ`ƒbƒv‚Æ‚Ì“–‚½‚è”»’è
 	GFloat t, t2;
 	GRigid *r = NULL;
-	if (haveArm && TickCount * 30 / LIMITFPS>150) {
+	if (haveArm && g_TickCount * 30 / g_LimitFPS>150) {
 		for (i = 0;i < Bullet->MaxVertex;i++) {
 			if (Bullet->Vertex[i].Life>0) {
 				r = NULL;
@@ -2065,12 +2053,12 @@ void GWorld::Move(bool initFlag)
 			GVector x = Bullet->Vertex[i].Pos.pointOnFaceAndLine(GVector(0, 1, 0), -0.45f, -Bullet->Vertex[i].Vec.normalize());
 			GVector w = Bullet->Vertex[i].Vec.normalize() / 3.0f;
 			if (Bullet->Vertex[i].Pos.y >= 0.0f)w.y = -w.y;
-			WaterLineParticle->Add(x, w, GVector(0, -0.01f, 0), Bullet->Vertex[i].Size / 2, 2.0f, 0.04f, GVector(1, 1, 1));
+			WATER_LINEParticle->Add(x, w, GVector(0, -0.01f, 0), Bullet->Vertex[i].Size / 2, 2.0f, 0.04f, GVector(1, 1, 1));
 		}
 	}
 
 	GroundParticle->Move();
-	WaterLineParticle->Move();
+	WATER_LINEParticle->Move();
 	JetParticle->Move();
 	Bullet->Move();
 	for (j = 0;j < ChipCount;j++) {
@@ -2081,7 +2069,7 @@ void GWorld::Move(bool initFlag)
 		Rigid[j]->L2.clear();
 		Rigid[j]->Hit[0].FricV.clear();
 		if (Rigid[j]->ChipType == 10) {
-			double e = 5000.0*30.0 / LIMITFPS;
+			double e = 5000.0*30.0 / g_LimitFPS;
 			if (!EfficientFlag) e = Rigid[j]->Top->CheckFuel(e / ARM_EFF)*ARM_EFF;
 			Rigid[j]->Energy += (GFloat)e;
 			if (Rigid[j]->Energy >= Rigid[j]->ArmEnergy) {

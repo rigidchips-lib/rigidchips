@@ -3,7 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "readSub.hpp"
-
+#include "Globals.hpp"
 //メモリリーク検出用
 #include <crtdbg.h>  
 #ifdef _DEBUG 
@@ -14,8 +14,6 @@
 #endif
 #endif 
 //--メモリリーク検出用
-
-extern int DataCheck;
 
 int  getCharData(FILE *fp)
 {

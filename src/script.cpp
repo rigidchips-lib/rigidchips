@@ -25,7 +25,7 @@
 #include "string.h"
 #include "ctype.h"
 
-
+#include "Globals.hpp"
 #include "GVector.hpp"
 #include "GRigid.hpp"
 #include "readData.hpp"
@@ -53,43 +53,7 @@
 #ifndef M_PI
 #define M_PI	3.14159265358979323846
 #endif
-extern GValList ValList[];
-extern GKeyList KeyList[];
-extern GWorld *World;
-extern GRigid *Chip[];
-extern int ChipCount;
-extern int VarCount;
-extern int TickCount;
-extern int SystemTickCount;
-extern double FPS;
-extern int LIMITFPS;
-extern int Width;
-extern int Height;
-extern int NumFace;
-extern int CCDImage[64][64];
-extern int LastBye;
-extern int Analog[];
-extern int Hat[];
-extern int	MouseX;
-extern int	MouseY;
-extern int	MouseL;
-extern int	MouseR;
-extern int	MouseM;
-extern int	CtrlKey;
-extern float CCDZoom;
-//extern bool ObjectBallFlag;
-extern int ViewType;
-extern GVector UserEyePos;
-extern GVector UserRefPos;
-extern GVector UserUpVec;
 
-extern GDPlay *DPlay;
-extern GPLAYERDATA PlayerData[];
-extern GMYDATA MyPlayerData;
-extern TCHAR CurrDataDir[];
-
-
-int randTime = 0;
 
 static float l3dx, l3dy, l3dz;
 static float l2dx, l2dy;
@@ -98,7 +62,6 @@ void Line(GVector &p1, GVector &p2, unsigned int col);
 void Line2D(GFloat x0, GFloat y0, GFloat x1, GFloat y1, int col);
 
 //ïœêîÇÃì‡óeÇçXêV
-char ScriptOutput[GOUTPUTMAX][512];
 
 static long myrandval = 1L;
 int myrand() {
@@ -144,15 +107,15 @@ double  mouseM(void)
 }
 double  ticks(void)
 {
-	return (double)TickCount;
+	return (double)g_TickCount;
 }
 double  systemTicks(void)
 {
-	return (double)SystemTickCount;
+	return (double)g_SystemTickCount;
 }
 double  setTicks(double v)
 {
-	TickCount = (int)v;
+	g_TickCount = (int)v;
 	return v;
 }
 double  setCCDZoom(double v)
@@ -700,7 +663,7 @@ double getFps()
 }
 double getBase()
 {
-	return (double)LIMITFPS;
+	return (double)g_LimitFPS;
 }
 double getFaces()
 {
@@ -1049,12 +1012,12 @@ struct funrec {
 	{"_PLAYERNAME2",NULL,NULL,getPlayerName2,NULL,2},
 	{"???",NULL,NULL,NULL,NULL,0} };
 
-char *ScriptSource = NULL;
-int ScriptType = 0;
+//char *ScriptSource = NULL;
+//int ScriptType = 0;
 char ScriptStr[MAXNAMESIZE], ScriptChar, ScriptSym;
-int ScriptErrorCode;
+//int ScriptErrorCode;
 char ScriptErrorStr[512];
-int ScriptErrorPc;
+//int ScriptErrorPc;
 int ScriptPc;
 int ScriptSymPC;
 int ScriptSymPrePC;

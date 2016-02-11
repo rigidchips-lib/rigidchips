@@ -6,6 +6,8 @@
 
 //#include <windows.h>
 #include "resource.h"
+#include "Globals.hpp"
+#include "Consts.hpp"
 #include "GParticle.hpp"
 #include "commctrl.h"
 
@@ -21,7 +23,6 @@
 
 //#include "WINNLS32.H"
 
-
 //メモリリーク検出用
 #include <crtdbg.h>  
 #ifdef _DEBUG 
@@ -32,29 +33,15 @@
 #endif
 #endif 
 //--メモリリーク検出用
-GDPlay *DPlay;
 
 bool MsgFlag = false;
-
-extern int GDTSTEP;
-extern int GLOOP;
-extern int LIMITFPS;
-
-int GNETSPAN = 200;
-
-float ARMSPEED = 20.0f;
-
-//燃料からの変換効率(大きいほど効率がよい)
-double ARM_EFF = 1.0;
-double JET_EFF = 10.0;
-double WHL_EFF = 30.0;
 
 char Kokuti[256] = "";
 
 int dataCode = 0;
 int gameCode = 0;
 int landCode = 0;
-int scenarioCode = 0;
+
 
 LPD3DXFONT	g_pFont = NULL;		// D3DXFontインターフェイス
 
@@ -80,21 +67,17 @@ typedef struct _D3DPOINTVERTEX_ {
 //#define D3DFVF_POINTVERTEX 		(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1| D3DFVF_PSIZE)
 #define D3DFVF_POINTVERTEX 		(D3DFVF_XYZ | D3DFVF_DIFFUSE)
 
-#define GMODELMAX 38
-#define GTEXMAX 23
-#define GCHECKPOINTMAX 100
+
 
 inline DWORD FtoDW(FLOAT f) { return *((DWORD*)&f); }
 
-float GFARMAX = 600.0f;
-float GMARKERSIZE = 1.0f;
-float GNAMESIZE = 1.0f;
+
 
 //int Size;
 D3DLIGHT8 light;
 //D3DLIGHT8 light1;
-#define GRECMAX (30*60*3)
-#define GCOURSEMAX 10
+
+
 int KeyRecord[GRECMAX][GKEYMAX + 7];//AnalogとHat
 int RecCheckPoint;
 int KeyRecordMode = 0;
@@ -102,11 +85,6 @@ int KeyRecordMax = 0;
 int KeyRecordCount = 0;
 int RecState = 0;
 
-bool SystemKeys[GSYSKEYMAX];
-bool SystemKeysDown[GSYSKEYMAX];
-bool SystemKeysUp[GSYSKEYMAX];
-
-bool ControlKeysLock[8];//0:Init,1:Reset,2:Open,3:Update,4:OpenLand,5:OpenGame,6:YForce,7:Title
 
 typedef struct {
 	char Name[128];
@@ -141,33 +119,16 @@ int RecWaitCount = 0;
 
 int CurrentCheckPoint = 0;
 
-int Analog[6];
-int Hat[1];
-int	MouseX;
-int	MouseY;
-int	MouseL;
-int	MouseR;
-int	MouseM;
-int	CtrlKey;
-int CCDImage[64][64];
-int LastBye;
-HWND g_hWnd = NULL;              // The main app window
 
 DWORD SoundType;
 
-float CCDZoom = 0.3f*180.0f / (GFloat)M_PI;
+//float CCDZoom = 0.3f*180.0f / (GFloat)M_PI;
 
-GVector AirSpeed;//風
 
-GParticle *GroundParticle;
-GParticle *WaterLineParticle;
-GParticle *JetParticle;
-GBullet *Bullet;
 
-LPDIRECT3DDEVICE8 G3dDevice;
+
 CD3DMesh*	m_pSkyMesh;				// XMeshデータ
 CD3DMesh*	m_pXMesh[GMODELMAX];	// XMeshデータ
-CD3DMesh*	m_pLandMesh;	// XMeshデータ
 D3DXMATRIX GMatWorld;
 D3DXMATRIX GMatView;
 
@@ -177,28 +138,18 @@ LPDIRECT3DTEXTURE8 pPointTexture = NULL;
 LPD3DXSPRITE pSprite = NULL;
 LPDIRECT3DTEXTURE8 pMyTexture[GTEXMAX];
 
-GValList ValList[GVALMAX];
-GKeyList KeyList[GKEYMAX];
+
 
 HMIDIOUT hMidiOut;
 
-GWorld *World;
-GRigid *Chip[GCHIPMAX];
-int ChipCount = 0;
-int VarCount = 0;
-int TickCount = 0;
-int SystemTickCount = 0;
+
+//int ChipCount = 0;
+//int VarCount = 0;
+
 int RecTickCount = 0;
-double FPS = 0.0;
-int Width, Height;
-bool GravityFlag = TRUE;
-bool AirFlag = TRUE;
-bool TorqueFlag = TRUE;
-bool JetFlag = TRUE;
-bool UnbreakableFlag = TRUE;
-bool ScriptFlag = TRUE;
-bool CCDFlag = TRUE;
-bool EfficientFlag = TRUE;
+//double FPS = 0.0;
+//int Width, Height;
+
 
 bool LockGravityFlag = FALSE;
 bool LockAirFlag = FALSE;
@@ -222,19 +173,7 @@ bool HardShadowFlag = false;
 
 int CallModeChange = 0;
 
-TCHAR AppDir[MAX_PATH];
-TCHAR ResourceDir[MAX_PATH];
-TCHAR DataDir[MAX_PATH];
-TCHAR CurrDataDir[MAX_PATH];
-TCHAR CurrScenarioDir[MAX_PATH];
 
-char szUpdateFileName[_MAX_PATH] = "";
-char szUpdateFileName0[_MAX_PATH] = "";
-char szLandFileName[_MAX_PATH] = "";
-char szLandFileName0[_MAX_PATH] = "";
-char szTempFileName0[_MAX_PATH] = "";
-char szSystemFileName[_MAX_PATH] = "";
-char szSystemFileName0[_MAX_PATH] = "";
 
 BOOL ShowTitle = FALSE;
 DWORD ShowMeter = TRUE;
@@ -246,11 +185,11 @@ DWORD ShowNetwork = FALSE;
 DWORD ShowVariable = TRUE;
 DWORD ShowPower = FALSE;
 DWORD ShowCowl = TRUE;
-DWORD ShowGhost = FALSE;
+//DWORD ShowGhost = FALSE;
 DWORD TextureAlpha = TRUE;
 DWORD BackFaces = FALSE;
 DWORD ShowShadowFlag = TRUE;
-DWORD ShowDustFlag = TRUE;
+//DWORD ShowDustFlag = TRUE;
 DWORD DitherFlag = TRUE;
 DWORD FastShadow = 1;
 bool MoveEnd = false;
@@ -272,9 +211,8 @@ char AttackData[GMAXATTACKLINE][256];
 int  AttackDataStart = 0;
 int  AttackDataEnd = 0;
 
-char MessageData[MESSAGEMAX + 1];
-int RecieaveMessageCode[GPLAYERMAX];
-char RecieaveMessageData[GPLAYERMAX][MESSAGEMAX + 1];
+
+
 
 //bool ObjectBallFlag=TRUE;
 BOOL WindCalm = TRUE;
@@ -284,41 +222,25 @@ BOOL WindTyphoon = FALSE;
 unsigned long TitleAlpha = 0x00ffffff;
 
 int ResetCount = 90;
-int NumFace;
+//int NumFace;
 
-GFloat TotalPower = 0;
-GFloat WaterLine = -0.45f;
 
-int DataCheck = 0;
+
+
 GVector lightColor;
 GVector FogColor;
 GVector EyePos, RefPos, UpVec;
-GVector UserEyePos;
-GVector UserRefPos;
-GVector UserUpVec;
-int ViewUpdate = 0;
-GFloat Zoom;
+//GVector UserEyePos;
+//GVector UserRefPos;
+//GVector UserUpVec;
+
 GFloat TurnLR;
 GFloat TurnUD;
-int ViewType = 0;
-GVector CompassTarget;
+//int ViewType = 0;
+//GVector CompassTarget;
 int RunScript();
-extern char *ScriptSource;
-extern int ScriptType;
-extern char ScriptOutput[][512];
-extern int ScriptErrorCode;
-extern int ScriptErrorPc;
-extern char ScriptErrorStr[];
 
-DWORD UseLuaExternal = 0;
 
-extern lua_State *SystemL;
-extern char *SystemSource;
-extern char SystemOutput[][512];
-extern int SystemErrorCode;
-extern char SystemErrorStr[];
-
-extern lua_State *ScriptL;
 int myRand();
 void MySrand(unsigned int seed);
 
@@ -416,12 +338,10 @@ DIACTION g_rgGameAction[] =
 //-----------------------------------------------------------------------------
 // Global access to the app (needed for the global WndProc())
 //-----------------------------------------------------------------------------
-CMyD3DApplication* g_pApp = NULL;
+
 HINSTANCE          g_hInst = NULL;
 
 
-GMYDATA MyPlayerData;
-GPLAYERDATA PlayerData[GPLAYERMAX];
 GPLAYERDATA PrePlayerData[GPLAYERMAX];
 
 DWORD MyNetDataSize = 0;
@@ -798,8 +718,8 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			GSTREAM strm2;
 			strm2.code = 1;
 			char *str = (char*)strm2.data;
-			if (World->NetStop) sprintf(str, "FPS=Pause (Base=%d) ", LIMITFPS);
-			else sprintf(str, "FPS=%.1f (Base=%d) ", FPS, LIMITFPS);
+			if (World->NetStop) sprintf(str, "FPS=Pause (Base=%d) ", g_LimitFPS);
+			else sprintf(str, "FPS=%.1f (Base=%d) ", FPS, g_LimitFPS);
 			DWORD size = strlen(str) + 1 + sizeof(short);
 			DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
 		}
@@ -1104,7 +1024,7 @@ void ResetVal()
 }
 void ResetRecVal()
 {
-	TickCount = RecTickCount;
+	g_TickCount = RecTickCount;
 	for (int i = 0;i < VarCount;i++) {
 		ValList[i].Val = ValList[i].RecVal;
 		for (int j = 0;j < ValList[i].RefCount;j++) {
@@ -1142,7 +1062,7 @@ void ResetRecVal()
 }
 void RecVal()
 {
-	RecTickCount = TickCount;
+	RecTickCount = g_TickCount;
 	for (int i = 0;i < VarCount;i++) {
 		ValList[i].RecUpdated = ValList[i].Updated;
 		ValList[i].RecVal = ValList[i].Val;
@@ -1150,7 +1070,7 @@ void RecVal()
 }
 void ResetChip(int n, GFloat a)
 {
-	TickCount = 0;
+	g_TickCount = 0;
 	CCDZoom = 0.3f*180.0f / (GFloat)M_PI;
 	Chip[n]->Power = 0.0;
 	Chip[n]->PowerSave = 0.0;
@@ -1189,7 +1109,7 @@ void ResetChip(int n, GFloat a)
 void ResetObject(int n, GFloat a)
 {
 	if (World->Object[n] == NULL) return;
-	TickCount = 0;
+	g_TickCount = 0;
 	World->Object[n]->R = GMatrix().rotateY(a);
 	World->Object[n]->L.clear();
 	World->Object[n]->P.clear();
@@ -1200,7 +1120,7 @@ void ResetObject(int n, GFloat a)
 
 void ResetChip2(int n, GFloat a)
 {
-	TickCount = 0;
+	g_TickCount = 0;
 	Chip[n]->Power = 0.0;
 	for (int i = 0;i < VarCount;i++) {
 		ValList[i].Val = ValList[i].Def;
@@ -1218,7 +1138,7 @@ void ResetChip2(int n, GFloat a)
 }
 void ResetChip3(int n, GQuat q, GVector x)
 {
-	TickCount = 0;
+	g_TickCount = 0;
 	Chip[n]->Power = 0.0;
 	Chip[n]->PowerSave = 0.0;
 	Chip[n]->Power2 = 0.0;
@@ -1445,28 +1365,28 @@ int CALLBACK DlgExtraProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		SendMessage(GetDlgItem(hDlg, IDC_NAMESLIDER), TBM_SETTICFREQ, (WPARAM)1, 0);
 		SendMessage(GetDlgItem(hDlg, IDC_LUAEXTERNAL), BM_SETCHECK, (WPARAM)UseLuaExternal, 0);
 
-		if (GFARMAX <= 300.0f) p = 0;
-		else if (GFARMAX <= 600.0f) p = 1;
-		else if (GFARMAX <= 1200.0f) p = 2;
-		else if (GFARMAX <= 2400.0f) p = 3;
-		else if (GFARMAX <= 4800.0f) p = 4;
+		if (g_FarMax <= 300.0f) p = 0;
+		else if (g_FarMax <= 600.0f) p = 1;
+		else if (g_FarMax <= 1200.0f) p = 2;
+		else if (g_FarMax <= 2400.0f) p = 3;
+		else if (g_FarMax <= 4800.0f) p = 4;
 		SendMessage(GetDlgItem(hDlg, IDC_FARSLIDER), TBM_SETPOS, 1, p);
 		r = (((int)FogColor.z) << 16) + (((int)FogColor.y) << 8) + (int)FogColor.x;
 		sprintf(str, "%06X", r);
 		SendDlgItemMessage(hDlg, IDC_COLORSTATIC, WM_SETTEXT, 0, (LPARAM)str);
 
-		if (GMARKERSIZE <= 0.0f) p = 0;
-		else if (GMARKERSIZE <= 0.5f) p = 1;
-		else if (GMARKERSIZE <= 0.75f) p = 2;
-		else if (GMARKERSIZE <= 1.0f) p = 3;
-		else if (GMARKERSIZE <= 2.0f) p = 4;
+		if (g_MarkerSize <= 0.0f) p = 0;
+		else if (g_MarkerSize <= 0.5f) p = 1;
+		else if (g_MarkerSize <= 0.75f) p = 2;
+		else if (g_MarkerSize <= 1.0f) p = 3;
+		else if (g_MarkerSize <= 2.0f) p = 4;
 		SendMessage(GetDlgItem(hDlg, IDC_MARKERSLIDER), TBM_SETPOS, 1, p);
 
-		if (GNAMESIZE <= 0.0f) p = 0;
-		else if (GNAMESIZE <= 0.5f) p = 1;
-		else if (GNAMESIZE <= 0.75f) p = 2;
-		else if (GNAMESIZE <= 1.0f) p = 3;
-		else if (GNAMESIZE <= 2.0f) p = 4;
+		if (g_NameSize <= 0.0f) p = 0;
+		else if (g_NameSize <= 0.5f) p = 1;
+		else if (g_NameSize <= 0.75f) p = 2;
+		else if (g_NameSize <= 1.0f) p = 3;
+		else if (g_NameSize <= 2.0f) p = 4;
 		SendMessage(GetDlgItem(hDlg, IDC_NAMESLIDER), TBM_SETPOS, 1, p);
 		break;
 	case WM_CLOSE:
@@ -1478,25 +1398,25 @@ int CALLBACK DlgExtraProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	case WM_HSCROLL:
 		p = (int)SendMessage(GetDlgItem(hDlg, IDC_FARSLIDER), TBM_GETPOS, 0, 0);
-		if (p == 0) GFARMAX = 300.0f;
-		else if (p == 1) GFARMAX = 600.0f;
-		else if (p == 2) GFARMAX = 1200.0f;
-		else if (p == 3) GFARMAX = 2400.0f;
-		else  GFARMAX = 4800.0f;
+		if (p == 0) g_FarMax = 300.0f;
+		else if (p == 1) g_FarMax = 600.0f;
+		else if (p == 2) g_FarMax = 1200.0f;
+		else if (p == 3) g_FarMax = 2400.0f;
+		else  g_FarMax = 4800.0f;
 
 		p = (int)SendMessage(GetDlgItem(hDlg, IDC_MARKERSLIDER), TBM_GETPOS, 0, 0);
-		if (p == 0) GMARKERSIZE = 0.0f;
-		else if (p == 1) GMARKERSIZE = 0.5f;
-		else if (p == 2) GMARKERSIZE = 0.75f;
-		else if (p == 3) GMARKERSIZE = 1.0f;
-		else  GMARKERSIZE = 2.0f;
+		if (p == 0) g_MarkerSize = 0.0f;
+		else if (p == 1) g_MarkerSize = 0.5f;
+		else if (p == 2) g_MarkerSize = 0.75f;
+		else if (p == 3) g_MarkerSize = 1.0f;
+		else  g_MarkerSize = 2.0f;
 
 		p = (int)SendMessage(GetDlgItem(hDlg, IDC_NAMESLIDER), TBM_GETPOS, 0, 0);
-		if (p == 0) GNAMESIZE = 0.0f;
-		else if (p == 1) GNAMESIZE = 0.5f;
-		else if (p == 2) GNAMESIZE = 0.75f;
-		else if (p == 3) GNAMESIZE = 1.0f;
-		else  GNAMESIZE = 2.0f;
+		if (p == 0) g_NameSize = 0.0f;
+		else if (p == 1) g_NameSize = 0.5f;
+		else if (p == 2) g_NameSize = 0.75f;
+		else if (p == 3) g_NameSize = 1.0f;
+		else  g_NameSize = 2.0f;
 		break;
 	case WM_DESTROY:
 		//            if(hDlg)DestroyWindow(hDlg);
@@ -1931,7 +1851,7 @@ int CALLBACK DlgNetworkProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			int n = DPlay->GetNumPlayers();
 			MyPlayerData.ver_team = (15220 << 16) + 0;
-			MyPlayerData.base_fps = (LIMITFPS << 16) + 30;
+			MyPlayerData.base_fps = (g_LimitFPS << 16) + 30;
 			MyPlayerData.scenarioCode = scenarioCode;
 			MyPlayerData.dummyf1 = 0;
 			MyPlayerData.dummyf2 = 0;
@@ -2613,9 +2533,9 @@ void GWorld::DispNetChipInfo(int n, float zz)
 	float z = PlayerData[n].z;
 	GVector infoV = GVector(x, y, z);
 	float l;
-	if (GMARKERSIZE != 0.0f) {
-		if (GMARKERSIZE < 1.5) {
-			l = zz*0.1f*GMARKERSIZE;
+	if (g_MarkerSize != 0.0f) {
+		if (g_MarkerSize < 1.5) {
+			l = zz*0.1f*g_MarkerSize;
 		}
 		else {
 			l = zz;
@@ -2656,9 +2576,9 @@ void GWorld::DispNetChipInfo(int n, float zz)
 
 		mesh->Render(G3dDevice);
 	}
-	if (GNAMESIZE != 0.0f) {
-		if (GNAMESIZE < 1.5) {
-			l = zz*0.1f*GNAMESIZE;
+	if (g_NameSize != 0.0f) {
+		if (g_NameSize < 1.5) {
+			l = zz*0.1f*g_NameSize;
 		}
 		else {
 			l = zz;
@@ -2861,26 +2781,26 @@ void GRigid::DispShadow()
 		for (int j = 0;j < Shape.PointN - 1;j++) {
 			if (Type == GTYPE_DISK) {
 				GVector v = (Shape.Point[j] * TM);
-				GFloat t = (v.y - WaterLine)*ndot;
+				GFloat t = (v.y - WATER_LINE)*ndot;
 
 				sv2[sn2] = v + n*t;
 				if (t > 0.01) { flag = true;break; }
 				if (t < -1000000) t = -1000000;
 				if (t < tmin) tmin = t;
-				sv2[sn2].y = WaterLine - 1.0f / 100.0f;
+				sv2[sn2].y = WATER_LINE - 1.0f / 100.0f;
 				sn2++;
 
 			}
 			else if (Type == GTYPE_FACE) {
 				if (j >= 4) break;
 				GVector v = (Shape.Point[j + 4] * TM);
-				GFloat t = (v.y - WaterLine)*ndot;
+				GFloat t = (v.y - WATER_LINE)*ndot;
 
 				sv2[sn2] = v + n*t;
 				if (t > 0.1) { flag = true;break; }
 				if (t<-1000000) t = -1000000;
 				if (t < tmin) tmin = t;
-				sv2[sn2].y = WaterLine - 1.0f / 100.0f;
+				sv2[sn2].y = WATER_LINE - 1.0f / 100.0f;
 				sn2++;
 			}
 		}
@@ -2964,18 +2884,18 @@ void GRigid::ApplyExtForce()
 		u = (v.normalize()).dot(n);	//投影面積
 		uw = (vw.normalize()).dot(nw);	//投影面積
 	}
-	if (X.y <= WaterLine + 0.3 && X.y >= WaterLine - 0.3) { //水表面
+	if (X.y <= WATER_LINE + 0.3 && X.y >= WATER_LINE - 0.3) { //水表面
 		if ((rand() % 200 + 2) < (int)V.abs()) {
 			float a = 1.0f + (rand() % 100) / 5000.0f - 0.01f;
 			if (a > 2.0f) a = 2.0f;else if (a <= 0.0f) a = 0.0f;
 			GVector w = GVector(V.x / 100.0f, 0.02f + fabs(V.y) / 60.0f, V.z / 100.0f);
 			//if(v.abs()>0.1f) v=v.normalize()/10.0f;
-			WaterLineParticle->Add(X, w, GVector(0, -0.005f, 0), 0.08f, a, 0.04f, GVector(1, 1, 1));
+			WATER_LINEParticle->Add(X, w, GVector(0, -0.005f, 0), 0.08f, a, 0.04f, GVector(1, 1, 1));
 		}
 	}
-	if (X.y <= WaterLine) { //水の中
-		if (X.y <= WaterLine - 100 && Top && Top->TotalCount > 2) {
-			Ext += (X - Top->TotalCenterOfGravity)*(X.y - WaterLine + 100)*M*0.01f;
+	if (X.y <= WATER_LINE) { //水の中
+		if (X.y <= WATER_LINE - 100 && Top && Top->TotalCount > 2) {
+			Ext += (X - Top->TotalCenterOfGravity)*(X.y - WATER_LINE + 100)*M*0.01f;
 			//ApplyImpulse((,X);
 		}
 		Ext += ((-World->G*M) - (World->G*(1100.0f*volume - M)))*World->Dt;
@@ -2987,7 +2907,7 @@ void GRigid::ApplyExtForce()
 		L -= L*0.01f;
 	}
 	else {
-		float a = X.y - WaterLine;
+		float a = X.y - WATER_LINE;
 		float hk = 1.0f;
 		if (X.y > 300) hk = 1.0f - (X.y - 300) / 10000.0f;if (hk <= 0) hk = 0.0f;
 		hk = hk*hk;
@@ -3179,7 +3099,7 @@ CMyD3DApplication::CMyD3DApplication()
 	m_strWindowTitle = TEXT("RigidChips 1.5.B27");
 	m_bUseDepthBuffer = TRUE;
 
-	m_dLimidFPS = 1000 / LIMITFPS;
+	m_dLimidFPS = 1000 / g_LimitFPS;
 	m_inputFocus = true;
 
 	// Create a D3D font using d3dfont.cpp
@@ -3328,9 +3248,9 @@ HRESULT CMyD3DApplication::OneTimeSceneInit()
 	lightColor = GVector(1.00f, 1.00f, 1.00f);
 	FogColor = GVector(200.0f, 230.0f, 255.0f);
 
-	World = new GWorld(1 / (float)LIMITFPS, GDTSTEP);	//ステップ・サブステップ
+	World = new GWorld(1 / (float)g_LimitFPS, GDTSTEP);	//ステップ・サブステップ
 	GroundParticle = new GParticle(1200);
-	WaterLineParticle = new GParticle(300);
+	WATER_LINEParticle = new GParticle(300);
 	JetParticle = new GParticle(2000);
 	Bullet = new GBullet(500);
 
@@ -3435,23 +3355,23 @@ VOID CMyD3DApplication::ReadSettings()
 		DXUtil_ReadIntRegKey(hkey, TEXT("ShowGhost"), &ShowGhost, ShowGhost);
 		DXUtil_ReadIntRegKey(hkey, TEXT("LimidFPS"), &m_dLimidFPS, m_dLimidFPS);
 		DXUtil_ReadIntRegKey(hkey, TEXT("FastShadow"), &FastShadow, FastShadow);
-		if (m_dLimidFPS == (1000 / 15)) LIMITFPS = 15;
-		else  LIMITFPS = 30;
+		if (m_dLimidFPS == (1000 / 15)) g_LimitFPS = 15;
+		else  g_LimitFPS = 30;
 
 		DXUtil_ReadIntRegKey(hkey, TEXT("TextureAlpha"), &TextureAlpha, TextureAlpha);
 		DXUtil_ReadIntRegKey(hkey, TEXT("BackFaces"), &BackFaces, BackFaces);
 		DXUtil_ReadIntRegKey(hkey, TEXT("ShowShadowFlag"), &ShowShadowFlag, ShowShadowFlag);
 		DXUtil_ReadIntRegKey(hkey, TEXT("ShowDustFlag"), &ShowDustFlag, ShowDustFlag);
 		DXUtil_ReadIntRegKey(hkey, TEXT("DitherFlag"), &DitherFlag, DitherFlag);
-		DWORD v = (DWORD)GFARMAX;
+		DWORD v = (DWORD)g_FarMax;
 		DXUtil_ReadIntRegKey(hkey, TEXT("FogLevel"), &v, v);
-		GFARMAX = (float)v;
-		v = (DWORD)(GMARKERSIZE * 1000);
+		g_FarMax = (float)v;
+		v = (DWORD)(g_MarkerSize * 1000);
 		DXUtil_ReadIntRegKey(hkey, TEXT("MarkerSize"), &v, v);
-		GMARKERSIZE = (float)(v / 1000.0f);
-		v = (DWORD)(GNAMESIZE * 1000);
+		g_MarkerSize = (float)(v / 1000.0f);
+		v = (DWORD)(g_NameSize * 1000);
 		DXUtil_ReadIntRegKey(hkey, TEXT("NameSize"), &v, v);
-		GNAMESIZE = (float)(v / 1000.0f);
+		g_NameSize = (float)(v / 1000.0f);
 
 		DXUtil_ReadStringRegKey(hkey, TEXT("CurrWorkDir"), CurrDataDir, MAX_PATH, DataDir);
 
@@ -3508,11 +3428,11 @@ VOID CMyD3DApplication::WriteSettings()
 		DXUtil_WriteIntRegKey(hkey, TEXT("ShowShadowFlag"), ShowShadowFlag);
 		DXUtil_WriteIntRegKey(hkey, TEXT("ShowDustFlag"), ShowDustFlag);
 		DXUtil_WriteIntRegKey(hkey, TEXT("DitherFlag"), DitherFlag);
-		DWORD v = (DWORD)GFARMAX;
+		DWORD v = (DWORD)g_FarMax;
 		DXUtil_WriteIntRegKey(hkey, TEXT("FogLevel"), v);
-		v = (DWORD)(GMARKERSIZE * 1000);
+		v = (DWORD)(g_MarkerSize * 1000);
 		DXUtil_WriteIntRegKey(hkey, TEXT("MarkerSize"), v);
-		v = (DWORD)(GNAMESIZE * 1000);
+		v = (DWORD)(g_NameSize * 1000);
 		DXUtil_WriteIntRegKey(hkey, TEXT("NameSize"), v);
 		DXUtil_WriteStringRegKey(hkey, TEXT("CurrWorkDir"), CurrDataDir);
 
@@ -4385,7 +4305,7 @@ HRESULT CMyD3DApplication::RestoreDeviceObjects()
 	// Set the projection matrix
 	D3DXMATRIX matProj;
 	FLOAT fAspect = ((FLOAT)m_d3dsdBackBuffer.Width) / m_d3dsdBackBuffer.Height;
-	D3DXMatrixPerspectiveFovLH(&matProj, Zoom*(GFloat)M_PI / 180.0f, fAspect, 1.0f, GFARMAX);
+	D3DXMatrixPerspectiveFovLH(&matProj, Zoom*(GFloat)M_PI / 180.0f, fAspect, 1.0f, g_FarMax);
 	m_pd3dDevice->SetTransform(D3DTS_PROJECTION, &matProj);
 
 	// Set up lighting states
@@ -4545,7 +4465,7 @@ HRESULT CMyD3DApplication::ResetChips(float x, float z, float a)
 	if (ScriptType == 1 && ScriptSource[0] != '\0') ScriptL = luaScriptInit(ScriptSource);
 
 	GroundParticle->Clear();
-	WaterLineParticle->Clear();
+	WATER_LINEParticle->Clear();
 	JetParticle->Clear();
 	Bullet->Clear();
 
@@ -4580,7 +4500,7 @@ HRESULT CMyD3DApplication::ResetChips(float y, float a)
 	}
 	if (ScriptType == 1 && ScriptSource[0] != '\0') ScriptL = luaScriptInit(ScriptSource);
 	GroundParticle->Clear();
-	WaterLineParticle->Clear();
+	WATER_LINEParticle->Clear();
 	JetParticle->Clear();
 	Bullet->Clear();
 
@@ -4613,7 +4533,7 @@ HRESULT CMyD3DApplication::InitChips(float a, int hereFlag)
 	}
 	if (ScriptType == 1 && ScriptSource[0] != '\0') ScriptL = luaScriptInit(ScriptSource);
 	GroundParticle->Clear();
-	WaterLineParticle->Clear();
+	WATER_LINEParticle->Clear();
 	JetParticle->Clear();
 
 	Bullet->Clear();
@@ -4748,42 +4668,42 @@ HRESULT CMyD3DApplication::FrameMove()
 	}
 	//FPSの監視
 	static int netON = 0;
-	static int saveLIMITFPS = 30;
+	static int saveg_LimitFPS = 30;
 	if (NetworkDlg) {
 		if (DPlay->GetLocalPlayerDPNID() == 0) {
 			//FPSを元に戻す
 			if (netON) {
-				m_dLimidFPS = saveLIMITFPS;
+				m_dLimidFPS = saveg_LimitFPS;
 				if (m_dLimidFPS == (1000 / 15)) {
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_CHECKED);
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
-					LIMITFPS = 15;
+					g_LimitFPS = 15;
 				}
 				else if (m_dLimidFPS == (1000 / 30)) {
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_CHECKED);
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
-					LIMITFPS = 30;
+					g_LimitFPS = 30;
 				}
 				else {
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
-					LIMITFPS = 30;
+					g_LimitFPS = 30;
 				}
 			}
 			netON = 0;
 		}
 		else {
 			if (netON == 0 || m_dLimidFPS == 0) {
-				saveLIMITFPS = m_dLimidFPS;
+				saveg_LimitFPS = m_dLimidFPS;
 				if (m_dLimidFPS == (1000 / 15)) {
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_CHECKED);
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
-					LIMITFPS = 15;
+					g_LimitFPS = 15;
 				}
 				else {
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
 					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_CHECKED);
-					LIMITFPS = 30;
+					g_LimitFPS = 30;
 					m_dLimidFPS = 1000L / 30;
 				}
 			}
@@ -4800,21 +4720,21 @@ HRESULT CMyD3DApplication::FrameMove()
 				sprintf(str, "Push 'Start' to Hosting or Connecting");
 				//FPSを元に戻す
 				if (netON) {
-					m_dLimidFPS = saveLIMITFPS;
+					m_dLimidFPS = saveg_LimitFPS;
 					if (m_dLimidFPS == (1000 / 15)) {
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_CHECKED);
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
-						LIMITFPS = 15;
+						g_LimitFPS = 15;
 					}
 					else if (m_dLimidFPS == (1000 / 30)) {
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_CHECKED);
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
-						LIMITFPS = 30;
+						g_LimitFPS = 30;
 					}
 					else {
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
-						LIMITFPS = 30;
+						g_LimitFPS = 30;
 					}
 				}
 				netON = 0;
@@ -4824,16 +4744,16 @@ HRESULT CMyD3DApplication::FrameMove()
 					sprintf(str, "Hosting. %d players in this session.", n);
 				else sprintf(str, "Connecting. %d players in this session.", n);
 				if (netON == 0 || m_dLimidFPS == 0) {
-					saveLIMITFPS = m_dLimidFPS;
+					saveg_LimitFPS = m_dLimidFPS;
 					if (m_dLimidFPS == (1000 / 15)) {
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_CHECKED);
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
-						LIMITFPS = 15;
+						g_LimitFPS = 15;
 					}
 					else {
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_CHECKED);
-						LIMITFPS = 30;
+						g_LimitFPS = 30;
 						m_dLimidFPS = 1000L / 30;
 					}
 				}
@@ -5869,7 +5789,7 @@ HRESULT CMyD3DApplication::FrameMove()
 				ScriptL = luaScriptInit(ScriptSource);
 			}
 			GroundParticle->Clear();
-			WaterLineParticle->Clear();
+			WATER_LINEParticle->Clear();
 			JetParticle->Clear();
 			Bullet->Clear();
 			if (SystemL != NULL && (World->B26Bullet || DPlay->GetNumPlayers() == 0)) luaSystemRun("OnReset");
@@ -5940,7 +5860,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					}
 					else {
 						val = ValList[KeyList[i].ValNo[j]].Val;
-						val += KeyList[i].Step[j] * 30.0f / LIMITFPS;
+						val += KeyList[i].Step[j] * 30.0f / g_LimitFPS;
 					}
 					if (val > ValList[KeyList[i].ValNo[j]].Max) val = ValList[KeyList[i].ValNo[j]].Max;
 					if (val < ValList[KeyList[i].ValNo[j]].Min) val = ValList[KeyList[i].ValNo[j]].Min;
@@ -5963,7 +5883,7 @@ HRESULT CMyD3DApplication::FrameMove()
 						}
 						else {
 							val = ValList[KeyList[i].ValNo[j]].Val;
-							val += KeyList[i].Step2[j] * 30.0f / LIMITFPS;
+							val += KeyList[i].Step2[j] * 30.0f / g_LimitFPS;
 						}
 						if (val > ValList[KeyList[i].ValNo[j]].Max) val = ValList[KeyList[i].ValNo[j]].Max;
 						if (val < ValList[KeyList[i].ValNo[j]].Min) val = ValList[KeyList[i].ValNo[j]].Min;
@@ -6013,7 +5933,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					if (!EfficientFlag) {
 						double f = Chip[i]->CheckFuel(Chip[i]->Power / WHL_EFF);
 						Chip[i]->PowerByFuel = Chip[i]->Power = f*WHL_EFF;
-						Chip[i]->Top->UseFuel(f*30.0 / LIMITFPS);
+						Chip[i]->Top->UseFuel(f*30.0 / g_LimitFPS);
 						Chip[i]->Top->CalcTotalFuel();
 
 					}
@@ -6024,7 +5944,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					TotalPower += (GFloat)fabs(po / (1 + Chip[i]->W.abs() / 100));
 				}
 				//ARM弾発射
-				else if (Chip[i]->ChipType == 10 && Chip[i]->ArmEnergy > 0 && Chip[i]->Energy >= Chip[i]->ArmEnergy && Chip[i]->Power >= Chip[i]->ArmEnergy && TickCount * 30 / LIMITFPS > 150) {
+				else if (Chip[i]->ChipType == 10 && Chip[i]->ArmEnergy > 0 && Chip[i]->Energy >= Chip[i]->ArmEnergy && Chip[i]->Power >= Chip[i]->ArmEnergy && g_TickCount * 30 / g_LimitFPS > 150) {
 					GVector dir;
 					switch (Chip[i]->Dir) {
 					case 1:dir = GVector(1, 0, 0);break;
@@ -6035,7 +5955,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					GVector d = dir*Chip[i]->R;
 					Chip[i]->ApplyForce(-d*Chip[i]->ArmEnergy*s, Chip[i]->X);
 					TotalPower += (GFloat)fabs(Chip[i]->ArmEnergy*s);
-					Chip[i]->Energy = (float)-5000 * 30 / LIMITFPS;
+					Chip[i]->Energy = (float)-5000 * 30 / g_LimitFPS;
 					double f = sqrt(fabs(Chip[i]->ArmEnergy / 125000.0));if (f > 2.5) f = 2.5;
 					BOOL hit;
 					FLOAT dist;
@@ -6049,15 +5969,15 @@ HRESULT CMyD3DApplication::FrameMove()
 					pVB->Lock(0, 0, (BYTE**)&pVertices, 0);
 					D3DXVECTOR3 v1, v2;
 					float as = ARMSPEED;
-					if (Chip[i]->X.y < WaterLine) as = as / 10;
-					GVector dir2 = (d*as*30.0f / (GFloat)LIMITFPS + Chip[i]->V*Chip[i]->World->Dt*(GFloat)GDTSTEP).normalize2();
+					if (Chip[i]->X.y < WATER_LINE) as = as / 10;
+					GVector dir2 = (d*as*30.0f / (GFloat)g_LimitFPS + Chip[i]->V*Chip[i]->World->Dt*(GFloat)GDTSTEP).normalize2();
 					v1.x = Chip[i]->X.x;v1.y = Chip[i]->X.y;v1.z = Chip[i]->X.z;
 					v2.x = dir2.x;v2.y = dir2.y;v2.z = dir2.z;
 					D3DXIntersect(m_pLandMesh->GetSysMemMesh(), &v1, &v2, &hit, NULL, NULL, NULL, &dist, NULL, NULL);
 					if (!hit) dist = 100000.0f;
 					GVector p = Chip[i]->X + dir2*dist;
-					GBulletVertex *bul = Bullet->Add(Chip[i], Chip[i]->X, d*as*30.0f / (GFloat)LIMITFPS + Chip[i]->V*Chip[i]->World->Dt*(GFloat)GDTSTEP, Chip[i]->ArmEnergy, (GFloat)f*0.3f, dist, p, -1);
-					if (Chip[i]->X.y < WaterLine) bul->Life = 150.0f;
+					GBulletVertex *bul = Bullet->Add(Chip[i], Chip[i]->X, d*as*30.0f / (GFloat)g_LimitFPS + Chip[i]->V*Chip[i]->World->Dt*(GFloat)GDTSTEP, Chip[i]->ArmEnergy, (GFloat)f*0.3f, dist, p, -1);
+					if (Chip[i]->X.y < WATER_LINE) bul->Life = 150.0f;
 
 					pVB->Unlock();
 					pIB->Unlock();
@@ -6072,7 +5992,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					if (!EfficientFlag) {
 						double f = Chip[i]->CheckFuel(Chip[i]->Power / JET_EFF);
 						Chip[i]->PowerByFuel = Chip[i]->Power = f*JET_EFF;
-						Chip[i]->Top->UseFuel(f*30.0 / LIMITFPS);
+						Chip[i]->Top->UseFuel(f*30.0 / g_LimitFPS);
 						Chip[i]->Top->CalcTotalFuel();
 					}
 					else Chip[i]->PowerByFuel = Chip[i]->Power;
@@ -6209,8 +6129,8 @@ HRESULT CMyD3DApplication::FrameMove()
 				RecState = 3;
 			}
 		}
-		TickCount++;
-		SystemTickCount++;
+		g_TickCount++;
+		g_SystemTickCount++;
 	}
 	MsgFlag = false;
 	return S_OK;
@@ -6345,8 +6265,8 @@ HRESULT CMyD3DApplication::ViewSet() {
 	// Set the projection matrix
 	D3DXMATRIX matProj;
 	FLOAT fAspect = ((FLOAT)m_d3dsdBackBuffer.Width) / m_d3dsdBackBuffer.Height;
-	if (ViewType == 7) D3DXMatrixPerspectiveFovLH(&matProj, CCDZoom*(GFloat)M_PI / 180.0f, fAspect, 1.0f, GFARMAX);
-	else D3DXMatrixPerspectiveFovLH(&matProj, Zoom*(GFloat)M_PI / 180.0f, fAspect, 1.0f, GFARMAX);
+	if (ViewType == 7) D3DXMatrixPerspectiveFovLH(&matProj, CCDZoom*(GFloat)M_PI / 180.0f, fAspect, 1.0f, g_FarMax);
+	else D3DXMatrixPerspectiveFovLH(&matProj, Zoom*(GFloat)M_PI / 180.0f, fAspect, 1.0f, g_FarMax);
 	m_pd3dDevice->SetTransform(D3DTS_PROJECTION, &matProj);
 
 
@@ -6785,7 +6705,7 @@ HRESULT CMyD3DApplication::Render()
 		//スクリプトの呼び出し
 		// TODO: update world
 		FPS = m_fFPS;
-		MyPlayerData.base_fps = (LIMITFPS << 16) + (int)(m_fFPS + 0.5);
+		MyPlayerData.base_fps = (g_LimitFPS << 16) + (int)(m_fFPS + 0.5);
 		Width = m_d3dsdBackBuffer.Width;
 		Height = m_d3dsdBackBuffer.Height;
 		if (CallModeChange && SystemL != NULL && (World->B26Bullet || DPlay->GetNumPlayers() == 0)) {
@@ -6876,7 +6796,7 @@ HRESULT CMyD3DApplication::Render()
 		m_pd3dDevice->SetRenderState(D3DRS_FOGVERTEXMODE, D3DFOG_LINEAR);
 		m_pd3dDevice->SetRenderState(D3DRS_FOGCOLOR, D3DCOLOR_XRGB((int)(FogColor.x*lightColor.x), (int)(FogColor.y*lightColor.y), (int)(FogColor.z*lightColor.z)));
 		m_pd3dDevice->SetRenderState(D3DRS_FOGSTART, FtoDW((float)(20.0f)));
-		m_pd3dDevice->SetRenderState(D3DRS_FOGEND, FtoDW((float)(GFARMAX - 10.0f)));
+		m_pd3dDevice->SetRenderState(D3DRS_FOGEND, FtoDW((float)(g_FarMax - 10.0f)));
 		m_pd3dDevice->SetRenderState(D3DRS_FOGDENSITY, FtoDW(0.2f));
 		m_pd3dDevice->SetRenderState(D3DRS_FOGENABLE, TRUE);
 		World->LandRigid->Disp();
@@ -6933,12 +6853,12 @@ HRESULT CMyD3DApplication::Render()
 			D3DXMATRIX mat1;
 			D3DXMATRIX mat2;
 			float x, z;
-			int ii = (int)(GFARMAX / 10);
-			int s = (int)(GFARMAX / 600);
+			int ii = (int)(g_FarMax / 10);
+			int s = (int)(g_FarMax / 600);
 			if (s == 0) {
 				x = (int)(EyePos.x / 60)*60.0f;
 				z = (int)(EyePos.z / 60)*60.0f;
-				D3DXMatrixTranslation(&mat1, x + (GFloat)sin(count / 90.0*M_PI), WaterLine, z);
+				D3DXMatrixTranslation(&mat1, x + (GFloat)sin(count / 90.0*M_PI), WATER_LINE, z);
 				D3DXMatrixScaling(&mat2, 2.0, 1.0f, 2.0);
 				D3DXMatrixMultiply(&mat1, &mat2, &mat1);
 				D3DXMatrixMultiply(&mat1, &mat1, &GMatWorld);
@@ -6954,7 +6874,7 @@ HRESULT CMyD3DApplication::Render()
 					for (int j = 0;j < s;j++) {
 						x = (float)(xx + i * 1200 - (s - 1) * 600);
 						z = (float)(zz + j * 1200 - (s - 1) * 600);
-						D3DXMatrixTranslation(&mat1, x + si, WaterLine, z - 30);
+						D3DXMatrixTranslation(&mat1, x + si, WATER_LINE, z - 30);
 						D3DXMatrixMultiply(&mat1, &mat2, &mat1);
 						D3DXMatrixMultiply(&mat1, &mat1, &GMatWorld);
 						m_pd3dDevice->SetTransform(D3DTS_WORLD, &mat1);
@@ -7132,25 +7052,25 @@ HRESULT CMyD3DApplication::Render()
 			}
 			//水しぶき
 			k = 0;
-			for (i = 0;i < WaterLineParticle->MaxVertex;i++) {
-				if (WaterLineParticle->Vertex[i].Life>0) {
-					pV[k].x = (float)WaterLineParticle->Vertex[i].Pos.x;
-					pV[k].y = (float)WaterLineParticle->Vertex[i].Pos.y;
-					pV[k].z = (float)WaterLineParticle->Vertex[i].Pos.z;
-					pV[k].r = (float)WaterLineParticle->Vertex[i].Color.x;
-					pV[k].g = (float)WaterLineParticle->Vertex[i].Color.y;
-					pV[k].b = (float)WaterLineParticle->Vertex[i].Color.z;
+			for (i = 0;i < WATER_LINEParticle->MaxVertex;i++) {
+				if (WATER_LINEParticle->Vertex[i].Life>0) {
+					pV[k].x = (float)WATER_LINEParticle->Vertex[i].Pos.x;
+					pV[k].y = (float)WATER_LINEParticle->Vertex[i].Pos.y;
+					pV[k].z = (float)WATER_LINEParticle->Vertex[i].Pos.z;
+					pV[k].r = (float)WATER_LINEParticle->Vertex[i].Color.x;
+					pV[k].g = (float)WATER_LINEParticle->Vertex[i].Color.y;
+					pV[k].b = (float)WATER_LINEParticle->Vertex[i].Color.z;
 					pV[k].id = i;
 
-					float a = WaterLineParticle->Vertex[i].Life;
-					if (WaterLineParticle->Vertex[i].Life < 0) a = 0.0f;
-					pV[k].size = WaterLineParticle->Vertex[i].Size;
+					float a = WATER_LINEParticle->Vertex[i].Life;
+					if (WATER_LINEParticle->Vertex[i].Life < 0) a = 0.0f;
+					pV[k].size = WATER_LINEParticle->Vertex[i].Size;
 					pV[k].alpha = a;
 					k++;
 					if (k >= GPARTMAX) break;
 					/*
-										if(WaterLineParticle->Vertex[i].Life>0.6) {
-											if(noiseMax<WaterLineParticle->Vertex[i].Life) noiseMax=GroundParticle->Vertex[i].Life;
+										if(WATER_LINEParticle->Vertex[i].Life>0.6) {
+											if(noiseMax<WATER_LINEParticle->Vertex[i].Life) noiseMax=GroundParticle->Vertex[i].Life;
 											nFlag=true;
 										}
 					*/
@@ -7215,7 +7135,7 @@ HRESULT CMyD3DApplication::Render()
 				if (pV[i].type != 0 || ShowDustFlag) {
 					CD3DMesh *mesh;
 					if (pV[i].type == 0) {
-						if (pV[i].y <= WaterLine) mesh = m_pXMesh[19];
+						if (pV[i].y <= WATER_LINE) mesh = m_pXMesh[19];
 						else mesh = m_pXMesh[29];
 					}
 					else if (pV[i].type == 1) mesh = m_pXMesh[35];
@@ -7337,7 +7257,7 @@ HRESULT CMyD3DApplication::Render()
 				vUpVec = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
 				D3DXMatrixLookAtLH(&matV, &vFromPt, &vLookatPt, &vUpVec);
 				// Set the projection matrix
-				D3DXMatrixPerspectiveFovLH(&matProj, 0.1f, 1.0f, 1.0f, GFARMAX);
+				D3DXMatrixPerspectiveFovLH(&matProj, 0.1f, 1.0f, 1.0f, g_FarMax);
 				m_pd3dDevice->SetTransform(D3DTS_PROJECTION, &matProj);
 				m_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0xffffffff);
 				m_pd3dDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
@@ -7377,7 +7297,7 @@ HRESULT CMyD3DApplication::Render()
 					float x, z;
 					x = (int)(Chip[0]->X.x / 50)*50.0f;
 					z = (int)(Chip[0]->X.z / 50)*50.0f;
-					D3DXMatrixTranslation(&mat1, x, WaterLine, z);
+					D3DXMatrixTranslation(&mat1, x, WATER_LINE, z);
 					D3DXMatrixMultiply(&mat1, &mat1, &GMatWorld);
 					G3dDevice->SetTransform(D3DTS_WORLD, &mat1);
 					G3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
@@ -7422,12 +7342,12 @@ HRESULT CMyD3DApplication::Render()
 
 						if ((int)(Lock.Pitch / w) == 2) {
 							int y;
-							for (y = 0; y < 64; y++)
+							for (y = 0; y < CCD_RESOLUTION; y++)
 							{
 								pLine = &pBase[(y + viewData2.Y)*Lock.Pitch + viewData2.X * 2];
-								for (int x = 0; x < 64; x++)
+								for (int x = 0; x < CCD_RESOLUTION; x++)
 								{
-									int v = pLine[0] + pLine[1] * 256;
+									int v = pLine[0] + pLine[1] * (CCD_RESOLUTION*4);
 									int r = v >> 11;
 									int g = (v & 0x7e0) >> 6;
 									int b = v & 0x1f;
@@ -8160,7 +8080,7 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		return S_OK;
 	}
 	//FPSの再設定
-//			if(m_appMax>1) LIMITFPS=15;else LIMITFPS=30;
+//			if(m_appMax>1) g_LimitFPS=15;else g_LimitFPS=30;
 
 	switch (msg)
 	{
@@ -8350,16 +8270,16 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		case IDM_LIMIT30:
 		{
 			HMENU hMenu = GetMenu(hWnd);
-			LIMITFPS = 30;
-			m_dLimidFPS = (m_dLimidFPS == (1000 / LIMITFPS)) ? 0L : (1000 / LIMITFPS);
-			if (World) World->SetStepTime(1.0f / LIMITFPS);
-			if (m_dLimidFPS == (1000 / LIMITFPS)) {
+			g_LimitFPS = 30;
+			m_dLimidFPS = (m_dLimidFPS == (1000 / g_LimitFPS)) ? 0L : (1000 / g_LimitFPS);
+			if (World) World->SetStepTime(1.0f / g_LimitFPS);
+			if (m_dLimidFPS == (1000 / g_LimitFPS)) {
 				CheckMenuItem(hMenu, IDM_LIMIT30, MF_CHECKED);
 				CheckMenuItem(hMenu, IDM_LIMIT15, MF_UNCHECKED);
 			}
 			else {
 				CheckMenuItem(hMenu, IDM_LIMIT30, MF_UNCHECKED);
-				LIMITFPS = 30;
+				g_LimitFPS = 30;
 			}
 
 			break;
@@ -8367,18 +8287,18 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		case IDM_LIMIT15:
 		{
 			HMENU hMenu = GetMenu(hWnd);
-			LIMITFPS = 15;
-			m_dLimidFPS = (m_dLimidFPS == (1000 / LIMITFPS)) ? 0L : (1000 / LIMITFPS);
-			if (World) World->SetStepTime(1.0f / LIMITFPS);
-			if (m_dLimidFPS == (1000 / LIMITFPS)) {
+			g_LimitFPS = 15;
+			m_dLimidFPS = (m_dLimidFPS == (1000 / g_LimitFPS)) ? 0L : (1000 / g_LimitFPS);
+			if (World) World->SetStepTime(1.0f / g_LimitFPS);
+			if (m_dLimidFPS == (1000 / g_LimitFPS)) {
 				CheckMenuItem(hMenu, IDM_LIMIT15, MF_CHECKED);
 				CheckMenuItem(hMenu, IDM_LIMIT30, MF_UNCHECKED);
 			}
 			else {
 				CheckMenuItem(hMenu, IDM_LIMIT15, MF_UNCHECKED);
-				LIMITFPS = 30;
-				m_dLimidFPS = (m_dLimidFPS == (1000 / LIMITFPS)) ? 0L : (1000 / LIMITFPS);
-				if (World) World->SetStepTime(1.0f / LIMITFPS);
+				g_LimitFPS = 30;
+				m_dLimidFPS = (m_dLimidFPS == (1000 / g_LimitFPS)) ? 0L : (1000 / g_LimitFPS);
+				if (World) World->SetStepTime(1.0f / g_LimitFPS);
 			}
 			break;
 		}
@@ -8413,8 +8333,8 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 			CheckMenuItem(hMenu, IDM_SHOWDUST, MF_CHECKED);
 			DitherFlag = 1;
 			CheckMenuItem(hMenu, IDM_DITHER, MF_CHECKED);
-			LIMITFPS = 30;
-			m_dLimidFPS = (1000 / LIMITFPS);
+			g_LimitFPS = 30;
+			m_dLimidFPS = (1000 / g_LimitFPS);
 			CheckMenuItem(hMenu, IDM_LIMIT15, MF_UNCHECKED);
 			CheckMenuItem(hMenu, IDM_LIMIT30, MF_CHECKED);
 			FastShadow = 1;
@@ -9031,7 +8951,7 @@ HRESULT CMyD3DApplication::FinalCleanup()
 	//**********
 	timeEndPeriod(1);
 	delete GroundParticle;
-	delete WaterLineParticle;
+	delete WATER_LINEParticle;
 	delete JetParticle;
 	delete Bullet;
 	delete World;
