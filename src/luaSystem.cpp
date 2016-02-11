@@ -130,7 +130,7 @@ int luaFileOpen(lua_State *L)
 	_splitpath(name,
 		szDrive, szPath,
 		szTitle, szExt);
-	lstrcpy(str, CurrScenarioDir);
+	lstrcpy(str, GetCurrentScenarioDir());
 	lstrcat(str, "\\");
 	lstrcat(str, szTitle);
 	lstrcat(str, szExt);
@@ -314,11 +314,11 @@ int luaLoadLand(lua_State *L)
 	int r = 0;
 	char st[_MAX_PATH];
 	if (strcmp(szLandFileName0, str) != 0) {
-		char *s = SearchFolder(CurrDataDir, str, st);
+		char *s = SearchFolder(GetCurrentDataDir(), str, st);
 		if (s == NULL) {
-			char *s = SearchFolder(DataDir, str, st);
+			char *s = SearchFolder(GetDataDir(), str, st);
 			if (s == NULL) {
-				s = SearchFolder(ResourceDir, str, st);
+				s = SearchFolder(GetResourceDir(), str, st);
 				if (s == NULL) {
 					lua_pushnumber(L, 0);
 					return 1;
@@ -358,7 +358,7 @@ int luaSaveChips(lua_State *L)
 {
 	char *fn = (char *)lua_tostring(L, 1);
 	char str[512];
-	lstrcpy(str, CurrDataDir);
+	lstrcpy(str, GetCurrentDataDir());
 	lstrcat(str, TEXT("\\"));
 	lstrcat(str, fn);
 	int e = saveData(str);
@@ -716,7 +716,7 @@ int luaGetSystemKey(lua_State *L)
 {
 	int n = (int)lua_tonumber(L, 1);
 	int s = 0;
-	if (n >= 0 && n < GSYSKEYMAX) s = (int)SystemKeys[n];
+	if (n >= 0 && n < GSYSKEYMAX) s = (int)GetSkey(n);
 	lua_pushnumber(L, s);
 	return 1;
 }
@@ -724,7 +724,7 @@ int luaGetSystemKeyDown(lua_State *L)
 {
 	int n = (int)lua_tonumber(L, 1);
 	int s = 0;
-	if (n >= 0 && n < GSYSKEYMAX) s = (int)SystemKeysDown[n];
+	if (n >= 0 && n < GSYSKEYMAX) s = (int)GetSkeyDown(n);
 	lua_pushnumber(L, s);
 	return 1;
 }
@@ -732,7 +732,7 @@ int luaGetSystemKeyUp(lua_State *L)
 {
 	int n = (int)lua_tonumber(L, 1);
 	int s = 0;
-	if (n >= 0 && n < GSYSKEYMAX) s = (int)SystemKeysUp[n];
+	if (n >= 0 && n < GSYSKEYMAX) s = (int)GetSkeyUp(n);
 	lua_pushnumber(L, s);
 	return 1;
 }

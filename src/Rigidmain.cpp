@@ -142,6 +142,17 @@ static int s_SystemTickCount;
 static char s_MessageData[MESSAGEMAX + 1];
 static int s_RecieaveMessageCode[GPLAYERMAX];
 static char s_RecieaveMessageData[GPLAYERMAX][MESSAGEMAX + 1];
+//SKEYの値
+static bool s_SystemKeys[GSYSKEYMAX];
+static bool s_SystemKeysDown[GSYSKEYMAX];
+static bool s_SystemKeysUp[GSYSKEYMAX];
+
+//各種フォルダのパス。実はグローバルに使ってるのはs_CurrDataDirだけぽい
+static TCHAR s_AppDir[MAX_PATH];
+static TCHAR s_ResourceDir[MAX_PATH];
+static TCHAR s_DataDir[MAX_PATH];
+static TCHAR s_CurrDataDir[MAX_PATH];
+static TCHAR s_CurrScenarioDir[MAX_PATH];
 
 int RecTickCount = 0;
 
@@ -908,7 +919,7 @@ void CopyObject(GRigid *rd[], GRigid *rs[])
 	}
 
 }
-char *SearchFolder(char *path, char *filename, char *result)
+char *SearchFolder(const TCHAR *path, char *filename, char *result)
 {
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;
@@ -3102,29 +3113,29 @@ CMyD3DApplication::CMyD3DApplication()
 	m_pSkyMesh = new CD3DMesh();
 	for (i = 0;i < GTEXMAX;i++) pMyTexture[i] = NULL;
 	// Read settings from registry
-	GetModuleFileName(NULL, AppDir, MAX_PATH);
+	GetModuleFileName(NULL, s_AppDir, MAX_PATH);
 	// Separate the path from the filename
-	TCHAR* strLastSlash = _tcsrchr(AppDir, TEXT('\\'));
+	TCHAR* strLastSlash = _tcsrchr(s_AppDir, TEXT('\\'));
 	*strLastSlash = TEXT('\0');
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;
 	char work[_MAX_PATH];
-	_tcscpy(work, AppDir);
+	_tcscpy(work, s_AppDir);
 	_tcscpy(work, TEXT("\\Resources"));
 	//最初にファイルを探す
 	hFind = FindFirstFile(work, &FindFileData);
 	if (hFind == INVALID_HANDLE_VALUE) {
-		GetCurrentDirectory(MAX_PATH, AppDir);
+		GetCurrentDirectory(MAX_PATH, s_AppDir);
 	}
-	_tcscpy(ResourceDir, AppDir);
-	_tcscat(ResourceDir, _T("\\Resources"));
-	_tcscpy(CurrScenarioDir, ResourceDir);
-	_tcscpy(DataDir, AppDir);
-	_tcscat(DataDir, _T("\\Data"));
-	_tcscpy(CurrDataDir, DataDir);
+	_tcscpy(s_ResourceDir, s_AppDir);
+	_tcscat(s_ResourceDir, _T("\\Resources"));
+	_tcscpy(s_CurrScenarioDir, s_ResourceDir);
+	_tcscpy(s_DataDir, s_AppDir);
+	_tcscat(s_DataDir, _T("\\Data"));
+	_tcscpy(s_CurrDataDir, s_DataDir);
 	ReadSettings();
-	if (SetCurrentDirectory(CurrDataDir) == 0) {
-		_tcscpy(CurrDataDir, DataDir);
+	if (SetCurrentDirectory(s_CurrDataDir) == 0) {
+		_tcscpy(s_CurrDataDir, s_DataDir);
 	}
 	for (i = 0;i < 6;i++) ControlKeysLock[i] = false;
 	LastChatData[0] = '\0';
@@ -3232,19 +3243,19 @@ HRESULT CMyD3DApplication::OneTimeSceneInit()
 
 	AirSpeed.clear();
 
-	if (SetCurrentDirectory(DataDir) == 0) return  E_FAIL;
-	if (SetCurrentDirectory(ResourceDir) == 0) return  E_FAIL;
+	if (SetCurrentDirectory(s_DataDir) == 0) return  E_FAIL;
+	if (SetCurrentDirectory(s_ResourceDir) == 0) return  E_FAIL;
 
 	if (readData("Basic.txt", false)) return  E_FAIL;
 	if (LoadSystem("System.rcs")) return E_FAIL;
 	luaSystemInit();
-	lstrcpy(szUpdateFileName, ResourceDir);
+	lstrcpy(szUpdateFileName, s_ResourceDir);
 	lstrcat(szUpdateFileName, TEXT("\\Basic.txt"));
 	lstrcpy(szUpdateFileName0, TEXT("Basic.txt"));
-	lstrcpy(szLandFileName, ResourceDir);
+	lstrcpy(szLandFileName, s_ResourceDir);
 	lstrcat(szLandFileName, TEXT("\\Land.x"));
 	lstrcpy(szLandFileName0, TEXT("Land.x"));
-	lstrcpy(szSystemFileName, ResourceDir);
+	lstrcpy(szSystemFileName, s_ResourceDir);
 	lstrcat(szSystemFileName, TEXT("\\System.rcs"));
 	lstrcpy(szSystemFileName0, TEXT("System.rcs"));
 	if (g_World->getChipCount() == 0) return E_FAIL;
@@ -3349,7 +3360,7 @@ VOID CMyD3DApplication::ReadSettings()
 		DXUtil_ReadIntRegKey(hkey, TEXT("NameSize"), &v, v);
 		g_NameSize = (float)(v / 1000.0f);
 
-		DXUtil_ReadStringRegKey(hkey, TEXT("CurrWorkDir"), CurrDataDir, MAX_PATH, DataDir);
+		DXUtil_ReadStringRegKey(hkey, TEXT("CurrWorkDir"), s_CurrDataDir, MAX_PATH, s_DataDir);
 
 		DXUtil_ReadStringRegKey(hkey, TEXT("SessionName"), SessionName, 256, "RigidChips");
 		if (SessionName[0] == '\0') strcpy(SessionName, "RigidChips");
@@ -3410,7 +3421,7 @@ VOID CMyD3DApplication::WriteSettings()
 		DXUtil_WriteIntRegKey(hkey, TEXT("MarkerSize"), v);
 		v = (DWORD)(g_NameSize * 1000);
 		DXUtil_WriteIntRegKey(hkey, TEXT("NameSize"), v);
-		DXUtil_WriteStringRegKey(hkey, TEXT("CurrWorkDir"), CurrDataDir);
+		DXUtil_WriteStringRegKey(hkey, TEXT("CurrWorkDir"), s_CurrDataDir);
 
 		DXUtil_WriteStringRegKey(hkey, TEXT("SessionName"), SessionName);
 		DXUtil_WriteStringRegKey(hkey, TEXT("PlayerName"), PlayerName);
@@ -3523,7 +3534,7 @@ HRESULT CMyD3DApplication::InitAudio( HWND hWnd )
 
 	// Instruct the music manager where to find the files
 	// TODO: Set this to the media directory, or use resources
-	m_pMusicManager->SetSearchDirectory( ResourceDir );
+	m_pMusicManager->SetSearchDirectory( s_ResourceDir );
 
 	// TODO: load the sounds from resources (or files)
 	m_pMusicManager->CreateSegmentFromFile( &m_pBoundSound1, _T("BOUND1.WAV") );
@@ -3569,8 +3580,8 @@ HRESULT CMyD3DApplication::LoadData(char *filename)
 			szDrive, szPath,
 			szTitle, szExt);
 
-		lstrcpy(CurrDataDir, szDrive);
-		lstrcat(CurrDataDir, szPath);
+		lstrcpy(s_CurrDataDir, szDrive);
+		lstrcat(s_CurrDataDir, szPath);
 
 		lstrcpy(szUpdateFileName, filename);
 		lstrcpy(szUpdateFileName0, szTitle);
@@ -3823,7 +3834,7 @@ HRESULT CMyD3DApplication::LoadLog(char *fname)
 	float ver;
 	char *s;
 	//tempモデルファイルにコピー
-	lstrcpy(fn, DataDir);
+	lstrcpy(fn, s_DataDir);
 	lstrcat(fn, "\\temp.txt");
 	if ((fp1 = fopen(fname, "r")) == NULL) return E_FAIL;
 	fgets(str, 1024, fp1);
@@ -3862,7 +3873,7 @@ HRESULT CMyD3DApplication::LoadLog(char *fname)
 	fscanf(fp, "%s", szUpdateFileName0);
 	//****
 	lstrcpy(szUpdateFileName0, TEXT("temp.txt"));
-	lstrcpy(szUpdateFileName, DataDir);
+	lstrcpy(szUpdateFileName, s_DataDir);
 	lstrcat(szUpdateFileName, TEXT("\\"));
 	lstrcat(szUpdateFileName, szUpdateFileName0);
 	fscanf(fp, "%s\n", szTempFileName0);
@@ -4036,7 +4047,7 @@ HRESULT LoadLand(LPDIRECT3DDEVICE8 Device, char *fname)
 	}
 	g_World->Land->Set();
 	g_World->MainStepCount = -1;
-	if (SetCurrentDirectory(CurrDataDir) == 0) return  E_FAIL;
+	if (SetCurrentDirectory(s_CurrDataDir) == 0) return  E_FAIL;
 
 	return S_OK;
 }
@@ -4107,7 +4118,7 @@ HRESULT CMyD3DApplication::InitDeviceObjects()
 	// TODO: create device objects
 	HRESULT hr;
 
-	SetCurrentDirectory(ResourceDir);
+	SetCurrentDirectory(s_ResourceDir);
 	// Init the font
 	m_pFont->InitDeviceObjects(m_pd3dDevice);
 	m_pFontL->InitDeviceObjects(m_pd3dDevice);
@@ -4230,7 +4241,7 @@ HRESULT CMyD3DApplication::RestoreDeviceObjects()
 {
 	// TODO: setup render states
 	HRESULT hr;
-	SetCurrentDirectory(ResourceDir);
+	SetCurrentDirectory(s_ResourceDir);
 
 	//	SAFE_RELEASE(pPointVB);
 	SAFE_RELEASE(pPointVB);
@@ -5068,8 +5079,8 @@ HRESULT CMyD3DApplication::FrameMove()
 					return 1;
 				}
 			}
-			if (SetCurrentDirectory(CurrDataDir) == 0) {
-				_tcscpy(CurrDataDir, DataDir);
+			if (SetCurrentDirectory(s_CurrDataDir) == 0) {
+				_tcscpy(s_CurrDataDir, s_DataDir);
 			}
 			char szFileName[512];
 			char szFilter[] = "Text(*.txt or *.rcd)\0*.txt;*.rcd\0All files(*.*)\0*.*\0";
@@ -5082,7 +5093,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			ofn.nFilterIndex = 1;
 			ofn.lpstrFile = szFileName;
 			ofn.nMaxFile = 512;
-			ofn.lpstrInitialDir = CurrDataDir;
+			ofn.lpstrInitialDir = s_CurrDataDir;
 			ofn.lpstrTitle = "Open Chips-Data";
 			ofn.lpstrDefExt = "txt;RCD";
 			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
@@ -5182,8 +5193,8 @@ HRESULT CMyD3DApplication::FrameMove()
 					return 1;
 				}
 			}
-			if (SetCurrentDirectory(CurrDataDir) == 0) {
-				_tcscpy(CurrDataDir, DataDir);
+			if (SetCurrentDirectory(s_CurrDataDir) == 0) {
+				_tcscpy(s_CurrDataDir, s_DataDir);
 			}
 			char szFileName[512];
 			char szFilter[] = "Data(*.x)\0*.x\0All files(*.*)\0*.*\0";
@@ -5195,7 +5206,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			ofn.lpstrFilter = szFilter;
 			ofn.nFilterIndex = 1;
 			ofn.lpstrFile = szFileName;
-			ofn.lpstrInitialDir = CurrDataDir;
+			ofn.lpstrInitialDir = s_CurrDataDir;
 			ofn.nMaxFile = 512;
 			ofn.lpstrTitle = "Open Land-Data";
 			ofn.lpstrDefExt = "x";
@@ -5211,8 +5222,8 @@ HRESULT CMyD3DApplication::FrameMove()
 					_splitpath(szFileName,
 						szDrive, szPath,
 						szTitle, szExt);
-					lstrcpy(CurrDataDir, szDrive);
-					lstrcat(CurrDataDir, szPath);
+					lstrcpy(s_CurrDataDir, szDrive);
+					lstrcat(s_CurrDataDir, szPath);
 					lstrcpy(szLandFileName, szFileName);
 					lstrcpy(szLandFileName0, szTitle);
 					lstrcat(szLandFileName0, szExt);
@@ -5268,8 +5279,8 @@ HRESULT CMyD3DApplication::FrameMove()
 					return 1;
 				}
 			}
-			if (SetCurrentDirectory(CurrDataDir) == 0) {
-				_tcscpy(CurrDataDir, DataDir);
+			if (SetCurrentDirectory(s_CurrDataDir) == 0) {
+				_tcscpy(s_CurrDataDir, s_DataDir);
 			}
 			char *LandFile;
 			char szFileName[512];
@@ -5282,7 +5293,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			ofn.lpstrFilter = szFilter;
 			ofn.nFilterIndex = 1;
 			ofn.lpstrFile = szFileName;
-			ofn.lpstrInitialDir = CurrDataDir;
+			ofn.lpstrInitialDir = s_CurrDataDir;
 			ofn.nMaxFile = 512;
 			ofn.lpstrTitle = "Open Game-Data";
 			ofn.lpstrDefExt = "rcg";
@@ -5300,10 +5311,10 @@ HRESULT CMyD3DApplication::FrameMove()
 						szDrive, szPath,
 						szTitle, szExt);
 
-					lstrcpy(CurrDataDir, szDrive);
-					lstrcat(CurrDataDir, szPath);
+					lstrcpy(s_CurrDataDir, szDrive);
+					lstrcat(s_CurrDataDir, szPath);
 
-					lstrcpy(szLandFileName, DataDir);
+					lstrcpy(szLandFileName, s_DataDir);
 					lstrcat(szLandFileName, TEXT("\\"));
 					lstrcat(szLandFileName, LandFile);
 					lstrcpy(szLandFileName0, szTitle);
@@ -5336,7 +5347,7 @@ HRESULT CMyD3DApplication::FrameMove()
 		m_UserInput.bDoCloseScenario = FALSE;
 
 		char fn[_MAX_PATH];
-		lstrcpy(fn, ResourceDir);
+		lstrcpy(fn, s_ResourceDir);
 		lstrcat(fn, TEXT("\\System.rcs"));
 		LoadSystem(fn);
 		luaSystemInit();
@@ -5368,8 +5379,8 @@ HRESULT CMyD3DApplication::FrameMove()
 				return 1;
 			}
 		}
-		if (SetCurrentDirectory(CurrDataDir) == 0) {
-			_tcscpy(CurrDataDir, DataDir);
+		if (SetCurrentDirectory(s_CurrDataDir) == 0) {
+			_tcscpy(s_CurrDataDir, s_DataDir);
 		}
 		char szFileName[512];
 		char szFilter[] = "Scenario-Data(*.rcs)\0*.rcs\0All files(*.*)\0*.*\0";
@@ -5381,7 +5392,7 @@ HRESULT CMyD3DApplication::FrameMove()
 		ofn.lpstrFilter = szFilter;
 		ofn.nFilterIndex = 1;
 		ofn.lpstrFile = szFileName;
-		ofn.lpstrInitialDir = CurrDataDir;
+		ofn.lpstrInitialDir = s_CurrDataDir;
 		ofn.nMaxFile = 512;
 		ofn.lpstrTitle = "Open Scenario-Data";
 		ofn.lpstrDefExt = "rcs";
@@ -5398,10 +5409,10 @@ HRESULT CMyD3DApplication::FrameMove()
 				szDrive, szPath,
 				szTitle, szExt);
 
-			lstrcpy(CurrDataDir, szDrive);
-			lstrcat(CurrDataDir, szPath);
+			lstrcpy(s_CurrDataDir, szDrive);
+			lstrcat(s_CurrDataDir, szPath);
 
-			_tcscpy(CurrScenarioDir, CurrDataDir);
+			_tcscpy(s_CurrScenarioDir, s_CurrDataDir);
 			luaSystemInit();
 			InitChips(a, 0);
 			ClearInput(&m_UserInput);
@@ -5442,8 +5453,8 @@ HRESULT CMyD3DApplication::FrameMove()
 				return 1;
 			}
 		}
-		if (SetCurrentDirectory(CurrDataDir) == 0) {
-			_tcscpy(CurrDataDir, DataDir);
+		if (SetCurrentDirectory(s_CurrDataDir) == 0) {
+			_tcscpy(s_CurrDataDir, s_DataDir);
 		}
 		char szFileName[512];
 		char szFilter[] = "Logdata(*.rcl)\0*.rcl\0All files(*.*)\0*.*\0";
@@ -5455,7 +5466,7 @@ HRESULT CMyD3DApplication::FrameMove()
 		ofn.lpstrFilter = szFilter;
 		ofn.nFilterIndex = 1;
 		ofn.lpstrFile = szFileName;
-		ofn.lpstrInitialDir = CurrDataDir;
+		ofn.lpstrInitialDir = s_CurrDataDir;
 		ofn.nMaxFile = 512;
 		ofn.lpstrTitle = "Save Log";
 		ofn.lpstrDefExt = "rcl";
@@ -5471,8 +5482,8 @@ HRESULT CMyD3DApplication::FrameMove()
 				szDrive, szPath,
 				szTitle, szExt);
 
-			lstrcpy(CurrDataDir, szDrive);
-			lstrcat(CurrDataDir, szPath);
+			lstrcpy(s_CurrDataDir, szDrive);
+			lstrcat(s_CurrDataDir, szPath);
 			SaveLog(szFileName);
 
 		}
@@ -5505,8 +5516,8 @@ HRESULT CMyD3DApplication::FrameMove()
 				return 1;
 			}
 		}
-		if (SetCurrentDirectory(CurrDataDir) == 0) {
-			_tcscpy(CurrDataDir, DataDir);
+		if (SetCurrentDirectory(s_CurrDataDir) == 0) {
+			_tcscpy(s_CurrDataDir, s_DataDir);
 		}
 		char szFileName[512];
 		char szFilter[] = "Logdata(*.rcl)\0*.rcl\0All files(*.*)\0*.*\0";
@@ -5519,7 +5530,7 @@ HRESULT CMyD3DApplication::FrameMove()
 		ofn.nFilterIndex = 1;
 		ofn.lpstrFile = szFileName;
 		ofn.nMaxFile = 512;
-		ofn.lpstrInitialDir = CurrDataDir;
+		ofn.lpstrInitialDir = s_CurrDataDir;
 		ofn.lpstrTitle = "Open Log-Data";
 		ofn.lpstrDefExt = "rcl";
 		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
@@ -5536,16 +5547,16 @@ HRESULT CMyD3DApplication::FrameMove()
 				szDrive, szPath,
 				szTitle, szExt);
 
-			lstrcpy(CurrDataDir, szDrive);
-			lstrcat(CurrDataDir, szPath);
+			lstrcpy(s_CurrDataDir, szDrive);
+			lstrcat(s_CurrDataDir, szPath);
 
 			if (LoadLog(szFileName) == 0) {
 				if (strcmp(szTempFileName0, szLandFileName0) != 0) {
 					if (lstrcmp(szTempFileName0, TEXT("Land.x")) == 0) {
-						lstrcpy(szLandFileName, ResourceDir);
+						lstrcpy(szLandFileName, s_ResourceDir);
 					}
 					else {
-						lstrcpy(szLandFileName, CurrDataDir);
+						lstrcpy(szLandFileName, s_CurrDataDir);
 					}
 					lstrcat(szLandFileName, TEXT("\\"));
 					lstrcat(szLandFileName, szTempFileName0);
@@ -5796,11 +5807,11 @@ HRESULT CMyD3DApplication::FrameMove()
 		}
 	}
 	for (i = 0;i < GSYSKEYMAX;i++) {
-		if (SystemKeys[i] == false && m_UserInput.bSystem[i]) SystemKeysDown[i] = true;
-		else  SystemKeysDown[i] = false;
-		if (SystemKeys[i] == true && m_UserInput.bSystem[i] == false) SystemKeysUp[i] = true;
-		else  SystemKeysUp[i] = false;
-		SystemKeys[i] = m_UserInput.bSystem[i] != 0 ? true : false;
+		if (s_SystemKeys[i] == false && m_UserInput.bSystem[i]) s_SystemKeysDown[i] = true;
+		else  s_SystemKeysDown[i] = false;
+		if (s_SystemKeys[i] == true && m_UserInput.bSystem[i] == false) s_SystemKeysUp[i] = true;
+		else  s_SystemKeysUp[i] = false;
+		s_SystemKeys[i] = m_UserInput.bSystem[i] != 0 ? true : false;
 	}
 
 	//変数の更新
@@ -8955,7 +8966,7 @@ HRESULT CMyD3DApplication::FinalCleanup()
 	for (i = 0;i < GTEXMAX;i++) SAFE_RELEASE(pMyTexture[i]);
 	// Write the settings to the registry
 	WriteSettings();
-	SetCurrentDirectory(AppDir);
+	SetCurrentDirectory(s_AppDir);
 	if (hMidiOut) {
 		midiOutClose(hMidiOut);
 		hMidiOut = NULL;
@@ -9063,3 +9074,37 @@ const char* GetMessageData(int playerNumber)
 {
 	return s_RecieaveMessageData[playerNumber];
 }
+bool GetSkey(int n)
+{
+	return s_SystemKeys[n];
+}
+
+bool GetSkeyUp(int n)
+{
+	return s_SystemKeysUp[n];
+}
+
+bool GetSkeyDown(int n)
+{
+	return s_SystemKeysDown[n];
+}
+
+const TCHAR* GetAppDir(){
+	return s_AppDir;
+};
+const TCHAR* GetResourceDir(){
+	return s_ResourceDir;
+};
+
+const TCHAR* GetDataDir()
+{
+	return s_DataDir;
+};
+const TCHAR* GetCurrentDataDir()
+{
+	return s_CurrDataDir;
+};
+const TCHAR* GetCurrentScenarioDir()
+{
+	return s_CurrScenarioDir;
+};

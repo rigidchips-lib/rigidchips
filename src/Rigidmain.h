@@ -222,4 +222,15 @@ void SetMessageData(const char* str);
 int GetReceiveMessageCode(int playerNumber);
 void ClearReceiveMessage(int playerNumber);
 const char* GetMessageData(int playerNumber);
+//_SKEY関係
+bool GetSkey(int n);
+bool GetSkeyUp(int n);
+bool GetSkeyDown(int n);
+//各種ファイルのフォルダを取得
+
+const TCHAR* GetAppDir();
+const TCHAR* GetResourceDir();
+const TCHAR* GetDataDir();
+const TCHAR* GetCurrentDataDir();
+const TCHAR* GetCurrentScenarioDir();
 #endif // !defined(AFX_RIGID_H__F533E4AC_435C_4933_8AC7_50A6C021E6DF__INCLUDED_)
