@@ -470,7 +470,7 @@ int luaCheckRingArea(lua_State *L)
 	int rn = (int)lua_tonumber(L, 1);	//リング番号
 	int n = (int)lua_tonumber(L, 2);	//チップ番号
 	int b = 0;
-	if ((n >= 0 && n < g_World->g_ChipCount) && (rn >= 0 && rn < GRINGMAX)) {
+	if ((n >= 0 && n < g_World->ChipCount) && (rn >= 0 && rn < GRINGMAX)) {
 		if ((Ring[rn].Point - g_World->Rigid[n]->X).abs() < Ring[rn].Scale) b = 1;
 	}
 	lua_pushnumber(L, b);
@@ -492,7 +492,7 @@ int luaCollisionRingArea(lua_State *L)
 	int rn = (int)lua_tonumber(L, 1);	//リング番号
 	int n = (int)lua_tonumber(L, 2);	//チップ番号
 	int b = 0;
-	if ((n >= 0 && n < g_World->g_ChipCount) && (rn >= 0 && rn < GRINGMAX)) {
+	if ((n >= 0 && n < g_World->ChipCount) && (rn >= 0 && rn < GRINGMAX)) {
 		GMatrix m = GMatrix().rotateX(Ring[rn].Dir.x*(float)M_PI / 180.0f).rotateY(Ring[rn].Dir.y*(float)M_PI / 180.0f).rotateZ(Ring[rn].Dir.z*(float)M_PI / 180.0f);
 		GVector norm;
 		norm.x = m.elem[2][0];
@@ -583,7 +583,7 @@ int luaHitCount(lua_State *L)
 	int hit = 0;
 	int n = (int)lua_tonumber(L, 1);
 	char *type = (char*)lua_tostring(L, 2);
-	if (n < 0 || n >= g_World->g_ChipCount) return 0;
+	if (n < 0 || n >= g_World->ChipCount) return 0;
 	if (g_World->Rigid[n]) {
 		if (strcmp(type, "OBJ") == 0) hit = g_World->Rigid[n]->HitObj;
 		if (strcmp(type, "BULLET") == 0) hit = g_World->Rigid[n]->HitBullet;
@@ -599,7 +599,7 @@ int luaWarp(lua_State *L)
 	float x = (float)lua_tonumber(L, 2);
 	float y = (float)lua_tonumber(L, 3);
 	float z = (float)lua_tonumber(L, 4);
-	if (n < 0 || n >= g_World->g_ChipCount) return 0;
+	if (n < 0 || n >= g_World->ChipCount) return 0;
 	if (g_World->Rigid[n]) {
 		GVector v = GVector(x, y, z) - g_World->Rigid[n]->Top->X;
 		g_World->Rigid[n]->Top->TranslateWithChild(v);
@@ -631,7 +631,7 @@ int luaRotate(lua_State *L)
 	float x = (float)lua_tonumber(L, 2);
 	float y = (float)lua_tonumber(L, 3);
 	float z = (float)lua_tonumber(L, 4);
-	if (n < 0 || n >= g_World->g_ChipCount) return 0;
+	if (n < 0 || n >= g_World->ChipCount) return 0;
 	if (g_World->Rigid[n]) {
 		GMatrix m = GMatrix().rotateX(x*(float)M_PI / 180.0f).rotateY(y*(float)M_PI / 180.0f).rotateZ(z*(float)M_PI / 180.0f);
 		g_World->Rigid[n]->Top->RotateWithChild(m, g_World->Rigid[n]->Top->X);
@@ -659,7 +659,7 @@ int luaDirect(lua_State *L)
 	float x = (float)lua_tonumber(L, 2);
 	float y = (float)lua_tonumber(L, 3);
 	float z = (float)lua_tonumber(L, 4);
-	if (n < 0 || n >= g_World->g_ChipCount) return 0;
+	if (n < 0 || n >= g_World->ChipCount) return 0;
 	if (g_World->Rigid[n]) {
 		GMatrix m = GMatrix().rotateX(x*(float)M_PI / 180.0f).rotateY(y*(float)M_PI / 180.0f).rotateZ(z*(float)M_PI / 180.0f);
 		g_World->Rigid[n]->Top->RotateWithChildAbs(m, g_World->Rigid[n]->Top->X);
@@ -684,7 +684,7 @@ int luaDirectObj(lua_State *L)
 int luaEnervate(lua_State *L)
 {
 	int n = (int)lua_tonumber(L, 1);
-	if (n < 0 || n >= g_World->g_ChipCount) return 0;
+	if (n < 0 || n >= g_World->ChipCount) return 0;
 	if (g_World->Rigid[n]) {
 		g_World->Rigid[n]->Top->EnervateWithChild();
 	}
@@ -765,7 +765,7 @@ int luaApplyTorque(lua_State *L)
 	float x = (float)lua_tonumber(L, 2);
 	float y = (float)lua_tonumber(L, 3);
 	float z = (float)lua_tonumber(L, 4);
-	if (n < 0 || n >= g_World->g_ChipCount) return 0;
+	if (n < 0 || n >= g_World->ChipCount) return 0;
 	if (g_World->Rigid[n]) {
 		g_World->Rigid[n]->ApplyTorque(GVector(x, y, z));
 	}
@@ -777,7 +777,7 @@ int luaApplyForce(lua_State *L)
 	float x = (float)lua_tonumber(L, 2);
 	float y = (float)lua_tonumber(L, 3);
 	float z = (float)lua_tonumber(L, 4);
-	if (n < 0 || n >= g_World->g_ChipCount) return 0;
+	if (n < 0 || n >= g_World->ChipCount) return 0;
 	if (g_World->Rigid[n]) {
 		g_World->Rigid[n]->ApplyForce(GVector(x, y, z), g_World->Rigid[n]->X);
 	}
@@ -1019,7 +1019,7 @@ int luaGetChip(lua_State *L)
 	int n = (int)lua_tonumber(L, 1);
 	char *name = (char*)lua_tostring(L, 2);
 	double value = 0.0;
-	if (n < 0 || n >= g_World->g_ChipCount) return 0;
+	if (n < 0 || n >= g_World->ChipCount) return 0;
 	if (g_World->Rigid[n]) {
 		if (strcmp(name, "DIR") == 0) {
 			value = g_World->Rigid[n]->Dir;
@@ -1077,7 +1077,7 @@ int luaSetChip(lua_State *L)
 	int n = (int)lua_tonumber(L, 1);
 	char *name = (char*)lua_tostring(L, 2);
 	float value = (float)lua_tonumber(L, 3);
-	if (n < 0 || n >= g_World->g_ChipCount) return 0;
+	if (n < 0 || n >= g_World->ChipCount) return 0;
 	if (g_World->Rigid[n]) {
 		if (strcmp(name, "EFFECT") == 0) {
 			g_World->Rigid[n]->Effect = value;

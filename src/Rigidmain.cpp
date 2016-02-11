@@ -852,12 +852,12 @@ void BlockErrStr(int errCode, int dataCheck, char *str) {
 }
 void CopyChip(GRigid *rd[], GRigid *rs[])
 {
-	for (int i = 0;i < g_World->g_ChipCount;i++) {
+	for (int i = 0;i < g_World->ChipCount;i++) {
 		if (rd[i] == NULL) rd[i] = new GRigid(0, false, 0, 0, 0);
 		*rd[i] = *rs[i];
 		rd[i]->Top = rd[i];
 	}
-	for (int i = 0;i < g_World->g_ChipCount;i++) {
+	for (int i = 0;i < g_World->ChipCount;i++) {
 		//ÚG‚Í‚·‚×‚ÄƒNƒŠƒA‚·‚é
 		rs[i]->HitN = 0;rd[i]->HitN = 0;
 		rs[i]->TotalHitCount = 0;rd[i]->TotalHitCount = 0;
@@ -926,7 +926,7 @@ char *SearchFolder(char *path, char *filename, char *result)
 }
 void StopChip()
 {
-	for (int i = 0;i < g_World->g_ChipCount;i++) {
+	for (int i = 0;i < g_World->ChipCount;i++) {
 		g_World->Rigid[i]->P = GVector(0, 0, 0);		//•Ài‰^“®—Ê
 		g_World->Rigid[i]->L = GVector(0, 0, 0);		//Šp‰^“®—Ê
 
@@ -952,7 +952,7 @@ void ResetVal()
 	g_Chip[0]->CalcTotalCenter();
 
 	g_World->Land->List3Reset();
-	for (int j = 0;j < g_World->g_ChipCount;j++) {
+	for (int j = 0;j < g_World->ChipCount;j++) {
 		if (g_World->Rigid[j]->Parent == NULL) {
 			g_World->Land->List3up(g_World->Rigid[j]->TotalCenter, g_World->Rigid[j]->TotalRadius + 5.0f / g_World->StepTime);
 		}
@@ -963,7 +963,7 @@ void ResetVal()
 		}
 	}
 	g_World->Land->List2Reset();
-	for (j = 0;j < g_World->g_ChipCount;j++) {
+	for (j = 0;j < g_World->ChipCount;j++) {
 		if (g_World->Rigid[j]->Parent == NULL) {
 			g_World->Land->List2up(g_World->Rigid[j]->TotalCenter, g_World->Rigid[j]->TotalRadius + 5.0f);
 		}
@@ -990,7 +990,7 @@ void ResetRecVal()
 	g_Chip[0]->CalcTotalCenter();
 
 	g_World->Land->List3Reset();
-	for (int j = 0;j < g_World->g_ChipCount;j++) {
+	for (int j = 0;j < g_World->ChipCount;j++) {
 		if (g_World->Rigid[j]->Parent == NULL) {
 			g_World->Land->List3up(g_World->Rigid[j]->TotalCenter, g_World->Rigid[j]->TotalRadius + 5.0f / g_World->StepTime);
 		}
@@ -1001,7 +1001,7 @@ void ResetRecVal()
 		}
 	}
 	g_World->Land->List2Reset();
-	for (j = 0;j < g_World->g_ChipCount;j++) {
+	for (j = 0;j < g_World->ChipCount;j++) {
 		if (g_World->Rigid[j]->Parent == NULL) {
 			g_World->Land->List2up(g_World->Rigid[j]->TotalCenter, g_World->Rigid[j]->TotalRadius + 5.0f);
 		}
@@ -1118,7 +1118,7 @@ void ResetChip3(int n, GQuat q, GVector x)
 	g_Chip[n]->CalcTotalCenter();
 	/*
 	g_World->Land->List3Reset();
-	for(int j=0;j<g_World->g_ChipCount;j++) {
+	for(int j=0;j<g_World->ChipCount;j++) {
 		if(g_World->Rigid[j]->Parent==NULL) {
 			g_World->Land->List3up(g_World->Rigid[j]->TotalCenter,g_World->Rigid[j]->TotalRadius+5.0f/g_World->StepTime);
 		}
@@ -1129,7 +1129,7 @@ void ResetChip3(int n, GQuat q, GVector x)
 		}
 	}
 	g_World->Land->List2Reset();
-	for(j=0;j<g_World->g_ChipCount;j++) {
+	for(j=0;j<g_World->ChipCount;j++) {
 		if(g_World->Rigid[j]->Parent==NULL) {
 			g_World->Land->List2up(g_World->Rigid[j]->TotalCenter,g_World->Rigid[j]->TotalRadius+5.0f);
 		}
@@ -3767,7 +3767,7 @@ HRESULT CMyD3DApplication::SaveLog(char *fname)
 	//	fprintf(fp2,"%d\n",EfficientFlag);
 	fprintf(fp2, "%s\n", szUpdateFileName0);
 	fprintf(fp2, "%s\n", szLandFileName0);
-	for (int i = 0;i < g_World->g_ChipCount;i++) {
+	for (int i = 0;i < g_World->ChipCount;i++) {
 		SaveProp(fp2, i);
 	}
 	fprintf(fp2, "%d\n", RecTickCount);
@@ -3845,11 +3845,11 @@ HRESULT CMyD3DApplication::LoadLog(char *fname)
 	fscanf(fp, "%s\n", szTempFileName0);
 	CopyChip(g_World->RecRigid, g_World->Rigid);
 	//	CopyObject(g_World->RecObject,g_World->Object);
-	for (i = 0;i < g_World->g_ChipCount;i++) {
+	for (i = 0;i < g_World->ChipCount;i++) {
 		LoadProp(fp, i);
 	}
 	fscanf(fp, "%d\n", &RecTickCount);
-	for (i = 0;i < g_World->g_ChipCount;i++) {
+	for (i = 0;i < g_World->ChipCount;i++) {
 		if (g_World->RecRigid[i]->tmp) {
 			g_World->DeleteLink(g_World->RecRigid[i]);
 		}
@@ -4922,7 +4922,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			}
 			i++;
 			j++;
-		} while (j < g_World->g_ChipCount);
+		} while (j < g_World->ChipCount);
 
 		MyNetDataSize = i*sizeof(GCHIPDATA) + sizeof(short);
 		g_DPlay->SendAll((BYTE*)&stream, MyNetDataSize);
@@ -8371,13 +8371,13 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		case IDM_CHANGEVIEW1:
 		{
 			if (ViewType == 0) {
-				for (int i = LastBye + 1;i < g_World->g_ChipCount;i++) {
+				for (int i = LastBye + 1;i < g_World->ChipCount;i++) {
 					if (g_World->Rigid[i]->Parent == NULL && g_World->Rigid[i]->ByeFlag != 2) {
 						LastBye = i;
 						break;
 					}
 				}
-				if (i >= g_World->g_ChipCount) LastBye = 0;
+				if (i >= g_World->ChipCount) LastBye = 0;
 			}
 			HMENU hMenu = GetMenu(hWnd);
 			ViewType = 0;
@@ -8397,13 +8397,13 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		case IDM_CHANGEVIEW2:
 		{
 			if (ViewType == 1) {
-				for (int i = LastBye + 1;i < g_World->g_ChipCount;i++) {
+				for (int i = LastBye + 1;i < g_World->ChipCount;i++) {
 					if (g_World->Rigid[i]->Parent == NULL && g_World->Rigid[i]->ByeFlag != 2) {
 						LastBye = i;
 						break;
 					}
 				}
-				if (i >= g_World->g_ChipCount) LastBye = 0;
+				if (i >= g_World->ChipCount) LastBye = 0;
 			}
 			HMENU hMenu = GetMenu(hWnd);
 			ViewType = 1;
@@ -8423,13 +8423,13 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		case IDM_CHANGEVIEW3:
 		{
 			if (ViewType == 2) {
-				for (int i = LastBye + 1;i < g_World->g_ChipCount;i++) {
+				for (int i = LastBye + 1;i < g_World->ChipCount;i++) {
 					if (g_World->Rigid[i]->Parent == NULL && g_World->Rigid[i]->ByeFlag != 2) {
 						LastBye = i;
 						break;
 					}
 				}
-				if (i >= g_World->g_ChipCount) LastBye = 0;
+				if (i >= g_World->ChipCount) LastBye = 0;
 			}
 			HMENU hMenu = GetMenu(hWnd);
 			ViewType = 2;
@@ -8449,13 +8449,13 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		case IDM_CHANGEVIEW4:
 		{
 			if (ViewType == 3) {
-				for (int i = LastBye + 1;i < g_World->g_ChipCount;i++) {
+				for (int i = LastBye + 1;i < g_World->ChipCount;i++) {
 					if (g_World->Rigid[i]->Parent == NULL && g_World->Rigid[i]->ByeFlag != 2) {
 						LastBye = i;
 						break;
 					}
 				}
-				if (i >= g_World->g_ChipCount) LastBye = 0;
+				if (i >= g_World->ChipCount) LastBye = 0;
 			}
 			HMENU hMenu = GetMenu(hWnd);
 			ViewType = 3;
@@ -8475,13 +8475,13 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		case IDM_CHANGEVIEW5:
 		{
 			if (ViewType == 4) {
-				for (int i = LastBye + 1;i < g_World->g_ChipCount;i++) {
+				for (int i = LastBye + 1;i < g_World->ChipCount;i++) {
 					if (g_World->Rigid[i]->Parent == NULL && g_World->Rigid[i]->ByeFlag != 2) {
 						LastBye = i;
 						break;
 					}
 				}
-				if (i >= g_World->g_ChipCount) LastBye = 0;
+				if (i >= g_World->ChipCount) LastBye = 0;
 			}
 			HMENU hMenu = GetMenu(hWnd);
 			ViewType = 4;
@@ -8501,13 +8501,13 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		case IDM_CHANGEVIEW6:
 		{
 			if (ViewType == 5) {
-				for (int i = LastBye + 1;i < g_World->g_ChipCount;i++) {
+				for (int i = LastBye + 1;i < g_World->ChipCount;i++) {
 					if (g_World->Rigid[i]->Parent == NULL && g_World->Rigid[i]->ByeFlag != 2) {
 						LastBye = i;
 						break;
 					}
 				}
-				if (i >= g_World->g_ChipCount) LastBye = 0;
+				if (i >= g_World->ChipCount) LastBye = 0;
 			}
 			HMENU hMenu = GetMenu(hWnd);
 
@@ -8528,13 +8528,13 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		case IDM_CHANGEVIEW7:
 		{
 			if (ViewType == 6) {
-				for (int i = LastBye + 1;i < g_World->g_ChipCount;i++) {
+				for (int i = LastBye + 1;i < g_World->ChipCount;i++) {
 					if (g_World->Rigid[i]->Parent == NULL && g_World->Rigid[i]->ByeFlag != 2) {
 						LastBye = i;
 						break;
 					}
 				}
-				if (i >= g_World->g_ChipCount) LastBye = 0;
+				if (i >= g_World->ChipCount) LastBye = 0;
 			}
 			ViewType = 6;
 			HMENU hMenu = GetMenu(hWnd);
@@ -8554,13 +8554,13 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		case IDM_CHANGEVIEW8:
 		{
 			if (ViewType == 7) {
-				for (int i = LastBye + 1;i < g_World->g_ChipCount;i++) {
+				for (int i = LastBye + 1;i < g_World->ChipCount;i++) {
 					if (g_World->Rigid[i]->Parent == NULL && g_World->Rigid[i]->ByeFlag != 2) {
 						LastBye = i;
 						break;
 					}
 				}
-				if (i >= g_World->g_ChipCount) LastBye = 0;
+				if (i >= g_World->ChipCount) LastBye = 0;
 			}
 			HMENU hMenu = GetMenu(hWnd);
 			ViewType = 7;
@@ -8580,13 +8580,13 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		case IDM_CHANGEVIEW9:
 		{
 			if (ViewType == 8) {
-				for (int i = LastBye + 1;i < g_World->g_ChipCount;i++) {
+				for (int i = LastBye + 1;i < g_World->ChipCount;i++) {
 					if (g_World->Rigid[i]->Parent == NULL && g_World->Rigid[i]->ByeFlag != 2) {
 						LastBye = i;
 						break;
 					}
 				}
-				if (i >= g_World->g_ChipCount) LastBye = 0;
+				if (i >= g_World->ChipCount) LastBye = 0;
 			}
 			HMENU hMenu = GetMenu(hWnd);
 			ViewType = 8;
@@ -8606,13 +8606,13 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		case IDM_CHANGEVIEW10:
 		{
 			if (ViewType == 9) {
-				for (int i = LastBye + 1;i < g_World->g_ChipCount;i++) {
+				for (int i = LastBye + 1;i < g_World->ChipCount;i++) {
 					if (g_World->Rigid[i]->Parent == NULL && g_World->Rigid[i]->ByeFlag != 2) {
 						LastBye = i;
 						break;
 					}
 				}
-				if (i >= g_World->g_ChipCount) LastBye = 0;
+				if (i >= g_World->ChipCount) LastBye = 0;
 			}
 			HMENU hMenu = GetMenu(hWnd);
 			ViewType = 9;

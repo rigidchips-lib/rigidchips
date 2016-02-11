@@ -302,7 +302,7 @@ public:
 	int MainStepCount;
 	GFloat DestroyK;
 	bool DestroyFlag;
-	int g_ChipCount;
+	int ChipCount;
 	GRigid	*Rigid[GCHIPMAX];
 	GRigid	*RecRigid[GCHIPMAX];
 	int haveArm;
