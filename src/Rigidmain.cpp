@@ -4649,7 +4649,7 @@ HRESULT CMyD3DApplication::_show_network()
 			if (FAILED(this->ToggleFullscreen()))
 			{
 				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-				return 1;
+				return -1;
 			}
 			// Prompt the user to change the mode
 			InvalidateRect(g_hWnd, NULL, NULL);
@@ -5117,7 +5117,7 @@ HRESULT CMyD3DApplication::_acquire_user_input()
 				if (FAILED(ToggleFullscreen()))
 				{
 					DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-					return 1;
+					return -1;
 				}
 			}
 			if (SetCurrentDirectory(s_CurrDataDir) == 0) {
@@ -5231,7 +5231,7 @@ HRESULT CMyD3DApplication::_acquire_user_input()
 				if (FAILED(this->ToggleFullscreen()))
 				{
 					this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-					return 1;
+					return -1;
 				}
 			}
 			if (SetCurrentDirectory(s_CurrDataDir) == 0) {
@@ -5317,7 +5317,7 @@ HRESULT CMyD3DApplication::_acquire_user_input()
 				if (FAILED(this->ToggleFullscreen()))
 				{
 					this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-					return 1;
+					return -1;
 				}
 			}
 			if (SetCurrentDirectory(s_CurrDataDir) == 0) {
@@ -5417,7 +5417,7 @@ HRESULT CMyD3DApplication::_acquire_user_input()
 			if (FAILED(this->ToggleFullscreen()))
 			{
 				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-				return 1;
+				return -1;
 			}
 		}
 		if (SetCurrentDirectory(s_CurrDataDir) == 0) {
@@ -5491,7 +5491,7 @@ HRESULT CMyD3DApplication::_acquire_user_input()
 			if (FAILED(this->ToggleFullscreen()))
 			{
 				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-				return 1;
+				return -1;
 			}
 		}
 		if (SetCurrentDirectory(s_CurrDataDir) == 0) {
@@ -5554,7 +5554,7 @@ HRESULT CMyD3DApplication::_acquire_user_input()
 			if (FAILED(this->ToggleFullscreen()))
 			{
 				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-				return 1;
+				return -1;
 			}
 		}
 		if (SetCurrentDirectory(s_CurrDataDir) == 0) {
@@ -5622,7 +5622,7 @@ HRESULT CMyD3DApplication::_acquire_user_input()
 				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
 			}
 		}
-		return S_OK;
+		return 1;
 	}
 	return S_OK;
 }
@@ -5640,7 +5640,7 @@ HRESULT CMyD3DApplication::_display_data()
 			if (FAILED(this->ToggleFullscreen()))
 			{
 				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-				return 1;
+				return -1;
 			}
 		}
 		// Prompt the user to change the mode
@@ -5673,7 +5673,7 @@ HRESULT CMyD3DApplication::_display_extra_data()
 			if (FAILED(this->ToggleFullscreen()))
 			{
 				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-				return 1;
+				return -1;
 			}
 		}
 		// Prompt the user to change the mode
@@ -6185,7 +6185,7 @@ HRESULT CMyD3DApplication::_apply_vals()
 	}
 	return S_OK;
 }
-HRESULT CMyD3DApplication::_update_mouse_input()
+HRESULT CMyD3DApplication::_update_system_input()
 {
 	POINT pos;
 	CtrlKey = GetAsyncKeyState(VK_CONTROL) != 0;
@@ -6205,37 +6205,88 @@ HRESULT CMyD3DApplication::_update_mouse_input()
 //-----------------------------------------------------------------------------
 HRESULT CMyD3DApplication::FrameMove()
 {
-	
-	DWORD t = timeGetTime();	
-	_record();
-	_show_network();
-	_check_FPS_setting();
-	_update_information(t);
+	HRESULT hr;
+	DWORD t = timeGetTime();
+	if (FAILED(hr=_record()))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _show_network()))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _check_FPS_setting()))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _update_information(t)))
+	{
+		return hr;
+	}
 	
 	if (g_World->NetStop) return S_OK;
 
-	_update_mouse_input();
+	_update_system_input();
 	bool tempMoveEnd = MoveEnd;
 
-	_send_network_bullet(t, tempMoveEnd);
-	_send_network_explosion(t, tempMoveEnd);
-	_send_network_scenario_message(t, tempMoveEnd);
-	_send_network_model_full(t, tempMoveEnd);
-	_send_network_model_short(t, MoveEnd);
-	_check_checkpoint();
-	
+	if (FAILED(hr = _send_network_bullet(t, tempMoveEnd)))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _send_network_explosion(t, tempMoveEnd)))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _send_network_scenario_message(t, tempMoveEnd)))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _send_network_model_full(t, tempMoveEnd)))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _send_network_model_short(t, MoveEnd)))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _check_checkpoint()))
+	{
+		return hr;
+	}	
 	// Update user input state
-	if (InputCancel == false) UpdateInput(&m_UserInput);else { DummyInput(&m_UserInput);InputCancel = false; }	
-	_acquire_user_input();
-	
-	_display_data();
-	_display_extra_data();
-
-	_acquire_user_model_input();
-
-	_update_keys();
-	_update_vals();
-	_apply_vals();
+	if (InputCancel == false) UpdateInput(&m_UserInput);else { DummyInput(&m_UserInput);InputCancel = false; }
+	if (FAILED(hr = _acquire_user_input()))
+	{
+		return hr;
+	}
+	else if (hr == 1)//Log開くのに成功した場合、1を返すので、此処から先の処理をスキップしてリターンする
+	{
+		return S_OK;
+	}
+	if (FAILED(hr = _display_data()))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _display_extra_data()))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _acquire_user_model_input()))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _update_keys()))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _update_vals()))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _apply_vals()))
+	{
+		return hr;
+	}
 	MsgFlag = false;
 	return S_OK;
 }

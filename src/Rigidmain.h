@@ -205,7 +205,7 @@ private:
 	HRESULT _show_network();
 	HRESULT _check_FPS_setting();
 	HRESULT _update_information(DWORD t);
-	HRESULT _update_mouse_input();
+	HRESULT _update_system_input();
 	HRESULT _send_network_bullet(DWORD t, bool moveEnd);
 	HRESULT _send_network_explosion(DWORD t, bool moveEnd);
 	HRESULT _send_network_scenario_message(DWORD t, bool moveEnd);
