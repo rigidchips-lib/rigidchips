@@ -1373,7 +1373,7 @@ GRigid* GWorld::AddRigid(int type, bool fix, GFloat x, GFloat y, GFloat z, GFloa
 	if (g_World->getChipCount() >= GCHIPMAX) return NULL;
 	GRigid*  r = Rigid[ChipCount] = new GRigid(type, fix, x, y, z);
 	if (r == NULL) return NULL;
-	r->ID = g_World->getChipCount() - 1;
+	r->ID = g_World->getChipCount();
 	r->World = this;
 	//	r->Rb.unity();
 	r->Rb = GMatrix33().rotateX(ax*(GFloat)M_PI / 180.0f).rotateY(ay*(GFloat)M_PI / 180.0f).rotateZ(az*(GFloat)M_PI / 180.0f);
