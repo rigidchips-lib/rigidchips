@@ -411,7 +411,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 	memcpy(strm, stream, size); //いったんコピー
 	BYTE *data = strm + sizeof(short);
 	short code = *((short*)strm);
-	if (code == -1) {
+	if (code == NC_ERR) {
 		for (int i = 0;i < g_DPlay->GetMaxPlayers();i++) {
 			if (g_PlayerData[i].ReceiveData.info.dpnidPlayer == playerInfo->dpnidPlayer) {
 				PrePlayerData[i].ReceiveData.size = 0;
@@ -419,7 +419,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			}
 		}
 	}
-	else if (code == 0) {
+	else if (code == NC_MODEL) {//?
 		for (int i = 0;i < g_DPlay->GetMaxPlayers();i++) {
 			if (g_PlayerData[i].ReceiveData.info.dpnidPlayer == playerInfo->dpnidPlayer) {
 				int s = g_PlayerData[i].ReceiveData.size;
@@ -444,14 +444,14 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			}
 		}
 	}
-	else if (code == 1) { //チャットデータ
+	else if (code == NC_CHAT) { //チャットデータ
 		if (NetworkDlg) {
 			char *ret = ChatDataDisp(playerInfo->strPlayerName, (char*)data);
 			strcpy(LastChatData, ret);
 			if (g_SystemLua != NULL && g_World->B26Bullet) luaSystemRun("OnChat");
 		}
 	}
-	else if (code == 30) { //15B26追加　シナリオメッセージ
+	else if (code == NC_SCENARIO_MESSAGE) { //15B26追加　シナリオメッセージ
 		for (int i = 0;i < g_DPlay->GetMaxPlayers();i++) {
 			if (g_PlayerData[i].ReceiveData.info.dpnidPlayer == playerInfo->dpnidPlayer) {
 				s_RecieaveMessageCode[i] = *((int*)data);
@@ -463,7 +463,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 		}
 	}
 
-	else if (code == 10) { //15B20追加　Coreの位置情報のみ送る
+	else if (code ==NC_CORE_ONLY) { //15B20追加　Coreの位置情報のみ送る
 		for (int i = 0;i < g_DPlay->GetMaxPlayers();i++) {
 			if (g_PlayerData[i].ReceiveData.info.dpnidPlayer == playerInfo->dpnidPlayer) {
 				int s1 = g_PlayerData[i].ReceiveData.size;
@@ -484,7 +484,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			}
 		}
 	}
-	else if (g_World->B20Bullet && code == 11) {
+	else if (g_World->B20Bullet && code == NC_B20_BULLET) {
 		int s = (size - sizeof(short)) / sizeof(GBULLETDATA);
 		GBULLETDATA *bullet = (GBULLETDATA*)data;
 		for (int j = 0;j < s;j++) {
@@ -492,7 +492,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			b->Net = 0;
 		}
 	}
-	else if (g_World->B26Bullet && code == 31) {
+	else if (g_World->B26Bullet && code == NC_B26_BULLET) {
 		int i;
 		for (i = 0;i < g_DPlay->GetNumPlayers();i++) {
 			if (g_PlayerData[i].ReceiveData.info.dpnidPlayer == playerInfo->dpnidPlayer) break;
@@ -507,7 +507,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			}
 		}
 	}
-	else if (!g_World->B20Bullet && !g_World->B26Bullet && code == 21) {
+	else if (!g_World->B20Bullet && !g_World->B26Bullet && code == NC_UNKNOWN_BULLET) {
 		int s = (size - sizeof(short)) / sizeof(GBULLETDATA);
 		GBULLETDATA *bullet = (GBULLETDATA*)data;
 		for (int j = 0;j < s;j++) {
@@ -515,7 +515,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			b->Net = 0;
 		}
 	}
-	else if (code == 100) {
+	else if (code == NC_UPDATE_PLAYER_DATA) {
 		for (int i = 0;i < g_DPlay->GetMaxPlayers();i++) {
 			if (g_PlayerData[i].ReceiveData.info.dpnidPlayer == playerInfo->dpnidPlayer) {
 				GMYDATA *mydata = (GMYDATA*)data;
@@ -528,7 +528,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			}
 		}
 	}
-	else if (g_World->B20Bullet && code == 12) {
+	else if (g_World->B20Bullet && code == NC_B20_EXPLOSION) {
 		int s = (size - sizeof(short)) / sizeof(GEXPDATA);
 		GEXPDATA *expo = (GEXPDATA*)data;
 		for (int j = 0;j < s;j++) {
@@ -542,7 +542,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			part->Net = 0;
 		}
 	}
-	else if (g_World->B26Bullet && code == 32) { //爆発を受け取った
+	else if (g_World->B26Bullet && code == NC_B26_EXPLOSION) { //爆発を受け取った
 		int i;
 		for (i = 0;i < g_DPlay->GetNumPlayers();i++) {
 			if (g_PlayerData[i].ReceiveData.info.dpnidPlayer == playerInfo->dpnidPlayer) break;
@@ -565,7 +565,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			}
 		}
 	}
-	else if (!g_World->B20Bullet && !g_World->B26Bullet &&code == 22) { //爆発を受け取った
+	else if (!g_World->B20Bullet && !g_World->B26Bullet &&code == NC_UNKNOWN_EXPLOSION) { //爆発を受け取った
 		int s = (size - sizeof(short)) / sizeof(GEXPDATA2);
 		GEXPDATA2 *expo = (GEXPDATA2*)data;
 		for (int j = 0;j < s;j++) {
@@ -581,13 +581,13 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			part->Net = 0;
 		}
 	}
-	else if (code == 62) {
+	else if (code == NC_PING_1) {
 		if (NetworkDlg) {
 			GSTREAM strm2;
 			DWORD *w = (DWORD*)data;
 			w[1] = timeGetTime();
 
-			strm2.code = 63;
+			strm2.code = NC_PING_2;
 			DWORD *sw = (DWORD*)strm2.data;
 			sw[0] = w[0];
 			sw[1] = w[1];
@@ -595,13 +595,13 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
 		}
 	}
-	else if (code == 63) {
+	else if (code == NC_PING_2) {
 		if (NetworkDlg) {
 			GSTREAM strm2;
 			DWORD *w = (DWORD*)data;
 			w[2] = timeGetTime();
 
-			strm2.code = 64;
+			strm2.code = NC_PING_3;
 			DWORD *sw = (DWORD*)strm2.data;
 			sw[0] = w[0];
 			sw[1] = w[1];
@@ -610,13 +610,13 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
 		}
 	}
-	else if (code == 64) {
+	else if (code == NC_PING_3) {
 		if (NetworkDlg) {
 			GSTREAM strm2;
 			DWORD *w = (DWORD*)data;
 			w[3] = timeGetTime();
 
-			strm2.code = 65;
+			strm2.code = NC_PING_4;
 			DWORD *sw = (DWORD*)strm2.data;
 			sw[0] = w[0];
 			sw[1] = w[1];
@@ -626,7 +626,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
 		}
 	}
-	else if (code == 65) {
+	else if (code == NC_PING_4) {
 		if (NetworkDlg) {
 			char str[256];
 			DWORD *w = (DWORD*)data;
@@ -634,7 +634,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			ChatDataDisp(playerInfo->strPlayerName, str);
 		}
 	}
-	else if (code == 50) { //Land
+	else if (code == NC_LAND) { //Land
 		if (NetworkDlg) {
 			GSTREAM strm2;
 			strm2.code = 1;
@@ -644,7 +644,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
 		}
 	}
-	else if (code == 51) { //Scenario
+	else if (code == NC_SCENARIO) { //Scenario
 		if (NetworkDlg) {
 			GSTREAM strm2;
 			strm2.code = 1;
@@ -654,7 +654,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
 		}
 	}
-	else if (code == 52) { //Version
+	else if (code == NC_VERSION) { //Version
 		if (NetworkDlg) {
 			GSTREAM strm2;
 			strm2.code = 1;
@@ -664,7 +664,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
 		}
 	}
-	else if (code == 53) { //Position
+	else if (code == NC_POSITION) { //Position
 		if (NetworkDlg) {
 			GSTREAM strm2;
 			strm2.code = 1;
@@ -674,7 +674,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
 		}
 	}
-	else if (code == 54) { //Name
+	else if (code == NC_NAME) { //Name
 		if (NetworkDlg) {
 			GSTREAM strm2;
 			strm2.code = 1;
@@ -686,23 +686,23 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
 		}
 	}
-	else if (code == 55) { //告知を要求
+	else if (code == NC_POST_KOKUTI) { //告知を要求
 		if (NetworkDlg) {
 			GSTREAM strm2;
-			strm2.code = 56;
+			strm2.code = NC_ACQUIRE_KOKUTI;
 			char *str = (char*)strm2.data;
 			strcpy(str, Kokuti);
 			DWORD size = strlen(str) + 1 + sizeof(short);
 			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
 		}
 	}
-	else if (code == 56) { //告知を出す
+	else if (code == NC_ACQUIRE_KOKUTI) { //告知を出す
 		if (NetworkDlg) {
 			strcpy(Kokuti, (char*)data);
 			SendDlgItemMessage(NetworkDlg, IDC_KOKUTI, WM_SETTEXT, 0, (LPARAM)Kokuti);
 		}
 	}
-	else if (code == 57) { //s_FPS
+	else if (code == NC_FPS) { //FPS
 		if (NetworkDlg) {
 			GSTREAM strm2;
 			strm2.code = 1;
@@ -713,7 +713,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
 		}
 	}
-	else if (code == 58) { //OS
+	else if (code == NC_SYSTEM) { //OS
 		if (NetworkDlg) {
 			GSTREAM strm2;
 			strm2.code = 1;
@@ -728,7 +728,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
 		}
 	}
-	else if (code == 59) { //Chips
+	else if (code == NC_CHIP) { //Chips
 		if (NetworkDlg) {
 			GSTREAM strm2;
 			strm2.code = 1;
@@ -1084,7 +1084,7 @@ void ResetChip(int n, GFloat a)
 	g_World->MainStepCount = 0;
 	ResetCount = 90;
 	g_Chip[n]->Energy = 0;
-	g_Chip[n]->Tolerant = 10000;
+	g_Chip[n]->Tolerant = MAX_TORELANCE;
 	g_Chip[n]->Bias.clear();
 	g_Chip[n]->TopBias.clear();
 	g_Chip[n]->HitN = 0;
@@ -1133,7 +1133,7 @@ void ResetChip3(int n, GQuat q, GVector x)
 	g_Chip[n]->Power2 = 0.0;
 	g_Chip[n]->PowerByFuel = 0.0;
 	g_Chip[n]->Energy = 0;
-	g_Chip[n]->Tolerant = 10000;
+	g_Chip[n]->Tolerant = MAX_TORELANCE;
 	for (int i = 0;i < g_VarCount;i++) {
 		g_ValList[i].Val = g_ValList[i].Def;
 		if (g_ValList[i].Val > g_ValList[i].Max) g_ValList[i].Val = g_ValList[i].Max;
@@ -1663,50 +1663,50 @@ int CALLBACK DlgNetworkProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					DWORD size = 0;
 
 					if (str1[1] == 'P' || str1[1] == 'p') {
-						stream.code = 62;//Ping
+						stream.code = NC_PING_1;//Ping
 						DWORD *w = (DWORD*)stream.data;
 						w[0] = timeGetTime();
 						size = sizeof(DWORD) * 4 + sizeof(short);
 					}
 					else if (str1[1] == 'L' || str1[1] == 'l') {
-						stream.code = 50;//Land
+						stream.code = NC_LAND;//Land
 						char *w = (char*)stream.data;
 						sprintf(w, "land");
 						size = 5 + sizeof(short);
 					}
 					else if (str1[1] == 'S' || str1[1] == 's') {
-						stream.code = 51;//Scenario
+						stream.code = NC_SCENARIO;//Scenario
 						char *w = (char*)stream.data;
 						sprintf(w, "scen");
 						size = 5 + sizeof(short);
 					}
 					else if (str1[1] == 'V' || str1[1] == 'v') {
-						stream.code = 52;//Version
+						stream.code = NC_VERSION;//Version
 						char *w = (char*)stream.data;
 						sprintf(w, "vers");
 						size = 5 + sizeof(short);
 					}
 					else if (str1[1] == 'X' || str1[1] == 'x') {
-						stream.code = 53;//Position
+						stream.code = NC_POSITION;//Position
 						char *w = (char*)stream.data;
 						sprintf(w, "posi");
 						size = 5 + sizeof(short);
 					}
 					else if (str1[1] == 'N' || str1[1] == 'n') {
-						stream.code = 54;//Name
+						stream.code = NC_NAME;//Name
 						char *w = (char*)stream.data;
 						sprintf(w, "name");
 						size = 5 + sizeof(short);
 					}
 					else if (str1[1] == 'K' || str1[1] == 'k') {
-						stream.code = 55;//告知を受け取る
+						stream.code = NC_POST_KOKUTI;//告知を受け取る
 						char *w = (char*)stream.data;
 						sprintf(w, "koku");
 						size = 5 + sizeof(short);
 						id = 0;
 					}
 					else if (str1[1] == 'J' || str1[1] == 'j') {
-						stream.code = 56;//告知を出す
+						stream.code = NC_ACQUIRE_KOKUTI;//告知を出す
 						char *w = (char*)stream.data;
 						char name[128];
 						g_DPlay->GetPlayersName(g_DPlay->GetLocalPlayerDPNID(), name);
@@ -1719,19 +1719,19 @@ int CALLBACK DlgNetworkProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						id = -1;
 					}
 					else if (str1[1] == 'F' || str1[1] == 'f') {
-						stream.code = 57;//s_FPS
+						stream.code = NC_FPS;//FPS
 						char *w = (char*)stream.data;
 						sprintf(w, "fps ");
 						size = 5 + sizeof(short);
 					}
 					else if (str1[1] == 'O' || str1[1] == 'o') {
-						stream.code = 58;//OS
+						stream.code = NC_SYSTEM;//OS
 						char *w = (char*)stream.data;
 						sprintf(w, "Os  ");
 						size = 5 + sizeof(short);
 					}
 					else if (str1[1] == 'C' || str1[1] == 'c') {
-						stream.code = 59;//Chips
+						stream.code = NC_CHIP;//Chips
 						char *w = (char*)stream.data;
 						sprintf(w, "chip");
 						size = 5 + sizeof(short);
@@ -1745,7 +1745,7 @@ int CALLBACK DlgNetworkProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					SendDlgItemMessage(hDlg, IDC_CHATEDIT, WM_SETTEXT, 0, (LPARAM)"");
 				}
 				else {
-					stream.code = 1;//chat
+					stream.code = NC_CHAT;//chat
 					strcpy((char*)stream.data, str1);
 					DWORD size = (DWORD)(strlen(str1) + 1 + sizeof(short));
 					g_DPlay->SendAll((BYTE*)&stream, size);
@@ -1907,7 +1907,7 @@ void GRigid::AddViewModel()
 }
 void GRigid::Disp()
 {
-	if (MeshNo == 23 && !ShowCowl) return;
+	if (MeshNo == MESH_COWL && !ShowCowl) return;
 	if (Ghost >= 1 && !ShowGhost) return;
 	CD3DMesh* mesh = NULL;
 	GMatrix m(TM);
@@ -1923,21 +1923,21 @@ void GRigid::Disp()
 	}
 	else {
 		mesh = m_pXMesh[MeshNo];
-		if (MeshNo == 2) {
-			if (LinkInfo && (W*(LinkInfo->Axis*R)).abs()>M_PI / g_World->StepTime / 3.0f) mesh = m_pXMesh[8];
+		if (MeshNo == MESH_WHEEL) {
+			if (LinkInfo && (W*(LinkInfo->Axis*R)).abs()>M_PI / g_World->StepTime / 3.0f) mesh = m_pXMesh[MESH_WHEEL2];//回ってる方のWheelに切り替える
 		}
-		else if (MeshNo == 3) {
-			if (LinkInfo && (W*(LinkInfo->Axis*R)).abs() > M_PI / g_World->StepTime / 3.0f) mesh = m_pXMesh[9];
+		else if (MeshNo == MESH_RLW) {
+			if (LinkInfo && (W*(LinkInfo->Axis*R)).abs() > M_PI / g_World->StepTime / 3.0f) mesh = m_pXMesh[MESH_RLW2];
 		}
-		else if (MeshNo == 23) { //カウル
-			if (Option == 1) mesh = m_pXMesh[24];
-			else if (Option == 2) mesh = m_pXMesh[25];
-			else if (Option == 3) mesh = m_pXMesh[26];
-			else if (Option == 4) mesh = m_pXMesh[27];
-			else if (Option == 5) mesh = m_pXMesh[28];
+		else if (MeshNo == MESH_COWL) { //カウル
+			if (Option == 1) mesh = m_pXMesh[MESH_COWL_1];
+			else if (Option == 2) mesh = m_pXMesh[MESH_COWL_2];
+			else if (Option == 3) mesh = m_pXMesh[MESH_COWL_3];
+			else if (Option == 4) mesh = m_pXMesh[MESH_COWL_4];
+			else if (Option == 5) mesh = m_pXMesh[MESH_COWL_5];
 		}
-		else if (MeshNo == 10 && (Option == 1 || Option == 2)) {
-			mesh = m_pXMesh[33];
+		else if (MeshNo == MESH_JET && (Option == 1 || Option == 2)) {
+			mesh = m_pXMesh[MESH_JET_2];
 		}
 
 		switch (Dir) {
@@ -1963,7 +1963,7 @@ void GRigid::Disp()
 			col.b = (((int)Color) & 0xff) / 255.0f;
 			col.a = 1.0f;
 			g_D3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
-			if (MeshNo == 23) {
+			if (MeshNo == MESH_COWL) {
 				float spe = (((int)Effect) & 0x0f) / 15.0f;
 				float pow = (((((int)Effect) & 0xf0) >> 4)) / 15.0f;
 				pow = pow*pow*46.0f + 4.0f;
@@ -1995,16 +1995,16 @@ void GRigid::Disp()
 				mesh->m_pMaterials[0].Diffuse.a = 1.0f;
 				mesh->m_pMaterials[0].Ambient = mesh->m_pMaterials[0].Diffuse;
 			}
-			if (MeshNo == 10 && (Option == 1 || Option == 2)) {
+			if (MeshNo == MESH_JET && (Option == 1 || Option == 2)) {
 				FLOAT f = (FLOAT)(pow((double)fabs((double)PowerByFuel), 1.0 / 3.0) / 5.0);
 				if (f<0.5f) f = 0.5f;
 				D3DXMatrixScaling(&mat2, f, f, f);
 				D3DXMatrixMultiply(&mat1, &mat2, &mat1);
 				g_D3DDevice->SetTransform(D3DTS_WORLD, &mat1);
-				m_pXMesh[33]->Render(g_D3DDevice);
+				m_pXMesh[MESH_JET_2]->Render(g_D3DDevice);
 			}
 			else mesh->Render(g_D3DDevice);
-			if ((MeshNo == 2 || MeshNo == 3)) {
+			if ((MeshNo == MESH_WHEEL || MeshNo == MESH_RLW)) {
 				float e = Effect;if (e < 1.0) e = 1.0;else if (e>10) e = 10.0f;
 				if (Option == 1 || Option == 2 || (e>1.0)) {
 					if (Option == 2) D3DXMatrixScaling(&mat2, (FLOAT)1.0f, (FLOAT)e, (FLOAT)1.0f);
@@ -2012,7 +2012,7 @@ void GRigid::Disp()
 					if (Option == 0) D3DXMatrixScaling(&mat2, (FLOAT)0.51f, (FLOAT)e, (FLOAT)0.51f);
 					D3DXMatrixMultiply(&mat1, &mat2, &mat1);
 					g_D3DDevice->SetTransform(D3DTS_WORLD, &mat1);
-					m_pXMesh[22]->Render(g_D3DDevice);
+					m_pXMesh[MESH_WHEEL_T]->Render(g_D3DDevice);
 				}
 			}
 		}
@@ -2149,47 +2149,47 @@ void GWorld::DispNetChip(int n)
 		}
 		switch (type) {
 		case GT_CORE:
-			meshNo = 0;
+			meshNo = MESH_CORE;
 			break;
 		case GT_CHIP:
-			meshNo = 1;
+			meshNo = MESH_CHIP;
 			break;
 		case GT_RUDDER:
-			meshNo = 4;
+			meshNo = MESH_RUDDER;
 			break;
 		case GT_DUMMY:
-			meshNo = 6;
+			meshNo = MESH_DUMMY;
 			break;
 		case GT_WHEEL:
-			meshNo = 2;
+			meshNo = MESH_WHEEL;
 			break;
 		case GT_RLW:
-			meshNo = 3;
+			meshNo = MESH_RLW;
 			break;
 		case GT_TRIM:
-			meshNo = 5;
+			meshNo = MESH_TRIM;
 			break;
 		case GT_JET:
-			meshNo = 10;
+			meshNo = MESH_JET;
 			break;
 		case GT_CHIPH:
-			meshNo = 21;
+			meshNo = MESH_WEIGHT;
 			break;
 		case GT_COWL:
-			meshNo = 23;
+			meshNo = MESH_COWL;
 			break;
 		case GT_ARM:
-			meshNo = 30;
+			meshNo = MESH_ARM;
 			g_PlayerData[n].haveArm++;
 			break;
 		case GT_CHIP2:
-			meshNo = 7;
+			meshNo = MESH_FRAME;
 			break;
 		case GT_RUDDER2:
-			meshNo = 16;
+			meshNo = MESH_RUDDER_F;
 			break;
 		case GT_TRIM2:
-			meshNo = 17;
+			meshNo = MESH_TRIM_F;
 			break;
 		default:
 			meshNo = 1;
@@ -2221,11 +2221,11 @@ void GWorld::DispNetChip(int n)
 				float alpha = 1.0f - ((chip->data.option & 0xe0) >> 5) / 7.0f;//3bit
 				if (alpha != 1) { g_PlayerData[n].ChipCount++;continue; }
 
-				if (opt == 1) mesh = m_pXMesh[24];
-				else if (opt == 2) mesh = m_pXMesh[25];
-				else if (opt == 3) mesh = m_pXMesh[26];
-				else if (opt == 4) mesh = m_pXMesh[27];
-				else if (opt == 5) mesh = m_pXMesh[28];
+				if (opt == 1) mesh = m_pXMesh[MESH_COWL_1];
+				else if (opt == 2) mesh = m_pXMesh[MESH_COWL_2];
+				else if (opt == 3) mesh = m_pXMesh[MESH_COWL_3];
+				else if (opt == 4) mesh = m_pXMesh[MESH_COWL_4];
+				else if (opt == 5) mesh = m_pXMesh[MESH_COWL_5];
 				if (alpha < 1.0f) {
 					g_D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 				}
@@ -2245,8 +2245,8 @@ void GWorld::DispNetChip(int n)
 				mesh->m_pMaterials[0].Power = 50.0f;
 			}
 			if (type == GT_WHEEL || type == GT_RLW) {
-				if (type == GT_WHEEL && op1) mesh = m_pXMesh[8];
-				if (type == GT_RLW && op1) mesh = m_pXMesh[9];
+				if (type == GT_WHEEL && op1) mesh = m_pXMesh[MESH_WHEEL2];
+				if (type == GT_RLW && op1) mesh = m_pXMesh[MESH_RLW2];
 				float e = (chip->data.option >> 2) / 6.3f;if (e < 1.0) e = 1.0f;else if (e>10) e = 10.0f;
 				int o = chip->data.option & 0x3;
 				if (o == 1 || o == 2 || (e > 1.0)) {
@@ -2255,7 +2255,7 @@ void GWorld::DispNetChip(int n)
 					if (o == 0) D3DXMatrixScaling(&mat2, (FLOAT)0.51f, (FLOAT)e, (FLOAT)0.51f);
 					D3DXMatrixMultiply(&mat1, &mat2, &mat1);
 					g_D3DDevice->SetTransform(D3DTS_WORLD, &mat1);
-					m_pXMesh[22]->Render(g_D3DDevice);
+					m_pXMesh[MESH_WHEEL_T]->Render(g_D3DDevice);
 				}
 			}
 			if (type == GT_JET) {
@@ -2264,7 +2264,7 @@ void GWorld::DispNetChip(int n)
 					D3DXMatrixScaling(&mat2, f, f, f);
 					D3DXMatrixMultiply(&mat1, &mat2, &mat1);
 					g_D3DDevice->SetTransform(D3DTS_WORLD, &mat1);
-					mesh = m_pXMesh[33];
+					mesh = m_pXMesh[MESH_JET_2];
 				}
 				else if (op1 == 0) g_PlayerData[n].Jet[g_PlayerData[n].ChipCount] = i;
 			}
@@ -2482,7 +2482,7 @@ void GWorld::DispNetJet(int type, GMatrix tm, float f, int dir)
 		D3DXMatrixMultiply(&matLocal, &mat1, &matLocal);
 		D3DXMatrixMultiply(&matLocal, &matLocal, &GMatWorld);
 		g_D3DDevice->SetTransform(D3DTS_WORLD, &matLocal);
-		m_pXMesh[11]->Render(g_D3DDevice);
+		m_pXMesh[MESH_FIRE]->Render(g_D3DDevice);
 	}
 	else if (type == 1 && f != 0) { //ARM
 		D3DXMATRIX mat1;
@@ -2501,7 +2501,7 @@ void GWorld::DispNetJet(int type, GMatrix tm, float f, int dir)
 		D3DXMatrixMultiply(&matLocal, &mat1, &matLocal);
 		D3DXMatrixMultiply(&matLocal, &matLocal, &GMatWorld);
 		g_D3DDevice->SetTransform(D3DTS_WORLD, &matLocal);
-		m_pXMesh[31]->Render(g_D3DDevice);
+		m_pXMesh[MESH_FIRE_2]->Render(g_D3DDevice);
 	}
 	g_D3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);  //DESTの設定
 }
@@ -2610,7 +2610,7 @@ void GRigid::DispObject()
 	D3DXMatrixMultiply(&mat1, &mat1, &matLocal);
 	D3DXMatrixMultiply(&mat1, &mat1, &GMatWorld);
 	g_D3DDevice->SetTransform(D3DTS_WORLD, &mat1);
-	CD3DMesh* mesh = m_pXMesh[20];
+	CD3DMesh* mesh = m_pXMesh[MESH_BALL];
 	mesh->m_pMaterials[1].Diffuse.r = (((int)Color) >> 16) / 255.0f;
 	mesh->m_pMaterials[1].Diffuse.g = ((((int)Color) & 0xff00) >> 8) / 255.0f;
 	mesh->m_pMaterials[1].Diffuse.b = (((int)Color) & 0xff) / 255.0f;
@@ -2647,7 +2647,7 @@ void GWorld::DispNetShadow()
 void GRigid::DispShadow()
 {
 	//影の表示
-	if (MeshNo == 23 && !ShowCowl) return;
+	if (MeshNo == MESH_COWL && !ShowCowl) return;
 	if (Ghost >= 1 && !ShowGhost) return;
 	if (FrameFlag) return;
 
@@ -5931,7 +5931,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			if (g_Chip[i]->Top != NULL) {
 				float s = (float)GDTSTEP / 6.0f;
 				//ホイールのトルク
-				if (TorqueFlag && (g_Chip[i]->MeshNo == 2 || g_Chip[i]->MeshNo == 3) && g_Chip[i]->Power != 0) {
+				if (TorqueFlag && (g_Chip[i]->MeshNo == MESH_WHEEL || g_Chip[i]->MeshNo == MESH_RLW) && g_Chip[i]->Power != 0) {
 					if (!EfficientFlag) {
 						double f = g_Chip[i]->CheckFuel(g_Chip[i]->Power / WHL_EFF);
 						g_Chip[i]->PowerByFuel = g_Chip[i]->Power = f*WHL_EFF;
@@ -6911,20 +6911,20 @@ HRESULT CMyD3DApplication::Render()
 			D3DXMatrixMultiply(&mat1, &mat1, &GMatWorld);
 			m_pd3dDevice->SetTransform(D3DTS_WORLD, &mat1);
 			if (Ring[ii].State == 1) {
-				m_pXMesh[15]->m_pMaterials[0].Diffuse.r = Ring[ii].Color.x;
-				m_pXMesh[15]->m_pMaterials[0].Diffuse.g = Ring[ii].Color.y;
-				m_pXMesh[15]->m_pMaterials[0].Diffuse.b = Ring[ii].Color.z;
-				m_pXMesh[15]->m_pMaterials[0].Diffuse.a = 0.2f;
-				m_pXMesh[15]->m_pMaterials[0].Ambient = m_pXMesh[15]->m_pMaterials[0].Diffuse;
+				m_pXMesh[MESH_CHECK_POINT]->m_pMaterials[0].Diffuse.r = Ring[ii].Color.x;
+				m_pXMesh[MESH_CHECK_POINT]->m_pMaterials[0].Diffuse.g = Ring[ii].Color.y;
+				m_pXMesh[MESH_CHECK_POINT]->m_pMaterials[0].Diffuse.b = Ring[ii].Color.z;
+				m_pXMesh[MESH_CHECK_POINT]->m_pMaterials[0].Diffuse.a = 0.2f;
+				m_pXMesh[MESH_CHECK_POINT]->m_pMaterials[0].Ambient = m_pXMesh[15]->m_pMaterials[0].Diffuse;
 			}
 			else {
-				m_pXMesh[15]->m_pMaterials[0].Diffuse.r = Ring[ii].Color.x;
-				m_pXMesh[15]->m_pMaterials[0].Diffuse.g = Ring[ii].Color.y;
-				m_pXMesh[15]->m_pMaterials[0].Diffuse.b = Ring[ii].Color.z;
-				m_pXMesh[15]->m_pMaterials[0].Diffuse.a = 0.7f;
-				m_pXMesh[15]->m_pMaterials[0].Ambient = m_pXMesh[15]->m_pMaterials[0].Diffuse;
+				m_pXMesh[MESH_CHECK_POINT]->m_pMaterials[0].Diffuse.r = Ring[ii].Color.x;
+				m_pXMesh[MESH_CHECK_POINT]->m_pMaterials[0].Diffuse.g = Ring[ii].Color.y;
+				m_pXMesh[MESH_CHECK_POINT]->m_pMaterials[0].Diffuse.b = Ring[ii].Color.z;
+				m_pXMesh[MESH_CHECK_POINT]->m_pMaterials[0].Diffuse.a = 0.7f;
+				m_pXMesh[MESH_CHECK_POINT]->m_pMaterials[0].Ambient = m_pXMesh[15]->m_pMaterials[0].Diffuse;
 			}
-			m_pXMesh[15]->Render(m_pd3dDevice);
+			m_pXMesh[MESH_CHECK_POINT]->Render(m_pd3dDevice);
 		}
 		for (int ii = 0;ii < Course[CurrentCourse].Count;ii++) {	//チェックポイントの表示
 			D3DXMATRIX mat1, mat2;
@@ -7015,29 +7015,29 @@ HRESULT CMyD3DApplication::Render()
 				m_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0x444444);
 				m_pd3dDevice->SetVertexShader(D3DFVF_POINTVERTEX);
 				m_pd3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-				m_pXMesh[18]->m_pMaterials[0].Ambient.r = (float)lightColor.x;
-				m_pXMesh[18]->m_pMaterials[0].Ambient.g = (float)lightColor.y;
-				m_pXMesh[18]->m_pMaterials[0].Ambient.b = (float)lightColor.z;
-				m_pXMesh[18]->m_pMaterials[0].Diffuse.r = (float)0;
-				m_pXMesh[18]->m_pMaterials[0].Diffuse.g = (float)0;
-				m_pXMesh[18]->m_pMaterials[0].Diffuse.b = (float)0;
+				m_pXMesh[MESH_DUST]->m_pMaterials[0].Ambient.r = (float)lightColor.x;
+				m_pXMesh[MESH_DUST]->m_pMaterials[0].Ambient.g = (float)lightColor.y;
+				m_pXMesh[MESH_DUST]->m_pMaterials[0].Ambient.b = (float)lightColor.z;
+				m_pXMesh[MESH_DUST]->m_pMaterials[0].Diffuse.r = (float)0;
+				m_pXMesh[MESH_DUST]->m_pMaterials[0].Diffuse.g = (float)0;
+				m_pXMesh[MESH_DUST]->m_pMaterials[0].Diffuse.b = (float)0;
 
-				m_pXMesh[19]->m_pMaterials[0].Ambient.r = (float)lightColor.x;
-				m_pXMesh[19]->m_pMaterials[0].Ambient.g = (float)lightColor.y;
-				m_pXMesh[19]->m_pMaterials[0].Ambient.b = (float)lightColor.z;
-				m_pXMesh[19]->m_pMaterials[0].Diffuse.r = (float)0;
-				m_pXMesh[19]->m_pMaterials[0].Diffuse.g = (float)0;
-				m_pXMesh[19]->m_pMaterials[0].Diffuse.b = (float)0;
+				m_pXMesh[MESH_SPLASH]->m_pMaterials[0].Ambient.r = (float)lightColor.x;
+				m_pXMesh[MESH_SPLASH]->m_pMaterials[0].Ambient.g = (float)lightColor.y;
+				m_pXMesh[MESH_SPLASH]->m_pMaterials[0].Ambient.b = (float)lightColor.z;
+				m_pXMesh[MESH_SPLASH]->m_pMaterials[0].Diffuse.r = (float)0;
+				m_pXMesh[MESH_SPLASH]->m_pMaterials[0].Diffuse.g = (float)0;
+				m_pXMesh[MESH_SPLASH]->m_pMaterials[0].Diffuse.b = (float)0;
 
-				m_pXMesh[29]->m_pMaterials[0].Ambient.r = (float)lightColor.x;
-				m_pXMesh[29]->m_pMaterials[0].Ambient.g = (float)lightColor.y;
-				m_pXMesh[29]->m_pMaterials[0].Ambient.b = (float)lightColor.z;
-				m_pXMesh[29]->m_pMaterials[0].Diffuse.r = (float)0;
-				m_pXMesh[29]->m_pMaterials[0].Diffuse.g = (float)0;
-				m_pXMesh[29]->m_pMaterials[0].Diffuse.b = (float)0;
+				m_pXMesh[MESH_JET_EFFECT]->m_pMaterials[0].Ambient.r = (float)lightColor.x;
+				m_pXMesh[MESH_JET_EFFECT]->m_pMaterials[0].Ambient.g = (float)lightColor.y;
+				m_pXMesh[MESH_JET_EFFECT]->m_pMaterials[0].Ambient.b = (float)lightColor.z;
+				m_pXMesh[MESH_JET_EFFECT]->m_pMaterials[0].Diffuse.r = (float)0;
+				m_pXMesh[MESH_JET_EFFECT]->m_pMaterials[0].Diffuse.g = (float)0;
+				m_pXMesh[MESH_JET_EFFECT]->m_pMaterials[0].Diffuse.b = (float)0;
 				D3DXMATRIX mat1, mat2;
 				for (i = 0;i < k;i++) {
-					m_pXMesh[18]->m_pMaterials[0].Diffuse.a = (float)pV[i].alpha*0.3f;
+					m_pXMesh[MESH_DUST]->m_pMaterials[0].Diffuse.a = (float)pV[i].alpha*0.3f;
 					D3DXMatrixRotationZ(&mat1, pV[i].alpha*2.0f + pV[i].id);
 					D3DXMatrixScaling(&mat2, pV[i].size, pV[i].size, pV[i].size);
 					D3DXMatrixMultiply(&mat1, &mat1, &mat2);
@@ -7049,7 +7049,7 @@ HRESULT CMyD3DApplication::Render()
 					D3DXMatrixMultiply(&mat1, &mat1, &mat2);
 					D3DXMatrixMultiply(&mat1, &mat1, &GMatWorld);
 					m_pd3dDevice->SetTransform(D3DTS_WORLD, &mat1);
-					m_pXMesh[18]->Render(m_pd3dDevice);
+					m_pXMesh[MESH_DUST]->Render(m_pd3dDevice);
 				}
 			}
 			//水しぶき
@@ -7098,10 +7098,10 @@ HRESULT CMyD3DApplication::Render()
 					D3DXMatrixMultiply(&mat1, &mat1, &mat2);
 					D3DXMatrixMultiply(&mat1, &mat1, &GMatWorld);
 					m_pd3dDevice->SetTransform(D3DTS_WORLD, &mat1);
-					m_pXMesh[19]->m_pMaterials[0].Ambient.r = (float)pV[i].r;
-					m_pXMesh[19]->m_pMaterials[0].Ambient.g = (float)pV[i].g;
-					m_pXMesh[19]->m_pMaterials[0].Ambient.b = (float)pV[i].b;
-					m_pXMesh[19]->Render(m_pd3dDevice);
+					m_pXMesh[MESH_SPLASH]->m_pMaterials[0].Ambient.r = (float)pV[i].r;
+					m_pXMesh[MESH_SPLASH]->m_pMaterials[0].Ambient.g = (float)pV[i].g;
+					m_pXMesh[MESH_SPLASH]->m_pMaterials[0].Ambient.b = (float)pV[i].b;
+					m_pXMesh[MESH_SPLASH]->Render(m_pd3dDevice);
 				}
 			}
 		}
@@ -7137,11 +7137,11 @@ HRESULT CMyD3DApplication::Render()
 				if (pV[i].type != 0 || ShowDustFlag) {
 					CD3DMesh *mesh;
 					if (pV[i].type == 0) {
-						if (pV[i].y <= WATER_LINE) mesh = m_pXMesh[19];
-						else mesh = m_pXMesh[29];
+						if (pV[i].y <= WATER_LINE) mesh = m_pXMesh[MESH_SPLASH];
+						else mesh = m_pXMesh[MESH_JET_EFFECT];
 					}
-					else if (pV[i].type == 1) mesh = m_pXMesh[35];
-					else mesh = m_pXMesh[36];
+					else if (pV[i].type == 1) mesh = m_pXMesh[MESH_EXPLOSION];
+					else mesh = m_pXMesh[MESH_EXPLOSION_2];
 					mesh->m_pMaterials[0].Ambient.r = (float)pV[i].r;
 					mesh->m_pMaterials[0].Ambient.g = (float)pV[i].g;
 					mesh->m_pMaterials[0].Ambient.b = (float)pV[i].b;
@@ -7203,7 +7203,7 @@ HRESULT CMyD3DApplication::Render()
 					if ((g_Bullet->Vertex[i].Dist + va - va*(float)j / fn) <= 0) alpha = 0.0f;
 
 					CD3DMesh *mesh;
-					mesh = m_pXMesh[32];
+					mesh = m_pXMesh[MESH_BULLET];
 					mesh->m_pMaterials[0].Diffuse.a = alpha;
 					D3DXMatrixRotationZ(&mat1, (FLOAT)i);
 					D3DXMatrixScaling(&mat2, size, size, size);
@@ -7266,7 +7266,7 @@ HRESULT CMyD3DApplication::Render()
 				m_pd3dDevice->SetViewport(&viewData1);
 				m_pd3dDevice->SetTransform(D3DTS_VIEW, &matV);
 				m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
-				m_pXMesh[12]->Render(g_D3DDevice);
+				m_pXMesh[MESH_COMPUS]->Render(g_D3DDevice);
 			}
 			m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
 			g_D3DDevice->SetTransform(D3DTS_WORLD, &GMatWorld);
@@ -7304,7 +7304,7 @@ HRESULT CMyD3DApplication::Render()
 					g_D3DDevice->SetTransform(D3DTS_WORLD, &mat1);
 					g_D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 					g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// カリングモード
-					m_pXMesh[14]->Render(g_D3DDevice);
+					m_pXMesh[MESH_WATER]->Render(g_D3DDevice);
 					g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	// カリングモード
 					g_D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 					/*					{	//Zバッファからの深度情報読み込み（D3DFMT_D16_LOCKABLEでないと無理

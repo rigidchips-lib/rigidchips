@@ -8,10 +8,6 @@
 #include "readSub.hpp"
 
 
-
-#define GDEFCD 1.0
-
-
 void readLand(char *name)
 {
 	FILE *fp;
