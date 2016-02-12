@@ -1166,7 +1166,7 @@ int LoadSystem(char *fileName) {
 	FILE *fp;
 	if ((fp = fopen(fileName, "r")) != NULL) {
 		char *p = fileName + strlen(fileName);
-		for(;*p!='\\'&&*p!='/';p--);
+		for(;(*p!='\\'&&*p!='/')||(*p=='\\'&&*(p-1)<0);p--);
 		p++;
 		strcpy(szSystemFileName0,p);
 		
