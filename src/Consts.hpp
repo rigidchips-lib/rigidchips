@@ -115,8 +115,8 @@ enum NetworkCode
 	NC_VERSION = 52, //Version問い合わせ
 	NC_POSITION = 53, //座標問い合わせ
 	NC_NAME = 54,//名前問い合わせ
-	NC_POST_KOKUTI = 55,//告知伝える
-	NC_ACQUIRE_KOKUTI = 56,//告知取得
+	NC_ACQUIRE_KOKUTI = 55,//告知伝える
+	NC_POST_KOKUTI = 56,//告知取得
 	NC_FPS = 57, //FPSを取得
 	NC_SYSTEM = 58, //OSその他の情報を取得
 	NC_CHIP = 59,//チップ数を取得

@@ -686,17 +686,17 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
 		}
 	}
-	else if (code == NC_POST_KOKUTI) { //告知を要求
+	else if (code == NC_ACQUIRE_KOKUTI) { //告知を要求
 		if (NetworkDlg) {
 			GSTREAM strm2;
-			strm2.code = NC_ACQUIRE_KOKUTI;
+			strm2.code = NC_POST_KOKUTI;
 			char *str = (char*)strm2.data;
 			strcpy(str, Kokuti);
 			DWORD size = strlen(str) + 1 + sizeof(short);
 			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
 		}
 	}
-	else if (code == NC_ACQUIRE_KOKUTI) { //告知を出す
+	else if (code == NC_POST_KOKUTI) { //告知を出す
 		if (NetworkDlg) {
 			strcpy(Kokuti, (char*)data);
 			SendDlgItemMessage(NetworkDlg, IDC_KOKUTI, WM_SETTEXT, 0, (LPARAM)Kokuti);
@@ -1699,14 +1699,14 @@ int CALLBACK DlgNetworkProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						size = 5 + sizeof(short);
 					}
 					else if (str1[1] == 'K' || str1[1] == 'k') {
-						stream.code = NC_POST_KOKUTI;//告知を受け取る
+						stream.code = NC_ACQUIRE_KOKUTI;//告知を受け取る
 						char *w = (char*)stream.data;
 						sprintf(w, "koku");
 						size = 5 + sizeof(short);
 						id = 0;
 					}
 					else if (str1[1] == 'J' || str1[1] == 'j') {
-						stream.code = NC_ACQUIRE_KOKUTI;//告知を出す
+						stream.code = NC_POST_KOKUTI;//告知を出す
 						char *w = (char*)stream.data;
 						char name[128];
 						g_DPlay->GetPlayersName(g_DPlay->GetLocalPlayerDPNID(), name);
