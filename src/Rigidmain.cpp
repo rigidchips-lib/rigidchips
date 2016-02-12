@@ -9051,7 +9051,7 @@ int GetLimitFPS()
 }
 bool IsInvulnerableTime()
 {
-	return  s_TickCount * 30 / s_LimitFPS>150;
+	return  s_TickCount * 30 / s_LimitFPS<=150;
 }
 GFloat GetTotalPower()
 {
