@@ -5946,7 +5946,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					s_TotalPower += (GFloat)fabs(po / (1 + g_Chip[i]->W.abs() / 100));
 				}
 				//ARM’e”­ŽË
-				else if (g_Chip[i]->ChipType == 10 && g_Chip[i]->ArmEnergy > 0 && g_Chip[i]->Energy >= g_Chip[i]->ArmEnergy && g_Chip[i]->Power >= g_Chip[i]->ArmEnergy && IsInvulnerableTime()) {
+				else if (g_Chip[i]->ChipType == 10 && g_Chip[i]->ArmEnergy > 0 && g_Chip[i]->Energy >= g_Chip[i]->ArmEnergy && g_Chip[i]->Power >= g_Chip[i]->ArmEnergy && !IsInvulnerableTime()) {
 					GVector dir;
 					switch (g_Chip[i]->Dir) {
 					case 1:dir = GVector(1, 0, 0);break;
@@ -9051,7 +9051,7 @@ int GetLimitFPS()
 }
 bool IsInvulnerableTime()
 {
-	return  s_TickCount * 30 / s_LimitFPS>150;
+	return  s_TickCount * 30 / s_LimitFPS<=150;
 }
 GFloat GetTotalPower()
 {
