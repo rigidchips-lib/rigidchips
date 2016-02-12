@@ -9,17 +9,18 @@ const int GOBJMAX = 2;
 const int GCHILDMAX = 12;
 
 const float GDESTROY_K = 0.3f;
-
-const int GTYPE_FACE = 0;
-const int GTYPE_DISK = 1;
-const int GTYPE_BOX = 2;
-const int GTYPE_BALL = 3;
-const int GTYPE_CAN = 4;
-const int GTYPE_CONE = 5;
+//剛体のタイプ
+const int GTYPE_FACE = 0;//平面
+const int GTYPE_DISK = 1;//円盤
+const int GTYPE_BOX = 2;//箱
+const int GTYPE_BALL = 3;//ボール
+const int GTYPE_CAN = 4;//円筒
+const int GTYPE_CONE = 5;//円錐
 const int GTYPE_DUMMY = 6;
 
-const int GMODELMAX = 38;
+const int GMODELMAX = 38;//読み込むXファイル（ポリゴンモデル）の最大数
 const int  GTEXMAX = 23;
+//設置可能チェックポイントの最大数
 const int GCHECKPOINTMAX = 100;
 
 //最大Recフレーム数？
@@ -61,15 +62,18 @@ const double ARM_EFF = 1.0;
 const double JET_EFF = 10.0;
 const double WHL_EFF = 30.0;
 
-typedef float GFloat;
+typedef float GFloat;//仮置き
+//水面の高さ
 const GFloat WATER_LINE = -0.45f;
 
 const int MESSAGEMAX = 64;
-
+//最大接続可能プレイヤー数
 const int GPLAYERMAX = 30;
+//プレイヤー名の最長
 const int MAX_PLAYER_NAME = 128;
-
+//コアの最高速度[m/s]
 const float MAX_VELOCITY = 140.0f;//モトがfなので
+//コアとコア以外の最高速度の比率。
 const float MAX_VELOCITY_UNCORE_RATIO = 10.0 / 8.0;//
 
 const double GDEFCD = 1.0;//デフォルトの空気抵抗値
@@ -109,7 +113,7 @@ enum NetworkCode
 	NC_SCENARIO_MESSAGE = 30,
 	NC_B26_BULLET = 31,
 	NC_B26_EXPLOSION = 32,
-	NC_UPDATE_PLAYER_DATA= 100,	
+	NC_UPDATE_PLAYER_DATA= 100,	//I/R/U/Yの数とかを送る奴
 	NC_LAND = 50,//Land問い合わせ
 	NC_SCENARIO = 51, //Scenario問い合わせ
 	NC_VERSION = 52, //Version問い合わせ
@@ -126,6 +130,7 @@ enum NetworkCode
 	NC_PING_4 = 65, //pingのやり取り終了、表示する奴
 	
 };
+//VAL名の最長
 const int VALNAMEMAX = 256;
 const GFloat MAX_TORELANCE = 10000.0;//耐久度の初期値
 
