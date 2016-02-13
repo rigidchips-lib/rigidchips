@@ -71,7 +71,7 @@ int luaPrint(lua_State *L)
 		else {
 			sprintf("%s:%p", lua_typename(L, lua_type(L, i)), lua_topointer(L, i));
 		}
-		if(a < GOUTPUTMAX) strcat(ScriptOutput[a], str);
+		if(a < GOUTPUTMAX && a >= 0) strcat(ScriptOutput[a], str);
 	}
 	return 0;
 }
