@@ -350,6 +350,8 @@ int luaLoadLand(lua_State *L)
 		}
 	}
 	g_World->MainStepCount = -1;
+	
+	g_pApp->Resize3DEnvironment();
 
 	lua_pushnumber(L, r);
 	return 1;
