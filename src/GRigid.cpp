@@ -145,7 +145,7 @@ void GRigid::RSet()
 {
 	HitN = 0;
 	TM = R.translate(X);
-	if (MeshNo == 23) return;
+	if (MeshNo == MESH_COWL) return;
 	Rt = R.transpose();
 	Q = R.quat();
 	preV = GVector(0, 0, 0);
@@ -235,7 +235,7 @@ GVector GRigid::CalcTotalPos(int *c, int *cc)
 			x += Child[i].RigidB->CalcTotalPos(c, cc);
 		}
 	}
-	if (MeshNo == 23) (*cc)++;
+	if (MeshNo == MESH_COWL) (*cc)++;
 	(*c)++;
 	return x;
 }
@@ -606,7 +606,7 @@ void GRigid::CollisionCheck(GRigid *rigid)
 	if (rigid->Type == -1) { //地面データ
 		switch (Type) {
 		case GTYPE_FACE:
-			if (MeshNo == 23) {
+			if (MeshNo == MESH_COWL) {
 			}
 			else {
 				for (j = 0;j < CheckShape.PointN;j++) {
@@ -787,7 +787,7 @@ void GRigid::CollisionCheck(GRigid *rigid)
 	else {
 		switch (Type) {
 		case GTYPE_FACE:
-			if (MeshNo == 23) {
+			if (MeshNo == MESH_COWL) {
 				/*					for(j=0;j<CheckShape.PointN;j++) {
 										GVector p=(CheckShape.Point[j])*TM;
 										GVector v=p-rigid->X;
@@ -1100,13 +1100,13 @@ void GRigid::Calc()
 	preV = V;
 	V = P*M_;
 	//リミッタ
-	if (V.abs() > 140.0f) {
+	if (V.abs() > MAX_VELOCITY) {
 		if (Top->ID == 0) {
-			V = V / V.abs()*140.0f;
+			V = V / V.abs()*MAX_VELOCITY;
 			P = V*M;
 		}
-		else if (V.abs() > 140.0f / 8 * 10) {
-			V = V / V.abs()*140.0f / 8 * 10;
+		else if (V.abs() > MAX_VELOCITY * MAX_VELOCITY_UNCORE_RATIO) {
+			V = V / V.abs()*MAX_VELOCITY * MAX_VELOCITY_UNCORE_RATIO;
 			P = V*M;
 		}
 	}
@@ -1164,13 +1164,13 @@ void GRigid::CalcLight()
 	preV = V;
 	V = P*M_;
 	//リミッタ
-	if (V.abs() > 140.0f) {
+	if (V.abs() > MAX_VELOCITY) {
 		if (Top->ID == 0) {
-			V = V / V.abs()*140.0f;
+			V = V / V.abs()*MAX_VELOCITY;
 			P = V*M;
 		}
-		else if (V.abs() > 140.0f / 8 * 10) {
-			V = V / V.abs()*140.0f / 8 * 10;
+		else if (V.abs() > MAX_VELOCITY * MAX_VELOCITY_UNCORE_RATIO) {
+			V = V / V.abs()*MAX_VELOCITY * MAX_VELOCITY_UNCORE_RATIO;
 			P = V*M;
 		}
 	}
@@ -1235,7 +1235,7 @@ void GRigid::DispJet(LPDIRECT3DDEVICE8 g_D3DDevice, D3DXMATRIX worldMatrix, CD3D
 	g_D3DDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);   //SRCの設定
 	g_D3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);  //DESTの設定
 	//g_D3DDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);// 引数の成分を乗算する
-	if (JetFlag && MeshNo == 10 && PowerByFuel != 0 && Top != NULL &&  Option == 0) {
+	if (JetFlag && MeshNo == MESH_JET && PowerByFuel != 0 && Top != NULL &&  Option == 0) {
 		GMatrix m(TM);
 		D3DXMATRIX mat1;
 		D3DXMATRIX matLocal = D3DXMATRIX((FLOAT)m.elem[0][0], (FLOAT)m.elem[0][1], (FLOAT)m.elem[0][2], (FLOAT)m.elem[0][3],
@@ -1695,7 +1695,7 @@ void GWorld::CheckLink(GRigid* rigidA)
 					rigidB->X += v*d*kk*10.0f / (GFloat)GDTSTEP;
 					rigidB->RSet();
 				}
-				if (rigidB->MeshNo != 2 && rigidB->MeshNo != 3) CheckLink(rigidB);
+				if (rigidB->MeshNo != MESH_WHEEL  && rigidB->MeshNo != MESH_RLW) CheckLink(rigidB);
 			}
 		}
 	}
@@ -1727,7 +1727,7 @@ void GWorld::CalcLink(GRigid* rigidA)
 			}
 
 			rigidB->preF = (rigidB->preF * 4 + f) / 5;
-			if (DestroyFlag && l->Type <= 2 && ((l->Type == 2 && rigidB->MeshNo != 6 && rigidB->preF>l->DestroyK / 3.0) || f > l->DestroyK)) {
+			if (DestroyFlag && l->Type <= 2 && ((l->Type == 2 && rigidB->MeshNo != MESH_DUMMY && rigidB->preF>l->DestroyK / 3.0) || f > l->DestroyK)) {
 				DeleteLink(rigidB);
 				rigidB->ByeFlag = 2;
 				rigidB->P /= 10.0f;

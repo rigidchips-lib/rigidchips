@@ -24,14 +24,12 @@
 #endif 
 //--メモリリーク検出用
 
-#define GDEFCD 1.0
-
 void MakeChip(int type, int rn)
 {
 	int cn = g_World->getChipCount();
 	if (type == GT_CORE) {  //Core		
 		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[cn]->MeshNo = 0;
+		g_Chip[cn]->MeshNo = MESH_CORE;
 		g_Chip[cn]->ChipType = type;
 		g_Chip[cn]->FrameFlag = 0;
 		g_Chip[cn]->Density = g_Chip[cn]->Density*0.7f;
@@ -45,9 +43,9 @@ void MakeChip(int type, int rn)
 		g_Chip[cn]->FuelMax = g_Chip[cn]->Fuel = 2000000.0f;
 		rn = 0;
 	}
-	else if (type == GT_CHIP) { //g_Chip
+	else if (type == GT_CHIP) { //Chip
 		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[cn]->MeshNo = 1;
+		g_Chip[cn]->MeshNo = MESH_CHIP;
 		g_Chip[cn]->ChipType = type;
 		g_Chip[cn]->FrameFlag = 0;
 		g_Chip[cn]->Density = g_Chip[cn]->Density*0.7f;
@@ -60,7 +58,7 @@ void MakeChip(int type, int rn)
 	}
 	else if (type == GT_CHIPH) { //ChipH
 		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[cn]->MeshNo = 21;
+		g_Chip[cn]->MeshNo = MESH_WEIGHT;
 		g_Chip[cn]->ChipType = type;
 		g_Chip[cn]->FrameFlag = 0;
 		g_Chip[cn]->Density = g_Chip[cn]->Density*0.7f * 4;
@@ -73,7 +71,7 @@ void MakeChip(int type, int rn)
 	}
 	else if (type == GT_COWL) { //cowl
 		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[cn]->MeshNo = 23;
+		g_Chip[cn]->MeshNo = MESH_COWL;
 		g_Chip[cn]->ChipType = type;
 		g_Chip[cn]->FrameFlag = 0;
 		g_Chip[cn]->Density = 0.00f;
@@ -89,7 +87,7 @@ void MakeChip(int type, int rn)
 	else if (type == GT_CHIP2) { //Frame
 		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 12, CHIPSIZE);
 		g_Chip[cn]->Shape.PointN--;
-		g_Chip[cn]->MeshNo = 7;
+		g_Chip[cn]->MeshNo = MESH_FRAME;
 		g_Chip[cn]->ChipType = type;
 		g_Chip[cn]->FrameFlag = 1;
 		g_Chip[cn]->Density = g_Chip[cn]->Density*0.7f;
@@ -102,7 +100,7 @@ void MakeChip(int type, int rn)
 	}
 	else if (type == GT_RUDDER) { //Rudder
 		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[cn]->MeshNo = 4;
+		g_Chip[cn]->MeshNo = MESH_RUDDER;
 		g_Chip[cn]->ChipType = type;
 		g_Chip[cn]->FrameFlag = 0;
 		g_Chip[cn]->Density = g_Chip[cn]->Density*0.7f;
@@ -116,7 +114,7 @@ void MakeChip(int type, int rn)
 	else if (type == GT_RUDDER2) { //Rudder2
 		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 12, CHIPSIZE);
 		g_Chip[cn]->Shape.PointN--;
-		g_Chip[cn]->MeshNo = 16;
+		g_Chip[cn]->MeshNo = MESH_RUDDER_F;
 		g_Chip[cn]->ChipType = type;
 		g_Chip[cn]->FrameFlag = 1;
 		g_Chip[cn]->Density = g_Chip[cn]->Density*0.7f;
@@ -129,7 +127,7 @@ void MakeChip(int type, int rn)
 	}
 	else if (type == GT_TRIM) { //Trim
 		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[cn]->MeshNo = 5;
+		g_Chip[cn]->MeshNo = MESH_TRIM;
 		g_Chip[cn]->ChipType = type;
 		g_Chip[cn]->FrameFlag = 0;
 		g_Chip[cn]->Density = g_Chip[cn]->Density*0.7f;
@@ -143,7 +141,7 @@ void MakeChip(int type, int rn)
 	else if (type == GT_TRIM2) { //Trim2
 		g_Chip[cn] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 12, CHIPSIZE);
 		g_Chip[cn]->Shape.PointN--;
-		g_Chip[cn]->MeshNo = 17;
+		g_Chip[cn]->MeshNo = MESH_TRIM_F;
 		g_Chip[cn]->ChipType = type;
 		g_Chip[cn]->FrameFlag = 1;
 		g_Chip[cn]->Density = g_Chip[cn]->Density*0.7f;
@@ -156,7 +154,7 @@ void MakeChip(int type, int rn)
 	}
 	else if (type == GT_DUMMY) { //Dummy
 		g_Chip[cn] = g_World->AddRigid(GTYPE_DISK, false, CHIPSIZE / 2, CHIPSIZE, CHIPSIZE / 2);
-		g_Chip[cn]->MeshNo = 6;
+		g_Chip[cn]->MeshNo = MESH_DUMMY;
 		g_Chip[cn]->ChipType = type;
 		g_Chip[cn]->Density = g_Chip[cn]->Density*1.0f;
 		g_Chip[cn]->Reset();
@@ -168,7 +166,7 @@ void MakeChip(int type, int rn)
 	}
 	else if (type == GT_WHEEL) { //Wheel
 		g_Chip[cn] = g_World->AddRigid(GTYPE_DISK, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[cn]->MeshNo = 2;
+		g_Chip[cn]->MeshNo = MESH_WHEEL;
 		g_Chip[cn]->ChipType = type;
 		g_Chip[cn]->FrameFlag = 0;
 		g_Chip[cn]->Density = g_Chip[cn]->Density*1.3f;
@@ -181,7 +179,7 @@ void MakeChip(int type, int rn)
 	}
 	else if (type == GT_RLW) { //RLW
 		g_Chip[g_World->getChipCount()] = g_World->AddRigid(GTYPE_DISK, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[g_World->getChipCount()]->MeshNo = 3;//無反動ホイール
+		g_Chip[g_World->getChipCount()]->MeshNo = MESH_RLW;//無反動ホイール
 		g_Chip[g_World->getChipCount()]->ChipType = type;
 		g_Chip[g_World->getChipCount()]->FrameFlag = 0;
 		g_Chip[g_World->getChipCount()]->Density = g_Chip[g_World->getChipCount()]->Density*1.3f;
@@ -194,7 +192,7 @@ void MakeChip(int type, int rn)
 	}
 	else if (type == GT_JET) { //Jet
 		g_Chip[g_World->getChipCount()] = g_World->AddRigid(GTYPE_DISK, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[g_World->getChipCount()]->MeshNo = 10;
+		g_Chip[g_World->getChipCount()]->MeshNo = MESH_JET;
 		g_Chip[g_World->getChipCount()]->ChipType = type;
 		g_Chip[g_World->getChipCount()]->FrameFlag = 0;
 		g_Chip[g_World->getChipCount()]->Density = g_Chip[g_World->getChipCount()]->Density*1.3f;
@@ -207,7 +205,7 @@ void MakeChip(int type, int rn)
 	}
 	else if (type == GT_ARM) { //Arm
 		g_Chip[g_World->getChipCount()] = g_World->AddRigid(GTYPE_FACE, false, CHIPSIZE, CHIPSIZE / 6, CHIPSIZE);
-		g_Chip[g_World->getChipCount()]->MeshNo = 30;
+		g_Chip[g_World->getChipCount()]->MeshNo = MESH_ARM;
 		g_Chip[g_World->getChipCount()]->ChipType = type;
 		g_Chip[g_World->getChipCount()]->FrameFlag = 0;
 		g_Chip[g_World->getChipCount()]->Density = g_Chip[g_World->getChipCount()]->Density*0.7f * 2;
@@ -249,10 +247,10 @@ int getValNo2(char *name, bool *minusFlag)
 void setOption(GRigid *rigid, GFloat value)
 {
 	rigid->Option = value;
-	if (rigid->ChipType == 10) {	//ARM
+	if (rigid->ChipType == GT_ARM) {	//ARM
 		rigid->ArmEnergy = value;
 	}
-	else if (rigid->ChipType == 4 || rigid->ChipType == 5) { //Wheel or RLW
+	else if (rigid->ChipType == GT_WHEEL || rigid->ChipType == GT_RLW) { //Wheel or RLW
 		if (value == 1) {
 			g_World->UpdateRigid(rigid, GTYPE_DISK, false, CHIPSIZE*1.5f, CHIPSIZE / (6 * 1.5f*1.5f), CHIPSIZE*1.5f);
 			rigid->Ud = 0.9f;
@@ -278,12 +276,12 @@ void setOption(GRigid *rigid, GFloat value)
 			rigid->SaveShape = rigid->Shape;
 		}
 	}
-	else if (rigid->ChipType == 33 || rigid->ChipType == 34 || rigid->ChipType == 35) { //Frame
+	else if (rigid->ChipType == GT_CHIP2 || rigid->ChipType ==GT_RUDDER2 || rigid->ChipType == GT_TRIM2) { //Frame
 		if (value == 1) {
 			rigid->Ghost = (int)value;
 		}
 	}
-	else if (rigid->ChipType == 7) {	//Jet
+	else if (rigid->ChipType == GT_JET) {	//Jet
 		rigid->Option = value;
 	}
 	else if (rigid->ChipType == GT_CHIPH) {	//Weight
@@ -293,7 +291,7 @@ void setOption(GRigid *rigid, GFloat value)
 		rigid->Reset();
 		rigid->FuelMax = rigid->Fuel = 6000000.0f*value;
 	}
-	else if (rigid->ChipType == 9) {	//Cowl
+	else if (rigid->ChipType == GT_COWL) {	//Cowl
 		if (value == 1) {
 			rigid->FrameFlag = 1;
 		}
