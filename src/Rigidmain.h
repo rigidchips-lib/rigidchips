@@ -200,6 +200,39 @@ public:
 	static HRESULT CALLBACK StaticInputAddDeviceCB(CInputDeviceManager::DeviceInfo* pDeviceInfo, const DIDEVICEINSTANCE* pdidi, LPVOID pParam);
 	BOOL    ConfigureInputDevicesCB(IUnknown* pUnknown);
 	static BOOL CALLBACK StaticConfigureInputDevicesCB(IUnknown* pUnknown, VOID* pUserData);
+private:
+	HRESULT _record();
+	HRESULT _show_network();
+	HRESULT _check_FPS_setting();
+	HRESULT _update_information(DWORD t);
+	HRESULT _update_system_input();
+	HRESULT _send_network_bullet(DWORD t, bool moveEnd);
+	HRESULT _send_network_explosion(DWORD t, bool moveEnd);
+	HRESULT _send_network_scenario_message(DWORD t, bool moveEnd);
+	HRESULT _send_network_model_full(DWORD t, bool moveEnd);
+	HRESULT _send_network_model_short(DWORD t,bool moveEnd);
+	HRESULT _check_checkpoint();
+	HRESULT _acquire_user_input();
+	HRESULT _display_data();
+	HRESULT _display_extra_data();
+	HRESULT _acquire_user_model_input();
+	HRESULT _update_keys();
+	HRESULT _update_vals();
+	HRESULT _apply_vals();
+	
+	DWORD m_lastT;
+	DWORD m_lastT2;
+	DWORD m_lastT3;
+	int m_preSound;
+	int m_soundCount;
+	GFloat m_a;
+	int m_count;
+	GFloat m_preY;
+
+
+	//s_FPS‚ÌŠÄŽ‹
+	int m_netON;
+	int m_saves_LimitFPS;
 };
 
 bool IsShowDust();
