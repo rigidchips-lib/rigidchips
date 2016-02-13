@@ -897,7 +897,14 @@ void CopyChip(GRigid *rd[], GRigid *rs[])
 		//接触はすべてクリアする
 		rs[i]->HitN = 0;rd[i]->HitN = 0;
 		rs[i]->TotalHitCount = 0;rd[i]->TotalHitCount = 0;
-		if (rs[i]->Top) rd[i]->Top = rd[rs[i]->Top->ID];else rd[i]->Top = NULL;
+		if (rs[i]->Top)
+		{
+			rd[i]->Top = rd[rs[i]->Top->ID];
+		}
+		else
+		{
+			rd[i]->Top = NULL;
+		}
 		if (rs[i]->CowlTop) rd[i]->CowlTop = rd[rs[i]->CowlTop->ID];else rd[i]->CowlTop = NULL;
 		if (rs[i]->Parent) rd[i]->Parent = rd[rs[i]->Parent->ID];else rd[i]->Parent = NULL;
 		for (int j = 0;j < rs[i]->ChildCount;j++) {
@@ -3142,6 +3149,19 @@ CMyD3DApplication::CMyD3DApplication()
 	for (i = 0;i < 6;i++) ControlKeysLock[i] = false;
 	LastChatData[0] = '\0';
 
+	this->m_lastT = 0;
+	this->m_lastT2 = 0;
+	this->m_lastT3 = 0;
+
+	this->m_preSound = false;
+	this->m_soundCount = 0;
+	this->m_a = 0.0f;
+	this->m_count = 0;
+	this->m_preY = 0.0;
+	this->m_preSound = false;
+
+	this->m_netON = 0;
+	this->m_saves_LimitFPS = 30;
 }
 
 
@@ -4564,24 +4584,8 @@ HRESULT CMyD3DApplication::InitChips(float a, int hereFlag)
 	if (ScriptType == 1 && g_ScriptLua != NULL) luaScriptRun(g_ScriptLua, "OnInit");
 	return 0;
 }
-//-----------------------------------------------------------------------------
-// Name: FrameMove()
-// Desc: Called once per frame, the call is the entry point for animating
-//       the scene.
-//-----------------------------------------------------------------------------
-HRESULT CMyD3DApplication::FrameMove()
+HRESULT CMyD3DApplication::_record()
 {
-	static DWORD lastT = 0;
-	static DWORD lastT2 = 0;
-	static DWORD lastT3 = 0;
-	static int soundCount = 0;
-	static GFloat a = 0.0f;
-	static int count = 0;
-	static GFloat preY = 0.0;
-	static int preSound = false;
-	int i, j, k;
-	POINT pos;
-	DWORD t = timeGetTime();
 	//録画開始
 	if (!MsgFlag && RecState > 0) {
 		if (RecState == 1) {
@@ -4619,7 +4623,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			if (KeyRecordMax > 0) {
 				RecState = 0;
 				LastBye = RecLastBye;
-				PlayLog();
+				this->PlayLog();
 				KeyRecordMode = 2;
 			}
 			else KeyRecordMode = 0;
@@ -4629,24 +4633,27 @@ HRESULT CMyD3DApplication::FrameMove()
 		g_World->InitRndTable();
 		MySrand(0);
 	}
-
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_show_network()
+{
 	if (ShowNetwork)
 	{
 		if (KeyRecordMode == 1) KeyRecordMax = KeyRecordCount;
 		KeyRecordMode = 0;
 		ShowNetwork = FALSE;
-		Pause(TRUE);
-		int win = m_bWindowed;
-		if (m_bWindowed == FALSE)
+		this->Pause(TRUE);
+		int win = this->m_bWindowed;
+		if (this->m_bWindowed == FALSE)
 		{
-			if (FAILED(ToggleFullscreen()))
+			if (FAILED(this->ToggleFullscreen()))
 			{
-				DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-				return 1;
+				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
+				return -1;
 			}
 			// Prompt the user to change the mode
 			InvalidateRect(g_hWnd, NULL, NULL);
-			Resize3DEnvironment();
+			this->Resize3DEnvironment();
 		}
 		if (NetworkDlg == NULL) {
 			NetworkDlg = CreateDialog((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_NETDIALOG), NULL, DlgNetworkProc);
@@ -4655,74 +4662,80 @@ HRESULT CMyD3DApplication::FrameMove()
 		ShowWindow(NetworkDlg, SW_SHOW);
 		SetFocus(NetworkDlg);
 		SetFocus(GetDlgItem(NetworkDlg, IDC_CHATEDIT));
-		ClearInput(&m_UserInput);
+		this->ClearInput(&this->m_UserInput);
 
 		/*
 		if( win == FALSE )
-				{
-					if( FAILED( ToggleFullscreen() ) )
-					{
-						DisplayErrorMsg( D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT );
-					}
-				}
+		{
+		if( FAILED( ToggleFullscreen() ) )
+		{
+		DisplayErrorMsg( D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT );
+		}
+		}
 		*/
-		Pause(FALSE);
+		this->Pause(FALSE);
 	}
-	//s_FPSの監視
-	static int netON = 0;
-	static int saves_LimitFPS = 30;
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_check_FPS_setting()
+{
+
 	if (NetworkDlg) {
 		if (g_DPlay->GetLocalPlayerDPNID() == 0) {
 			//s_FPSを元に戻す
-			if (netON) {
-				m_dLimidFPS = saves_LimitFPS;
+			if (this->m_netON) {
+				this->m_dLimidFPS = this->m_saves_LimitFPS;
 				if (m_dLimidFPS == (1000 / 15)) {
-					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_CHECKED);
-					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
+					CheckMenuItem(GetMenu(this->m_hWnd), IDM_LIMIT15, MF_CHECKED);
+					CheckMenuItem(GetMenu(this->m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
 					s_LimitFPS = 15;
 				}
 				else if (m_dLimidFPS == (1000 / 30)) {
-					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_CHECKED);
-					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
+					CheckMenuItem(GetMenu(this->m_hWnd), IDM_LIMIT30, MF_CHECKED);
+					CheckMenuItem(GetMenu(this->m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
 					s_LimitFPS = 30;
 				}
 				else {
-					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
-					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
+					CheckMenuItem(GetMenu(this->m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
+					CheckMenuItem(GetMenu(this->m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
 					s_LimitFPS = 30;
 				}
 			}
-			netON = 0;
+			this->m_netON = 0;
 		}
 		else {
-			if (netON == 0 || m_dLimidFPS == 0) {
-				saves_LimitFPS = m_dLimidFPS;
+			if (this->m_netON == 0 || this->m_dLimidFPS == 0) {
+				this->m_saves_LimitFPS = m_dLimidFPS;
 				if (m_dLimidFPS == (1000 / 15)) {
-					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_CHECKED);
-					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
+					CheckMenuItem(GetMenu(this->m_hWnd), IDM_LIMIT15, MF_CHECKED);
+					CheckMenuItem(GetMenu(this->m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
 					s_LimitFPS = 15;
 				}
 				else {
-					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
-					CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_CHECKED);
+					CheckMenuItem(GetMenu(this->m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
+					CheckMenuItem(GetMenu(this->m_hWnd), IDM_LIMIT30, MF_CHECKED);
 					s_LimitFPS = 30;
 					m_dLimidFPS = 1000L / 30;
 				}
 			}
-			netON = 1;
+			this->m_netON = 1;
 		}
 	}
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_update_information(DWORD t)
+{
 	//情報更新
-	if (t - lastT3 > 1000) {
-		lastT3 = t;
+	if (t - m_lastT3 > 1000) {
+		m_lastT3 = t;
 		if (NetworkDlg) {
 			char str[100];
 			int n = g_DPlay->GetNumPlayers();
 			if (g_DPlay->GetLocalPlayerDPNID() == 0) {
 				sprintf(str, "Push 'Start' to Hosting or Connecting");
 				//s_FPSを元に戻す
-				if (netON) {
-					m_dLimidFPS = saves_LimitFPS;
+				if (this->m_netON) {
+					this->m_dLimidFPS = this->m_saves_LimitFPS;
 					if (m_dLimidFPS == (1000 / 15)) {
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_CHECKED);
 						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
@@ -4739,27 +4752,27 @@ HRESULT CMyD3DApplication::FrameMove()
 						s_LimitFPS = 30;
 					}
 				}
-				netON = 0;
+				this->m_netON = 0;
 			}
 			else {
 				if (g_DPlay->GetHostPlayerDPNID() == g_DPlay->GetLocalPlayerDPNID())
 					sprintf(str, "Hosting. %d players in this session.", n);
 				else sprintf(str, "Connecting. %d players in this session.", n);
-				if (netON == 0 || m_dLimidFPS == 0) {
-					saves_LimitFPS = m_dLimidFPS;
+				if (this->m_netON == 0 || m_dLimidFPS == 0) {
+					this->m_saves_LimitFPS = m_dLimidFPS;
 					if (m_dLimidFPS == (1000 / 15)) {
-						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_CHECKED);
-						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
+						CheckMenuItem(GetMenu(this->m_hWnd), IDM_LIMIT15, MF_CHECKED);
+						CheckMenuItem(GetMenu(this->m_hWnd), IDM_LIMIT30, MF_UNCHECKED);
 						s_LimitFPS = 15;
 					}
 					else {
-						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
-						CheckMenuItem(GetMenu(m_hWnd), IDM_LIMIT30, MF_CHECKED);
+						CheckMenuItem(GetMenu(this->m_hWnd), IDM_LIMIT15, MF_UNCHECKED);
+						CheckMenuItem(GetMenu(this->m_hWnd), IDM_LIMIT30, MF_CHECKED);
 						s_LimitFPS = 30;
 						m_dLimidFPS = 1000L / 30;
 					}
 				}
-				netON = 1;
+				this->m_netON = 1;
 			}
 			SendDlgItemMessage(NetworkDlg, IDC_STATICMES, WM_SETTEXT, 0, (LPARAM)str);
 			if (g_DPlay->GetLocalPlayerDPNID() != 0) {
@@ -4780,27 +4793,20 @@ HRESULT CMyD3DApplication::FrameMove()
 			PlayersInfoDisp();
 		}
 	}
-	if (g_World->NetStop) return S_OK;
-
-	CtrlKey = GetAsyncKeyState(VK_CONTROL) != 0;
-	MouseL = GetAsyncKeyState(VK_LBUTTON) != 0;
-	MouseR = GetAsyncKeyState(VK_RBUTTON) != 0;
-	MouseM = GetAsyncKeyState(VK_MBUTTON) != 0;
-	GetCursorPos(&pos);
-	ScreenToClient(m_hWnd, &pos);
-	MouseX = pos.x;
-	MouseY = pos.y;
-	bool tempMoveEnd = MoveEnd;
-
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_send_network_bullet(DWORD t, bool moveEnd)
+{
+	int i, j;
 	//ネットデータ送信0 Arm弾の情報を送る
-	if (g_DPlay->GetNumPlayers() > 0 && t - lastT2 > (DWORD)GNETSPAN / 3 && tempMoveEnd) {
+	if (g_DPlay->GetNumPlayers() > 0 && t - m_lastT2 > (DWORD)GNETSPAN / 3 && moveEnd) {
 		MoveEnd = false;
 		GBULLESTREAM stream;
 		if (g_World->B26Bullet) stream.code = 31;
 		else if (g_World->B20Bullet) stream.code = 11;
 		else stream.code = 21;
 		j = 0;
-		for (i = 0;i < g_Bullet->MaxVertex;i++) {
+		for (i = 0; i < g_Bullet->MaxVertex; i++) {
 			if (g_Bullet->Vertex[i].Net != 0) {
 				float v = g_Bullet->Vertex[i].Vec.abs()*(g_Bullet->Vertex[i].Net - 1);
 				stream.data[j].Dist = g_Bullet->Vertex[i].Dist2;
@@ -4820,15 +4826,19 @@ HRESULT CMyD3DApplication::FrameMove()
 			g_DPlay->SendAll((BYTE*)&stream, mySize);
 		}
 	}
-
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_send_network_explosion(DWORD t, bool moveEnd)
+{
+	int i, j;
 	//ネットデータ送信0 爆発の情報を送る
-	if (g_DPlay->GetNumPlayers() > 0 && t - lastT2 > (DWORD)GNETSPAN / 3 && tempMoveEnd) {
+	if (g_DPlay->GetNumPlayers() > 0 && t - m_lastT2 > (DWORD)GNETSPAN / 3 && moveEnd) {
 		MoveEnd = false;
 		if (g_World->B26Bullet) {
 			GEXPSTREAM2 stream;
 			stream.code = 32;
 			j = 0;
-			for (i = 0;i < g_JetParticle->MaxVertex;i++) {
+			for (i = 0; i < g_JetParticle->MaxVertex; i++) {
 				if (g_JetParticle->Vertex[i].Net != 0) {
 					stream.data[j].Type = g_JetParticle->Vertex[i].Type;
 					stream.data[j].Pos = g_JetParticle->Vertex[i].Pos;
@@ -4850,7 +4860,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			GEXPSTREAM stream;
 			stream.code = 12;
 			j = 0;
-			for (i = 0;i < g_JetParticle->MaxVertex;i++) {
+			for (i = 0; i < g_JetParticle->MaxVertex; i++) {
 				if (g_JetParticle->Vertex[i].Net != 0) {
 					stream.data[j].Type = g_JetParticle->Vertex[i].Type;
 					stream.data[j].Pos = g_JetParticle->Vertex[i].Pos;
@@ -4870,7 +4880,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			GEXPSTREAM2 stream;
 			stream.code = 22;
 			j = 0;
-			for (i = 0;i < g_JetParticle->MaxVertex;i++) {
+			for (i = 0; i < g_JetParticle->MaxVertex; i++) {
 				if (g_JetParticle->Vertex[i].Net != 0) {
 					stream.data[j].Type = g_JetParticle->Vertex[i].Type;
 					stream.data[j].Pos = g_JetParticle->Vertex[i].Pos;
@@ -4889,8 +4899,12 @@ HRESULT CMyD3DApplication::FrameMove()
 			}
 		}
 	}
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_send_network_scenario_message(DWORD t, bool moveEnd)
+{
 	//メッセージの送信
-	if (g_DPlay->GetNumPlayers() > 0 && t - lastT > (DWORD)GNETSPAN && tempMoveEnd) {
+	if (g_DPlay->GetNumPlayers() > 0 && t - m_lastT > (DWORD)GNETSPAN && moveEnd) {
 		if (strlen(s_MessageData)) {
 			GSTREAM stream;
 			stream.code = 30;//シナリオメッセージ
@@ -4901,12 +4915,16 @@ HRESULT CMyD3DApplication::FrameMove()
 			s_MessageData[0] = '\0';
 		}
 	}
-
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_send_network_model_full(DWORD t, bool moveEnd)
+{
+	int i, j;
 	//ネットデータ送信
-	if (g_DPlay->GetNumPlayers() > 0 && t - lastT > (DWORD)GNETSPAN && tempMoveEnd) {
+	if (g_DPlay->GetNumPlayers() > 0 && t - m_lastT > (DWORD)GNETSPAN && moveEnd) {
 		MoveEnd = false;
-		lastT = t;
-		lastT2 = t;
+		m_lastT = t;
+		m_lastT2 = t;
 		GCHIPSTREAM stream;
 		stream.code = 0;
 		i = 0;
@@ -4945,7 +4963,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					stream.data[i].data.option = (int)(f * 10 + 0.5);
 				}
 				else {
-					float f = (float)fabs(r->Power / 2000.0);if (f > 2.5f) f = 2.5f;
+					float f = (float)fabs(r->Power / 2000.0); if (f > 2.5f) f = 2.5f;
 					stream.data[i].data.option = (int)(f * 50 + 0.5f);
 					if (r->Power < 0) stream.data[i].data.type |= GT_OPTION2;
 				}
@@ -4976,9 +4994,13 @@ HRESULT CMyD3DApplication::FrameMove()
 		MyNetDataSize = i*sizeof(GCHIPDATA) + sizeof(short);
 		g_DPlay->SendAll((BYTE*)&stream, MyNetDataSize);
 	}
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_send_network_model_short(DWORD t, bool moveEnd)
+{
 	//ネットデータ送信2 位置情報だけを送る
-	if (g_DPlay->GetNumPlayers()>0 && t - lastT2 > (DWORD)GNETSPAN / 3 && MoveEnd) {
-		lastT2 = t;
+	if (g_DPlay->GetNumPlayers()>0 && t - m_lastT2 > (DWORD)GNETSPAN / 3 && moveEnd) {
+		m_lastT2 = t;
 		GCHIPSTREAM stream;
 		stream.code = 10;
 		stream.data[0].id = 512;
@@ -4988,8 +5010,11 @@ HRESULT CMyD3DApplication::FrameMove()
 
 		MyNetDataSize = sizeof(GCHIPDATA) + sizeof(short);//1Chip分だけ送る
 		g_DPlay->SendAll((BYTE*)&stream, MyNetDataSize);
-
 	}
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_check_checkpoint()
+{
 	if (g_World->Stop == false && g_World->NetStop == false) {
 		//チェックポイントのチェック
 		if (CurrentCheckPoint < Course[CurrentCourse].Count && CurrentCheckPoint >= 0) {
@@ -5005,7 +5030,7 @@ HRESULT CMyD3DApplication::FrameMove()
 						ScriptFlag = Course[CurrentCourse].ScriptFlag;
 						EfficientFlag = Course[CurrentCourse].EfficientFlag;
 
-						SetRegulationMenu();
+						this->SetRegulationMenu();
 						RecCheckPoint = CurrentCheckPoint;
 					}
 					GameTime = 0;
@@ -5024,22 +5049,23 @@ HRESULT CMyD3DApplication::FrameMove()
 		}
 		else g_World->DestroyFlag = !UnbreakableFlag;
 	}
-	// Update user input state
-	if (InputCancel == false) UpdateInput(&m_UserInput);else { DummyInput(&m_UserInput);InputCancel = false; }
-
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_acquire_user_input()
+{
 	// Respond to input
-	if (m_UserInput.bDoConfigureInput)
+	if (this->m_UserInput.bDoConfigureInput)
 	{
 		// One-shot per keypress
 		m_UserInput.bDoConfigureInput = FALSE;
 
-		Pause(TRUE);
+		this->Pause(TRUE);
 
 		// Get access to the list of semantically-mapped input devices
 		// to delete all InputDeviceState structs before calling ConfigureDevices()
 		CInputDeviceManager::DeviceInfo* pDeviceInfos;
 		DWORD dwNumDevices;
-		m_pInputDeviceManager->GetDevices(&pDeviceInfos, &dwNumDevices);
+		this->m_pInputDeviceManager->GetDevices(&pDeviceInfos, &dwNumDevices);
 
 		for (DWORD i = 0; i < dwNumDevices; i++)
 		{
@@ -5054,9 +5080,9 @@ HRESULT CMyD3DApplication::FrameMove()
 			m_pInputDeviceManager->ConfigureDevices(m_hWnd, NULL, NULL, DICD_EDIT, NULL);
 		else
 			m_pInputDeviceManager->ConfigureDevices(m_hWnd,
-				m_pDIConfigSurface,
-				(VOID*)StaticConfigureInputDevicesCB,
-				DICD_EDIT, (LPVOID) this);
+			m_pDIConfigSurface,
+			(VOID*)StaticConfigureInputDevicesCB,
+			DICD_EDIT, (LPVOID) this);
 
 		Pause(FALSE);
 	}
@@ -5091,7 +5117,7 @@ HRESULT CMyD3DApplication::FrameMove()
 				if (FAILED(ToggleFullscreen()))
 				{
 					DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-					return 1;
+					return -1;
 				}
 			}
 			if (SetCurrentDirectory(s_CurrDataDir) == 0) {
@@ -5186,26 +5212,26 @@ HRESULT CMyD3DApplication::FrameMove()
 		}
 		else {
 			m_UserInput.bDoUpdateChip = FALSE;
-			ClearInput(&m_UserInput);
+			this->ClearInput(&this->m_UserInput);
 		}
 	}
 
 	if (m_UserInput.bDoOpenLand)
 	{
 		if (ControlKeysLock[4] == false) {
-			ClearInput(&m_UserInput);
+			this->ClearInput(&m_UserInput);
 			InputCancel = true;
-			int win = m_bWindowed;
+			int win = this->m_bWindowed;
 			if (KeyRecordMode == 1) KeyRecordMax = KeyRecordCount;
 			KeyRecordMode = 0;
 			m_UserInput.bDoOpenLand = FALSE;
-			Pause(TRUE);
+			this->Pause(TRUE);
 			if (m_bWindowed == FALSE)
 			{
-				if (FAILED(ToggleFullscreen()))
+				if (FAILED(this->ToggleFullscreen()))
 				{
-					DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-					return 1;
+					this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
+					return -1;
 				}
 			}
 			if (SetCurrentDirectory(s_CurrDataDir) == 0) {
@@ -5217,7 +5243,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			szFileName[0] = '\0';
 			memset(&ofn, 0, sizeof(OPENFILENAME));
 			ofn.lStructSize = sizeof(OPENFILENAME);
-			ofn.hwndOwner = m_hWnd;
+			ofn.hwndOwner = this->m_hWnd;
 			ofn.lpstrFilter = szFilter;
 			ofn.nFilterIndex = 1;
 			ofn.lpstrFile = szFileName;
@@ -5227,7 +5253,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			ofn.lpstrDefExt = "x";
 			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
 			if (GetOpenFileName(&ofn)) {
-				if (LoadLand(m_pd3dDevice, szFileName) == 0) {
+				if (LoadLand(this->m_pd3dDevice, szFileName) == 0) {
 					char szDrive[_MAX_DRIVE + 1];	// ドライブ名格納領域 
 					char szPath[_MAX_PATH + 1];	// パス名格納領域 
 					char szTitle[_MAX_FNAME + 1];	// ファイルタイトル格納領域 
@@ -5244,7 +5270,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					lstrcat(szLandFileName0, szExt);
 					KeyRecordMax = 0;
 					KeyRecordCount = 0;
-					for (int i = 0;i < g_World->getChipCount();i++) {
+					for (int i = 0; i < g_World->getChipCount(); i++) {
 						if (g_Chip[i]->ChipType == 0) {
 							GFloat y = g_World->Land->GetY(0, 0);
 							if (y < -9000.0f)y = 0.0f;
@@ -5263,35 +5289,35 @@ HRESULT CMyD3DApplication::FrameMove()
 			}
 			if (win == FALSE)
 			{
-				if (FAILED(ToggleFullscreen()))
+				if (FAILED(this->ToggleFullscreen()))
 				{
-					DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
+					this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
 				}
 			}
-			Resize3DEnvironment();
+			this->Resize3DEnvironment();
 			Pause(FALSE);
 		}
 		else {
 			m_UserInput.bDoOpenLand = FALSE;
-			ClearInput(&m_UserInput);
+			this->ClearInput(&this->m_UserInput);
 		}
 	}
 	if (m_UserInput.bDoOpenGame) {
 		if (ControlKeysLock[5] == false) {
 
-			ClearInput(&m_UserInput);
+			this->ClearInput(&this->m_UserInput);
 			InputCancel = true;
-			int win = m_bWindowed;
+			int win = this->m_bWindowed;
 			if (KeyRecordMode == 1) KeyRecordMax = KeyRecordCount;
 			KeyRecordMode = 0;
 			m_UserInput.bDoOpenGame = FALSE;
-			Pause(TRUE);
+			this->Pause(TRUE);
 			if (m_bWindowed == FALSE)
 			{
-				if (FAILED(ToggleFullscreen()))
+				if (FAILED(this->ToggleFullscreen()))
 				{
-					DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-					return 1;
+					this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
+					return -1;
 				}
 			}
 			if (SetCurrentDirectory(s_CurrDataDir) == 0) {
@@ -5304,7 +5330,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			szFileName[0] = '\0';
 			memset(&ofn, 0, sizeof(OPENFILENAME));
 			ofn.lStructSize = sizeof(OPENFILENAME);
-			ofn.hwndOwner = m_hWnd;
+			ofn.hwndOwner = this->m_hWnd;
 			ofn.lpstrFilter = szFilter;
 			ofn.nFilterIndex = 1;
 			ofn.lpstrFile = szFileName;
@@ -5335,24 +5361,24 @@ HRESULT CMyD3DApplication::FrameMove()
 					lstrcpy(szLandFileName0, szTitle);
 					lstrcat(szLandFileName0, szExt);
 				}
-				InitChips(0, 0);
+				this->InitChips(0, 0);
 				ClearInput(&m_UserInput);
 				CurrentCourse = 1;
 				CurrentCheckPoint = 0;
 			}
 			if (win == FALSE)
 			{
-				if (FAILED(ToggleFullscreen()))
+				if (FAILED(this->ToggleFullscreen()))
 				{
-					DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
+					this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
 				}
-				Resize3DEnvironment();
+				this->Resize3DEnvironment();
 			}
 			Pause(FALSE);
 		}
 		else {
 			m_UserInput.bDoOpenGame = FALSE;
-			ClearInput(&m_UserInput);
+			this->ClearInput(&this->m_UserInput);
 		}
 	}
 	if (m_UserInput.bDoCloseScenario)
@@ -5366,8 +5392,8 @@ HRESULT CMyD3DApplication::FrameMove()
 		lstrcat(fn, TEXT("\\System.rcs"));
 		LoadSystem(fn);
 		luaSystemInit();
-		InitChips(a, 1);
-		ClearInput(&m_UserInput);
+		this->InitChips(a, 1);
+		this->ClearInput(&this->m_UserInput);
 		if (g_DPlay->GetNumPlayers() > 0) {	//初期化を送信する
 			GINFOSTREAM stream;
 			stream.code = 100; //初期化
@@ -5382,16 +5408,16 @@ HRESULT CMyD3DApplication::FrameMove()
 		float a = -(GVector(0, 0, 1)*g_Chip[0]->R).Cut2(GVector(0, 1, 0)).angle2(GVector(0, 0, 1), GVector(0, 1, 0));
 		InputCancel = true;
 		m_UserInput.bDoOpenScenario = FALSE;
-		int win = m_bWindowed;
+		int win = this->m_bWindowed;
 		if (KeyRecordMode == 1) KeyRecordMax = KeyRecordCount;
 		KeyRecordMode = 0;
-		Pause(TRUE);
+		this->Pause(TRUE);
 		if (m_bWindowed == FALSE)
 		{
-			if (FAILED(ToggleFullscreen()))
+			if (FAILED(this->ToggleFullscreen()))
 			{
-				DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-				return 1;
+				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
+				return -1;
 			}
 		}
 		if (SetCurrentDirectory(s_CurrDataDir) == 0) {
@@ -5403,7 +5429,7 @@ HRESULT CMyD3DApplication::FrameMove()
 		szFileName[0] = '\0';
 		memset(&ofn, 0, sizeof(OPENFILENAME));
 		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.hwndOwner = m_hWnd;
+		ofn.hwndOwner = this->m_hWnd;
 		ofn.lpstrFilter = szFilter;
 		ofn.nFilterIndex = 1;
 		ofn.lpstrFile = szFileName;
@@ -5429,8 +5455,8 @@ HRESULT CMyD3DApplication::FrameMove()
 
 			_tcscpy(s_CurrScenarioDir, s_CurrDataDir);
 			luaSystemInit();
-			InitChips(a, 0);
-			ClearInput(&m_UserInput);
+			this->InitChips(a, 0);
+			this->ClearInput(&this->m_UserInput);
 			if (g_DPlay->GetNumPlayers() > 0) {	//初期化を送信する
 				GINFOSTREAM stream;
 				stream.code = 100; //初期化
@@ -5444,28 +5470,28 @@ HRESULT CMyD3DApplication::FrameMove()
 		{
 			if (FAILED(ToggleFullscreen()))
 			{
-				DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
+				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
 			}
-			Resize3DEnvironment();
+			this->Resize3DEnvironment();
 		}
 		Pause(FALSE);
 	}
 
 	if (m_UserInput.bDoSaveLog)
 	{
-		ClearInput(&m_UserInput);
+		this->ClearInput(&this->m_UserInput);
 		InputCancel = true;
-		int win = m_bWindowed;
+		int win = this->m_bWindowed;
 		if (KeyRecordMode == 1) KeyRecordMax = KeyRecordCount;
 		KeyRecordMode = 0;
 		m_UserInput.bDoSaveLog = FALSE;
-		Pause(TRUE);
+		this->Pause(TRUE);
 		if (m_bWindowed == FALSE)
 		{
-			if (FAILED(ToggleFullscreen()))
+			if (FAILED(this->ToggleFullscreen()))
 			{
-				DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-				return 1;
+				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
+				return -1;
 			}
 		}
 		if (SetCurrentDirectory(s_CurrDataDir) == 0) {
@@ -5477,7 +5503,7 @@ HRESULT CMyD3DApplication::FrameMove()
 		szFileName[0] = '\0';
 		memset(&ofn, 0, sizeof(OPENFILENAME));
 		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.hwndOwner = m_hWnd;
+		ofn.hwndOwner = this->m_hWnd;
 		ofn.lpstrFilter = szFilter;
 		ofn.nFilterIndex = 1;
 		ofn.lpstrFile = szFileName;
@@ -5499,36 +5525,36 @@ HRESULT CMyD3DApplication::FrameMove()
 
 			lstrcpy(s_CurrDataDir, szDrive);
 			lstrcat(s_CurrDataDir, szPath);
-			SaveLog(szFileName);
+			this->SaveLog(szFileName);
 
 		}
 		if (win == FALSE)
 		{
-			if (FAILED(ToggleFullscreen()))
+			if (FAILED(this->ToggleFullscreen()))
 			{
-				DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
+				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
 			}
-			Resize3DEnvironment();
+			this->Resize3DEnvironment();
 		}
-		Pause(FALSE);
+		this->Pause(FALSE);
 	}
 
 
 	if (m_UserInput.bDoOpenLog)
 	{
-		ClearInput(&m_UserInput);
+		this->ClearInput(&this->m_UserInput);
 		InputCancel = true;
 		if (KeyRecordMode == 1) KeyRecordMax = KeyRecordCount;
 		KeyRecordMode = 0;
 		m_UserInput.bDoOpenLog = FALSE;
-		Pause(TRUE);
-		int win = m_bWindowed;
+		this->Pause(TRUE);
+		int win = this->m_bWindowed;
 		if (m_bWindowed == FALSE)
 		{
-			if (FAILED(ToggleFullscreen()))
+			if (FAILED(this->ToggleFullscreen()))
 			{
-				DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-				return 1;
+				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
+				return -1;
 			}
 		}
 		if (SetCurrentDirectory(s_CurrDataDir) == 0) {
@@ -5540,7 +5566,7 @@ HRESULT CMyD3DApplication::FrameMove()
 		szFileName[0] = '\0';
 		memset(&ofn, 0, sizeof(OPENFILENAME));
 		ofn.lStructSize = sizeof(OPENFILENAME);
-		ofn.hwndOwner = m_hWnd;
+		ofn.hwndOwner = this->m_hWnd;
 		ofn.lpstrFilter = szFilter;
 		ofn.nFilterIndex = 1;
 		ofn.lpstrFile = szFileName;
@@ -5565,7 +5591,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			lstrcpy(s_CurrDataDir, szDrive);
 			lstrcat(s_CurrDataDir, szPath);
 
-			if (LoadLog(szFileName) == 0) {
+			if (this->LoadLog(szFileName) == 0) {
 				if (strcmp(szTempFileName0, szLandFileName0) != 0) {
 					if (lstrcmp(szTempFileName0, TEXT("Land.x")) == 0) {
 						lstrcpy(szLandFileName, s_ResourceDir);
@@ -5576,7 +5602,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					lstrcat(szLandFileName, TEXT("\\"));
 					lstrcat(szLandFileName, szTempFileName0);
 					lstrcpy(szLandFileName0, szTempFileName0);
-					if (LoadLand(m_pd3dDevice, szLandFileName) != 0) KeyRecordMax = 0;
+					if (LoadLand(this->m_pd3dDevice, szLandFileName) != 0) KeyRecordMax = 0;
 				}
 				RecState = 3;
 				Sleep(1000);
@@ -5586,31 +5612,35 @@ HRESULT CMyD3DApplication::FrameMove()
 				sprintf(str, "Error  ");
 				MessageBox(NULL, str, NULL, MB_ICONERROR | MB_OK);
 			}
-			Resize3DEnvironment();
+			this->Resize3DEnvironment();
 		}
 		Pause(FALSE);
 		if (win == FALSE)
 		{
-			if (FAILED(ToggleFullscreen()))
+			if (FAILED(this->ToggleFullscreen()))
 			{
-				DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
+				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
 			}
 		}
-		return S_OK;
+		return 1;
 	}
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_display_data()
+{
 	if (ShowData)
 	{
 		if (KeyRecordMode == 1) KeyRecordMax = KeyRecordCount;
 		KeyRecordMode = 0;
 		ShowData = FALSE;
-		Pause(TRUE);
-		int win = m_bWindowed;
-		if (m_bWindowed == FALSE)
+		this->Pause(TRUE);
+		int win = this->m_bWindowed;
+		if (this->m_bWindowed == FALSE)
 		{
-			if (FAILED(ToggleFullscreen()))
+			if (FAILED(this->ToggleFullscreen()))
 			{
-				DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-				return 1;
+				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
+				return -1;
 			}
 		}
 		// Prompt the user to change the mode
@@ -5619,28 +5649,31 @@ HRESULT CMyD3DApplication::FrameMove()
 		}
 		if (win == FALSE)
 		{
-			if (FAILED(ToggleFullscreen()))
+			if (FAILED(this->ToggleFullscreen()))
 			{
-				DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
+				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
 			}
-			Resize3DEnvironment();
+			this->Resize3DEnvironment();
 		}
-		Pause(FALSE);
+		this->Pause(FALSE);
 	}
-
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_display_extra_data()
+{
 	if (ShowExtra)
 	{
 		if (KeyRecordMode == 1) KeyRecordMax = KeyRecordCount;
 		KeyRecordMode = 0;
 		ShowExtra = FALSE;
-		Pause(TRUE);
-		int win = m_bWindowed;
+		this->Pause(TRUE);
+		int win = this->m_bWindowed;
 		if (m_bWindowed == FALSE)
 		{
-			if (FAILED(ToggleFullscreen()))
+			if (FAILED(this->ToggleFullscreen()))
 			{
-				DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
-				return 1;
+				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
+				return -1;
 			}
 		}
 		// Prompt the user to change the mode
@@ -5649,29 +5682,31 @@ HRESULT CMyD3DApplication::FrameMove()
 		}
 		if (win == FALSE)
 		{
-			if (FAILED(ToggleFullscreen()))
+			if (FAILED(this->ToggleFullscreen()))
 			{
-				DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
+				this->DisplayErrorMsg(D3DAPPERR_RESIZEFAILED, MSGERR_APPMUSTEXIT);
 			}
-			Resize3DEnvironment();
+			this->Resize3DEnvironment();
 		}
-		Pause(FALSE);
+		this->Pause(FALSE);
 	}
-
-
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_acquire_user_model_input()
+{
 	GFloat mass = g_Chip[0]->TotalMass*10.0f;
-	if (m_UserInput.bButtonOneShotInit) {
+	if (this->m_UserInput.bButtonOneShotInit) {
 		if (ControlKeysLock[0] == false) {
 			if (KeyRecordMode == 1) KeyRecordMax = KeyRecordCount;
 			KeyRecordMode = 0;
-			a = 0.0f;
-			count = 0;
-			ResetChips(0, 0, a);
-			InitChips(a, 0);
+			this->m_a = 0.0f;
+			this->m_count = 0;
+			this->ResetChips(0, 0, this->m_a);
+			this->InitChips(this->m_a, 0);
 			//		BOOL f=m_UserInput.bButtonInit;
 			//		ClearInput(&m_UserInput);
 			//		m_UserInput.bButtonInit=f;
-			preY = g_Chip[0]->X.y;
+			this->m_preY = g_Chip[0]->X.y;
 			if (g_DPlay->GetNumPlayers() > 0) {	//初期化を送信する
 				GINFOSTREAM stream;
 				stream.code = 100; //初期化
@@ -5686,27 +5721,27 @@ HRESULT CMyD3DApplication::FrameMove()
 	}
 	else if (m_UserInput.bButtonInit) {
 		if (ControlKeysLock[0] == false) {
-			if (count > 15) {
-				a = a + (GFloat)(3.0f / 180.0f*M_PI);
+			if (this->m_count > 15) {
+				this->m_a = this->m_a + (GFloat)(3.0f / 180.0f*M_PI);
 				CurrentCourse = 0;
 			}
 			if (CurrentCourse > 0) {
 				g_Chip[0]->X = Course[CurrentCourse].StartPoint;
-				a = Course[CurrentCourse].StartAngleY / 180.0f*(GFloat)M_PI;
+				this->m_a = Course[CurrentCourse].StartAngleY / 180.0f*(GFloat)M_PI;
 			}
-			count++;
-			g_Chip[0]->X.y = preY;
+			this->m_count++;
+			g_Chip[0]->X.y = this->m_preY;
 			//		InitChips(a);
 			//		InitChips(a,0);
-			ResetChips(0, 0, a);
-			InitChips(a, 0);
+			this->ResetChips(0, 0, this->m_a);
+			this->InitChips(this->m_a, 0);
 			//		ClearInput(&m_UserInput);
 			CurrentCheckPoint = 0;
 			/*		ResetObject(0,0);
-					g_World->Object[0]->X.x=g_Chip[0]->X.x+g_Chip[0]->Top->TotalRadius+1;
-					g_World->Object[0]->X.y=g_Chip[0]->X.y+g_Chip[0]->Top->TotalRadius+1;
-					g_World->Object[0]->X.z=g_Chip[0]->X.z;
-					g_World->Object[0]->RSet();
+			g_World->Object[0]->X.x=g_Chip[0]->X.x+g_Chip[0]->Top->TotalRadius+1;
+			g_World->Object[0]->X.y=g_Chip[0]->X.y+g_Chip[0]->Top->TotalRadius+1;
+			g_World->Object[0]->X.z=g_Chip[0]->X.z;
+			g_World->Object[0]->RSet();
 			*/
 			//		m_UserInput.bButtonInit=true;
 		}
@@ -5715,7 +5750,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			if (ScriptType == 1 && g_ScriptLua != NULL) luaScriptRun(g_ScriptLua, "OnInit");
 		}
 	}
-	if (m_UserInput.bButtonOneShotYForce) {
+	if (this->m_UserInput.bButtonOneShotYForce) {
 		if (ControlKeysLock[6] == false) {
 			if (KeyRecordMode == 1) KeyRecordMax = KeyRecordCount;
 			KeyRecordMode = 0;
@@ -5732,57 +5767,57 @@ HRESULT CMyD3DApplication::FrameMove()
 			}
 		}
 	}
-	if (m_UserInput.bButtonOneShotTitle) {
+	if (this->m_UserInput.bButtonOneShotTitle) {
 		if (ControlKeysLock[7] == false) {
 			ShowTitle = !ShowTitle;
 		}
 	}
-	if (m_UserInput.bButtonOneShotZoomIn) {
+	if (this->m_UserInput.bButtonOneShotZoomIn) {
 		Zoom = Zoom*0.8f;
 		if (Zoom < 9.437184f) Zoom = 9.437184f;
 	}
-	if (m_UserInput.bButtonOneShotZoomOut) {
+	if (this->m_UserInput.bButtonOneShotZoomOut) {
 		Zoom = Zoom*1.25f;
 		if (Zoom > 109.86328125f) Zoom = 109.86328125f;
 	}
-	if (m_UserInput.bButtonOneShotResetView) {
+	if (this->m_UserInput.bButtonOneShotResetView) {
 		Zoom = 45.0f;
 		TurnLR = 0.0f;
 		TurnUD = 0.0f;
 	}
-	if (m_UserInput.bButtonOneShotTurnLeft) {
+	if (this->m_UserInput.bButtonOneShotTurnLeft) {
 		TurnLR += 10.0f*(float)M_PI / 180.0f;
 	}
-	if (m_UserInput.bButtonOneShotTurnRight) {
+	if (this->m_UserInput.bButtonOneShotTurnRight) {
 		TurnLR -= 10.0f*(float)M_PI / 180.0f;
 	}
-	if (m_UserInput.bButtonOneShotTurnUp) {
+	if (this->m_UserInput.bButtonOneShotTurnUp) {
 		TurnUD += 5.0f*(float)M_PI / 180.0f;
 	}
-	if (m_UserInput.bButtonOneShotTurnDown) {
+	if (this->m_UserInput.bButtonOneShotTurnDown) {
 		TurnUD -= 5.0f*(float)M_PI / 180.0f;
 	}
-	if (m_UserInput.bButtonOneShotReset) {
+	if (this->m_UserInput.bButtonOneShotReset) {
 		if (ControlKeysLock[1] == false) {
 			if (KeyRecordMode == 1) KeyRecordMax = KeyRecordCount;
 			KeyRecordMode = 0;
-			count = 0;
+			this->m_count = 0;
 			LastBye = 0;
-			for (int i = 0;i < g_VarCount;i++) {
+			for (int i = 0; i < g_VarCount; i++) {
 				g_ValList[i].Val = g_ValList[i].Def;
 				if (g_ValList[i].Val > g_ValList[i].Max) g_ValList[i].Val = g_ValList[i].Max;
 				if (g_ValList[i].Val < g_ValList[i].Min) g_ValList[i].Val = g_ValList[i].Min;
 				g_ValList[i].Updated = true;
-				for (int j = 0;j < g_ValList[i].RefCount;j++) {
+				for (int j = 0; j < g_ValList[i].RefCount; j++) {
 					if (g_ValList[i].Flag[j])
 						*(g_ValList[i].Ref[j]) = -g_ValList[i].Val;
 					else *(g_ValList[i].Ref[j]) = g_ValList[i].Val;
 				}
 			}
-			for (int c = 0;c < g_World->getChipCount();c++) {
+			for (int c = 0; c < g_World->getChipCount(); c++) {
 				if (g_Chip[c]->ChipType == 0) {
-					a = -(GVector(0, 0, 1)*g_Chip[c]->R).Cut2(GVector(0, 1, 0)).angle2(GVector(0, 0, 1), GVector(0, 1, 0));
-					ResetChip(c, a);
+					this->m_a = -(GVector(0, 0, 1)*g_Chip[c]->R).Cut2(GVector(0, 1, 0)).angle2(GVector(0, 0, 1), GVector(0, 1, 0));
+					ResetChip(c, this->m_a);
 				}
 			}
 			if (g_ScriptLua) {
@@ -5796,7 +5831,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			g_Bullet->Clear();
 			if (g_SystemLua != NULL && (g_World->B26Bullet || g_DPlay->GetNumPlayers() == 0)) luaSystemRun("OnReset");
 			if (ScriptType == 1 && g_ScriptLua != NULL) luaScriptRun(g_ScriptLua, "OnReset");
-			preY = g_Chip[0]->X.y;
+			this->m_preY = g_Chip[0]->X.y;
 			if (g_DPlay->GetNumPlayers() > 0) {	//初期化を送信する
 				GINFOSTREAM stream;
 				stream.code = 100; //初期化
@@ -5813,27 +5848,36 @@ HRESULT CMyD3DApplication::FrameMove()
 	}
 	else if (m_UserInput.bButtonReset) {
 		if (ControlKeysLock[1] == false) {
-			if (count > 15) a = a + (GFloat)(3.0f / 180.0f*M_PI);
-			count++;
-			ResetChips(preY, a);
+			if (this->m_count > 15) this->m_a = this->m_a + (GFloat)(3.0f / 180.0f*M_PI);
+			this->m_count++;
+			this->ResetChips(this->m_preY, this->m_a);
 			BOOL f = m_UserInput.bButtonReset;
-			ClearInput(&m_UserInput);
+			this->ClearInput(&this->m_UserInput);
 			m_UserInput.bButtonReset = f;
 		}
 	}
-	for (i = 0;i < GSYSKEYMAX;i++) {
-		if (s_SystemKeys[i] == false && m_UserInput.bSystem[i]) s_SystemKeysDown[i] = true;
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_update_keys()
+{
+	int i;
+	for (i = 0; i < GSYSKEYMAX; i++) {
+		if (s_SystemKeys[i] == false && this->m_UserInput.bSystem[i]) s_SystemKeysDown[i] = true;
 		else  s_SystemKeysDown[i] = false;
 		if (s_SystemKeys[i] == true && m_UserInput.bSystem[i] == false) s_SystemKeysUp[i] = true;
 		else  s_SystemKeysUp[i] = false;
 		s_SystemKeys[i] = m_UserInput.bSystem[i] != 0 ? true : false;
 	}
-
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_update_vals()
+{
+	int i,j,k;
 	//変数の更新
 	GFloat val;
-	for (i = 0;i < GKEYMAX;i++) {
-		int key = m_UserInput.bButton[i];
-		if (KeyRecordMode == 1) KeyRecord[KeyRecordCount][i] = m_UserInput.bButton[i];
+	for (i = 0; i < GKEYMAX; i++) {
+		int key = this->m_UserInput.bButton[i];
+		if (KeyRecordMode == 1) KeyRecord[KeyRecordCount][i] = this->m_UserInput.bButton[i];
 		else if (KeyRecordMode == 2) {
 			if (key != 0) KeyRecordMode = 0;
 			else key = KeyRecord[KeyRecordCount][i];
@@ -5841,7 +5885,7 @@ HRESULT CMyD3DApplication::FrameMove()
 		bool ks2 = g_KeyList[i].SPressed;
 		g_KeyList[i].SPressed = key != 0 ? true : false;
 		if (ks2 == false && key != 0) g_KeyList[i].SDown = true; else g_KeyList[i].SDown = false;
-		if (ks2 == true && key == 0) g_KeyList[i].SUp = true;else g_KeyList[i].SUp = false;
+		if (ks2 == true && key == 0) g_KeyList[i].SUp = true; else g_KeyList[i].SUp = false;
 		if (g_KeyList[i].Lock) {
 			key = 0;
 			g_KeyList[i].Down = 0;
@@ -5853,9 +5897,9 @@ HRESULT CMyD3DApplication::FrameMove()
 		if (g_KeyList[i].Lock) ks = false;
 		g_KeyList[i].Pressed = key != 0 ? true : false;
 		if (ks == false && key != 0) g_KeyList[i].Down = true; else g_KeyList[i].Down = false;
-		if (ks == true && key == 0) g_KeyList[i].Up = true;else g_KeyList[i].Up = false;
+		if (ks == true && key == 0) g_KeyList[i].Up = true; else g_KeyList[i].Up = false;
 		if (key) {
-			for (j = 0;j < g_KeyList[i].Count;j++) {
+			for (j = 0; j < g_KeyList[i].Count; j++) {
 				if (g_KeyList[i].ValNo[j] >= 0) {
 					if (g_KeyList[i].ResetFlag[j]) {
 						val = g_ValList[g_KeyList[i].ValNo[j]].Def;
@@ -5868,7 +5912,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					if (val < g_ValList[g_KeyList[i].ValNo[j]].Min) val = g_ValList[g_KeyList[i].ValNo[j]].Min;
 					g_ValList[g_KeyList[i].ValNo[j]].Val = val;
 					g_ValList[g_KeyList[i].ValNo[j]].Updated = true;
-					for (k = 0;k < g_ValList[g_KeyList[i].ValNo[j]].RefCount;k++) {
+					for (k = 0; k < g_ValList[g_KeyList[i].ValNo[j]].RefCount; k++) {
 						if (g_ValList[g_KeyList[i].ValNo[j]].Flag[k])
 							*(g_ValList[g_KeyList[i].ValNo[j]].Ref[k]) = -val;
 						else *(g_ValList[g_KeyList[i].ValNo[j]].Ref[k]) = val;
@@ -5877,7 +5921,7 @@ HRESULT CMyD3DApplication::FrameMove()
 			}
 		}
 		else {
-			for (j = 0;j < g_KeyList[i].Count;j++) {
+			for (j = 0; j < g_KeyList[i].Count; j++) {
 				if (g_KeyList[i].ValNo[j] >= 0) {
 					if (g_KeyList[i].ReleaseFlag[j]) {
 						if (g_KeyList[i].ResetFlag2[j]) {
@@ -5890,7 +5934,7 @@ HRESULT CMyD3DApplication::FrameMove()
 						if (val > g_ValList[g_KeyList[i].ValNo[j]].Max) val = g_ValList[g_KeyList[i].ValNo[j]].Max;
 						if (val < g_ValList[g_KeyList[i].ValNo[j]].Min) val = g_ValList[g_KeyList[i].ValNo[j]].Min;
 						g_ValList[g_KeyList[i].ValNo[j]].Val = val;
-						for (k = 0;k < g_ValList[g_KeyList[i].ValNo[j]].RefCount;k++) {
+						for (k = 0; k < g_ValList[g_KeyList[i].ValNo[j]].RefCount; k++) {
 							if (g_ValList[g_KeyList[i].ValNo[j]].Flag[k])
 								*(g_ValList[g_KeyList[i].ValNo[j]].Ref[k]) = -val;
 							else *(g_ValList[g_KeyList[i].ValNo[j]].Ref[k]) = val;
@@ -5900,9 +5944,14 @@ HRESULT CMyD3DApplication::FrameMove()
 			}
 		}
 	}
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_apply_vals()
+{
+	int i, j, k;
 	if (g_World->Stop == false && g_World->NetStop == false) {
 		//変数の内容を更新
-		for (i = 0;i<GVALMAX;i++) {
+		for (i = 0; i<GVALMAX; i++) {
 			if (g_ValList[i].Updated == false) {
 				if (g_ValList[i].Val>g_ValList[i].Def) {
 					g_ValList[i].Val -= (GFloat)fabs(g_ValList[i].Dec);
@@ -5913,7 +5962,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					if (g_ValList[i].Val > g_ValList[i].Def) g_ValList[i].Val = g_ValList[i].Def;
 				}
 			}
-			for (k = 0;k < g_ValList[i].RefCount;k++) {
+			for (k = 0; k < g_ValList[i].RefCount; k++) {
 				if (g_ValList[i].Flag[k])
 					*(g_ValList[i].Ref[k]) = -g_ValList[i].Val;
 				else *(g_ValList[i].Ref[k]) = g_ValList[i].Val;
@@ -5921,7 +5970,7 @@ HRESULT CMyD3DApplication::FrameMove()
 		}
 
 		s_TotalPower = 0;
-		for (i = 0;i < g_World->getChipCount();i++) {
+		for (i = 0; i < g_World->getChipCount(); i++) {
 			if (g_Chip[i]->Top != g_Chip[0] && g_Chip[i]->Top->ByeFlag >= 1) {
 				g_Chip[i]->Power = g_Chip[i]->PowerSave;
 				if (g_Chip[i]->Top->ByeFlag == 1) g_Chip[i]->PowerSave = g_Chip[i]->PowerSave*0.95f;
@@ -5949,16 +5998,16 @@ HRESULT CMyD3DApplication::FrameMove()
 				else if (g_Chip[i]->ChipType == 10 && g_Chip[i]->ArmEnergy > 0 && g_Chip[i]->Energy >= g_Chip[i]->ArmEnergy && g_Chip[i]->Power >= g_Chip[i]->ArmEnergy && !IsInvulnerableTime()) {
 					GVector dir;
 					switch (g_Chip[i]->Dir) {
-					case 1:dir = GVector(1, 0, 0);break;
-					case 2:dir = GVector(0, 0, -1);break;
-					case 3:dir = GVector(-1, 0, 0);break;
-					default:dir = GVector(0, 0, 1);break;
+					case 1:dir = GVector(1, 0, 0); break;
+					case 2:dir = GVector(0, 0, -1); break;
+					case 3:dir = GVector(-1, 0, 0); break;
+					default:dir = GVector(0, 0, 1); break;
 					}
 					GVector d = dir*g_Chip[i]->R;
 					g_Chip[i]->ApplyForce(-d*g_Chip[i]->ArmEnergy*s, g_Chip[i]->X);
 					s_TotalPower += (GFloat)fabs(g_Chip[i]->ArmEnergy*s);
 					g_Chip[i]->Energy = (float)-5000 * 30 / s_LimitFPS;
-					double f = sqrt(fabs(g_Chip[i]->ArmEnergy / 125000.0));if (f > 2.5) f = 2.5;
+					double f = sqrt(fabs(g_Chip[i]->ArmEnergy / 125000.0)); if (f > 2.5) f = 2.5;
 					BOOL hit;
 					FLOAT dist;
 					LPDIRECT3DVERTEXBUFFER8 pVB;
@@ -5973,8 +6022,8 @@ HRESULT CMyD3DApplication::FrameMove()
 					float as = ARMSPEED;
 					if (g_Chip[i]->X.y < WATER_LINE) as = as / 10;
 					GVector dir2 = (d*as*30.0f / (GFloat)s_LimitFPS + g_Chip[i]->V*g_Chip[i]->World->Dt*(GFloat)GDTSTEP).normalize2();
-					v1.x = g_Chip[i]->X.x;v1.y = g_Chip[i]->X.y;v1.z = g_Chip[i]->X.z;
-					v2.x = dir2.x;v2.y = dir2.y;v2.z = dir2.z;
+					v1.x = g_Chip[i]->X.x; v1.y = g_Chip[i]->X.y; v1.z = g_Chip[i]->X.z;
+					v2.x = dir2.x; v2.y = dir2.y; v2.z = dir2.z;
 					D3DXIntersect(g_pLandMesh->GetSysMemMesh(), &v1, &v2, &hit, NULL, NULL, NULL, &dist, NULL, NULL);
 					if (!hit) dist = 100000.0f;
 					GVector p = g_Chip[i]->X + dir2*dist;
@@ -6016,10 +6065,10 @@ HRESULT CMyD3DApplication::FrameMove()
 							int nn = (int)((fabs(po) + 7900) / 8000);
 							if (nn > 0) {
 								float a = 0.5f + (rand() % 100) / 5000.0f;
-								if (a > 2.0f) a = 2.0f;else if (a <= 0.0f) a = 0.0f;
+								if (a > 2.0f) a = 2.0f; else if (a <= 0.0f) a = 0.0f;
 								GVector vv = -GVector(0, 1, 0)*g_Chip[i]->R*po / 50000.0f;
 								//if(v.abs()>0.1f) v=v.normalize()/10.0f;
-								for (int ii = 0;ii < nn;ii++) {
+								for (int ii = 0; ii < nn; ii++) {
 									g_JetParticle->Add(g_Chip[i]->X + (g_Chip[i]->V / 30 - vv)*(GFloat)ii / (GFloat)nn, vv, GVector(0, 0, 0), 0.08f, a, 0.02f, GVector(1, 1, 1));
 								}
 							}
@@ -6028,10 +6077,10 @@ HRESULT CMyD3DApplication::FrameMove()
 							int nn = (int)((fabs(po) + 7900) / 8000);
 							if (nn > 0) {
 								float a = 0.7f + (rand() % 1000) / 5000.0f;
-								if (a > 1.0f) a = 1.0f;else if (a <= 0.0f) a = 0.0f;
+								if (a > 1.0f) a = 1.0f; else if (a <= 0.0f) a = 0.0f;
 								GVector vv = -GVector(0, 1, 0)*g_Chip[i]->R*po / 50000.0f;
 								//						double f=fabs(Power/2000.0);if(f>2.5) f=2.5;
-								for (int ii = 0;ii < nn;ii++) {
+								for (int ii = 0; ii < nn; ii++) {
 									GVector rv = GVector((rand() % 100 - 50) / 2000.0f, (rand() % 100 - 50) / 2000.0f, (rand() % 100 - 50) / 2000.0f);
 									g_JetParticle->Add(g_Chip[i]->X + vv * 2 + (g_Chip[i]->V / 30 - vv)*(GFloat)ii / (GFloat)nn, vv + rv, GVector(0, 0, 0), 0.08f, a, 0.003f, GVector(1, 1, 1));
 								}
@@ -6041,10 +6090,10 @@ HRESULT CMyD3DApplication::FrameMove()
 							int nn = (int)((fabs(po) + 7900) / 8000);
 							if (nn > 0) {
 								float a = 1.0f + (rand() % 100) / 5000.0f;
-								if (a > 2.0f) a = 2.0f;else if (a <= 0.0f) a = 0.0f;
+								if (a > 2.0f) a = 2.0f; else if (a <= 0.0f) a = 0.0f;
 								GVector vv = -GVector(0, 1, 0)*g_Chip[i]->R*po / 50000.0f;
 								//if(v.abs()>0.1f) v=v.normalize()/10.0f;
-								for (int ii = 0;ii < nn;ii++) {
+								for (int ii = 0; ii < nn; ii++) {
 									g_JetParticle->Add(g_Chip[i]->X + (g_Chip[i]->V / 30 - vv)*(GFloat)ii / (GFloat)nn, vv, GVector(0, 0, 0), 0.08f, a, 0.005f, GVector(1, 1, 1));
 								}
 							}
@@ -6055,7 +6104,7 @@ HRESULT CMyD3DApplication::FrameMove()
 								float a = 1.0f;
 								GVector vv = -GVector(0, 1, 0)*g_Chip[i]->R*po / 50000.0f;
 								//if(v.abs()>0.1f) v=v.normalize()/10.0f;
-								for (int ii = 0;ii < nn;ii++) {
+								for (int ii = 0; ii < nn; ii++) {
 									g_JetParticle->Add(g_Chip[i]->X + (g_Chip[i]->V / 30 - vv)*(GFloat)ii / (GFloat)nn, vv, GVector(0, 0, 0), 0.01f, a, 0.000f, GVector(1, 1, 1));
 								}
 							}
@@ -6066,19 +6115,19 @@ HRESULT CMyD3DApplication::FrameMove()
 		}
 		if (hMidiOut != NULL && SoundType == 1) {
 			if (s_TotalPower > 0.1f) {
-				if (!preSound) {
+				if (!this->m_preSound) {
 					//音を鳴らす(0x9n,音程,強さ,0) nはチャンネル(0～0xF)
 					long msg = MAKELONG(MAKEWORD(0x90, 80), MAKEWORD(0x1f, 0));
 					midiOutShortMsg(hMidiOut, msg); // Note On
 				}
-				preSound = true;
+				this->m_preSound = true;
 			}
 			else {
 				//		m_fSoundPlayRepeatCountdown=0.0f;
-						//音を止める(0x9n,音程,00,0) nはチャンネル(0～0xF) 
+				//音を止める(0x9n,音程,00,0) nはチャンネル(0～0xF) 
 				long msg = MAKELONG(MAKEWORD(0x90, 80), MAKEWORD(0x00, 0));
 				midiOutShortMsg(hMidiOut, msg); // Note Off
-				preSound = false;
+				this->m_preSound = false;
 			}
 		}
 
@@ -6091,7 +6140,7 @@ HRESULT CMyD3DApplication::FrameMove()
 		}
 		//if(g_World->MainStepCount<0) Resize3DEnvironment();
 		int crush = g_World->Rigid[0]->Crush;
-		g_World->Move(m_UserInput.bButtonReset || m_UserInput.bButtonInit);
+		g_World->Move(this->m_UserInput.bButtonReset || m_UserInput.bButtonInit);
 		MoveEnd = true;
 		if (crush == false && g_World->Rigid[0]->Crush) { //死んだ
 			if (g_DPlay->GetNumPlayers() > 0) {	//初期化を送信する
@@ -6105,9 +6154,9 @@ HRESULT CMyD3DApplication::FrameMove()
 		}
 		if (hMidiOut != NULL && SoundType == 1) {
 
-			soundCount--;
-			if (soundCount < 0) soundCount = 0;
-			if (g_Chip[0]->TotalHitCount>0 && soundCount == 0) {
+			this->m_soundCount--;
+			if (this->m_soundCount < 0) this->m_soundCount = 0;
+			if (g_Chip[0]->TotalHitCount>0 && this->m_soundCount == 0) {
 				//		if( m_pBoundSound1 ) {
 				int db = (int)(g_Chip[0]->MaxImpulse / 3.0f + 0.5f);
 				if (db > 0x7f) db = 0x7f;
@@ -6116,7 +6165,7 @@ HRESULT CMyD3DApplication::FrameMove()
 					midiOutShortMsg(hMidiOut, msg); // Note On
 					msg = MAKELONG(MAKEWORD(0x99, 42), MAKEWORD((db * 2 / 5), 0));
 					midiOutShortMsg(hMidiOut, msg); // Note On
-					soundCount = 2;
+					this->m_soundCount = 2;
 				}
 				//		}
 			}
@@ -6133,6 +6182,110 @@ HRESULT CMyD3DApplication::FrameMove()
 		}
 		s_TickCount++;
 		s_SystemTickCount++;
+	}
+	return S_OK;
+}
+HRESULT CMyD3DApplication::_update_system_input()
+{
+	POINT pos;
+	CtrlKey = GetAsyncKeyState(VK_CONTROL) != 0;
+	MouseL = GetAsyncKeyState(VK_LBUTTON) != 0;
+	MouseR = GetAsyncKeyState(VK_RBUTTON) != 0;
+	MouseM = GetAsyncKeyState(VK_MBUTTON) != 0;
+	GetCursorPos(&pos);
+	ScreenToClient(this->m_hWnd, &pos);
+	MouseX = pos.x;
+	MouseY = pos.y;
+	return S_OK;
+}
+//-----------------------------------------------------------------------------
+// Name: FrameMove()
+// Desc: Called once per frame, the call is the entry point for animating
+//       the scene.
+//-----------------------------------------------------------------------------
+HRESULT CMyD3DApplication::FrameMove()
+{
+	HRESULT hr;
+	DWORD t = timeGetTime();
+	if (FAILED(hr=_record()))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _show_network()))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _check_FPS_setting()))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _update_information(t)))
+	{
+		return hr;
+	}
+	
+	if (g_World->NetStop) return S_OK;
+
+	_update_system_input();
+	bool tempMoveEnd = MoveEnd;
+
+	if (FAILED(hr = _send_network_bullet(t, tempMoveEnd)))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _send_network_explosion(t, tempMoveEnd)))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _send_network_scenario_message(t, tempMoveEnd)))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _send_network_model_full(t, tempMoveEnd)))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _send_network_model_short(t, MoveEnd)))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _check_checkpoint()))
+	{
+		return hr;
+	}	
+	// Update user input state
+	if (InputCancel == false) UpdateInput(&m_UserInput);else { DummyInput(&m_UserInput);InputCancel = false; }
+	if (FAILED(hr = _acquire_user_input()))
+	{
+		return hr;
+	}
+	else if (hr == 1)//Log開くのに成功した場合、1を返すので、此処から先の処理をスキップしてリターンする
+	{
+		return S_OK;
+	}
+	if (FAILED(hr = _display_data()))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _display_extra_data()))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _acquire_user_model_input()))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _update_keys()))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _update_vals()))
+	{
+		return hr;
+	}
+	if (FAILED(hr = _apply_vals()))
+	{
+		return hr;
 	}
 	MsgFlag = false;
 	return S_OK;
