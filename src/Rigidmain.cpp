@@ -794,7 +794,7 @@ void PlayersInfoDisp() {
 
 int ishex(int c)
 {
-	return isdigit(c)||c=='A' || c=='B' || c=='C' || c=='D' || c=='E' || c=='F';
+	return isdigit(c)||c=='A' || c=='B' || c=='C' || c=='D' || c=='E' || c=='F' ||c=='a' || c=='b' || c=='c' || c=='d' || c=='e' || c=='f';
 }
 
 int ishexstr(char *s)
