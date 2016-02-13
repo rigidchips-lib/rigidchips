@@ -1712,14 +1712,17 @@ void GWorld::CalcLink(GRigid* rigidA)
 		if (Alt) k = j;else k = rigidA->ChildCount - 1 - j;
 		l = &rigidA->Child[k];
 		GRigid *rigidB = l->RigidB;
+		GFloat flk;
 		if (rigidB && rigidB->ChipType != GT_COWL) {
 			CalcLink(rigidB); //switch•¶‚æ‚èŒã‚Ì‚ªˆÀ’è‚·‚é ‚ªU“®‚ð‹N‚±‚·
 			switch (l->Type) {
 			case 0:
-				f = CalcJoint(rigidA, l->OffsetA, rigidB, l->OffsetB, l->FrictionK) / 1.2f;
+				flk = l->FrictionK >= 0 ? l->FrictionK : 0;
+				f = CalcJoint(rigidA, l->OffsetA, rigidB, l->OffsetB, flk) / 1.2f;
 				break;
 			case 1:
-				f = CalcShaft(rigidA, l->OffsetA, rigidB, l->OffsetB, l->Axis, l->FrictionK) / 2.5f;
+				flk = l->FrictionK >= 0 ? l->FrictionK : 0;
+				f = CalcShaft(rigidA, l->OffsetA, rigidB, l->OffsetB, l->Axis, flk) / 2.5f;
 				break;
 			case 2:
 				f = CalcHinge(rigidA, l->OffsetA, rigidB, l->OffsetB, l->Axis, l->Angle, l->SpringK, l->DamperK) / 1.2f;
