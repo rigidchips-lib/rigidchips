@@ -1165,11 +1165,6 @@ int luaSystemPrint(lua_State *L)
 int LoadSystem(char *fileName) {
 	FILE *fp;
 	if ((fp = fopen(fileName, "r")) != NULL) {
-		char *p = fileName + strlen(fileName);
-		for(;(*p!='\\'&&*p!='/')||(*p=='\\'&&*(p-1)<0);p--);
-		p++;
-		strcpy(szSystemFileName0,p);
-		
 		/*　ファイルの長さを調べる　*/
 		fseek(fp, 0, SEEK_SET);
 		int start_pos = ftell(fp);
