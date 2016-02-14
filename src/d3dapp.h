@@ -145,7 +145,7 @@ protected:
 	HRESULT ForceWindowed();
 	HRESULT UserSelectNewDevice();
 	VOID    Cleanup3DEnvironment();
-	//HRESULT Render3DEnvironment();
+	HRESULT Render3DEnvironment();
 	virtual HRESULT AdjustWindowForChange();
 	static INT_PTR CALLBACK SelectDeviceProc(HWND hDlg, UINT msg,
 		WPARAM wParam, LPARAM lParam);
@@ -158,7 +158,6 @@ public:
 	LPDIRECT3D8       m_pD3D;              // The main D3D object
 	LPDIRECT3DDEVICE8 m_pd3dDevice;        // The D3D rendering device
 	D3DCAPS8          m_d3dCaps;           // Caps for the device
-	HRESULT Render3DEnvironment();
 protected:
 	D3DSURFACE_DESC   m_d3dsdBackBuffer;   // Surface desc of the backbuffer
 	DWORD             m_dwCreateFlags;     // Indicate sw or hw vertex processing
