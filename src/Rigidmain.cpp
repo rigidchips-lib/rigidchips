@@ -5466,6 +5466,9 @@ HRESULT CMyD3DApplication::_acquire_user_input()
 
 			lstrcpy(s_CurrDataDir, szDrive);
 			lstrcat(s_CurrDataDir, szPath);
+			
+			lstrcpy(szSystemFileName0,szTitle);
+			lstrcat(szSystemFileName0,szExt);
 
 			_tcscpy(s_CurrScenarioDir, s_CurrDataDir);
 			luaSystemInit();
