@@ -402,16 +402,19 @@ int luaAddBall(lua_State *L)
 	float z = (float)lua_tonumber(L, 4);
 	float d = (float)lua_tonumber(L, 5);
 
-	GRigid *rg = g_World->AddObject(GTYPE_BALL, false, r * 2, r * 2, r * 2, d);
-	if (rg) {
-		rg->X.x = x;
-		rg->X.y = y;
-		rg->X.z = z;
-		rg->Ux = 0.002f;
-		rg->RSet();
-		rg->CalcTotalCenter();
-		//	ObjectBallFlag=TRUE;
-		lua_pushnumber(L, rg->ID);
+	if(d > 0) {
+		GRigid *rg = g_World->AddObject(GTYPE_BALL, false, r * 2, r * 2, r * 2, d);
+		if (rg) {
+			rg->X.x = x;
+			rg->X.y = y;
+			rg->X.z = z;
+			rg->Ux = 0.002f;
+			rg->RSet();
+			rg->CalcTotalCenter();
+			//	ObjectBallFlag=TRUE;
+			lua_pushnumber(L, rg->ID);
+		}
+		else lua_pushnumber(L, -1);
 	}
 	else lua_pushnumber(L, -1);
 	return 1;
