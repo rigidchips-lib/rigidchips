@@ -67,9 +67,6 @@
     <ClInclude Include="src\GVector.hpp">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Land.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\luaScript.hpp">
       <Filter>src</Filter>
     </ClInclude>

@@ -194,7 +194,6 @@
     <ClInclude Include="src\GPlayers.h" />
     <ClInclude Include="src\GRigid.hpp" />
     <ClInclude Include="src\GVector.hpp" />
-    <ClInclude Include="src\Land.h" />
     <ClInclude Include="src\luaScript.hpp" />
     <ClInclude Include="src\luaSub.hpp" />
     <ClInclude Include="src\luaSystem.hpp" />
