@@ -347,6 +347,8 @@ int luaLoadLand(lua_State *L)
 			g_Chip[0]->R = GMatrix33();
 			g_World->RestoreLink(g_Chip[0], g_Chip[0]);
 			if (g_Chip[0]->X.y <= -100000.0f)g_Chip[0]->X.y = 0.0f;
+			g_pLandMesh->InvalidateDeviceObjects();
+ 			g_pLandMesh->RestoreDeviceObjects(g_D3DDevice);
 		}
 	}
 	g_World->MainStepCount = -1;
@@ -1169,11 +1171,6 @@ int luaSystemPrint(lua_State *L)
 int LoadSystem(char *fileName) {
 	FILE *fp;
 	if ((fp = fopen(fileName, "r")) != NULL) {
-		char *p = fileName + strlen(fileName);
-		for(;(*p!='\\'&&*p!='/')||(*p=='\\'&&*(p-1)<0);p--);
-		p++;
-		strcpy(szSystemFileName0,p);
-		
 		/*　ファイルの長さを調べる　*/
 		fseek(fp, 0, SEEK_SET);
 		int start_pos = ftell(fp);
