@@ -82,9 +82,6 @@
     <ClInclude Include="src\readData.hpp">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\readLand.hpp">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\readSub.hpp">
       <Filter>src</Filter>
     </ClInclude>
@@ -150,9 +147,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\readdata.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\readLand.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\readSub.cpp">

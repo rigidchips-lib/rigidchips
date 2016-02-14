@@ -25,7 +25,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -63,6 +63,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <SourcePath>src;$(VC_SourcePath);</SourcePath>
+    <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
@@ -198,7 +199,6 @@
     <ClInclude Include="src\luaSub.hpp" />
     <ClInclude Include="src\luaSystem.hpp" />
     <ClInclude Include="src\readData.hpp" />
-    <ClInclude Include="src\readLand.hpp" />
     <ClInclude Include="src\readSub.hpp" />
     <ClInclude Include="src\resource.h" />
     <ClInclude Include="src\Rigidmain.h" />
@@ -223,7 +223,6 @@
     <ClCompile Include="src\luaSub.cpp" />
     <ClCompile Include="src\luaSystem.cpp" />
     <ClCompile Include="src\readdata.cpp" />
-    <ClCompile Include="src\readLand.cpp" />
     <ClCompile Include="src\readSub.cpp" />
     <ClCompile Include="src\Rigidmain.cpp" />
     <ClCompile Include="src\script.cpp" />
