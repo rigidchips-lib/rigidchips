@@ -1141,6 +1141,7 @@ int luaSystemPrint(lua_State *L)
 	int a = (int)lua_tonumber(L, 1);
 	int i;
 	char str[256];
+	if(a >= GOUTPUTMAX || a < 0) return 0;
 	SystemOutput[a][0] = '\0';
 	for (i = 2; i <= n; i++) {
 		if (lua_isnumber(L, i)) {
@@ -1158,7 +1159,7 @@ int luaSystemPrint(lua_State *L)
 		else {
 			sprintf(str, "%s:%p", lua_typename(L, lua_type(L, i)), lua_topointer(L, i));
 		}
-		if(a < GOUTPUTMAX && a >= 0) strcat(SystemOutput[a], str);
+		strcat(SystemOutput[a], str);
 	}
 	return 0;
 }
