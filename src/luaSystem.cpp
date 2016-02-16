@@ -316,7 +316,7 @@ int luaLoadLand(lua_State *L)
 	if (strcmp(szLandFileName0, str) != 0) {
 		char *s = SearchFolder(GetCurrentDataDir(), str, st);
 		if (s == NULL) {
-			char *s = SearchFolder(GetDataDir(), str, st);
+			s = SearchFolder(GetDataDir(), str, st);
 			if (s == NULL) {
 				s = SearchFolder(GetResourceDir(), str, st);
 				if (s == NULL) {
