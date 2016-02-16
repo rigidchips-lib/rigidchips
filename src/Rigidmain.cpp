@@ -791,6 +791,18 @@ void PlayersInfoDisp() {
 		SendMessage(GetDlgItem(NetworkDlg, IDC_PLAYERLIST), WM_SETREDRAW, TRUE, 0);
 	}
 }
+
+int ishex(int c)
+{
+	return isdigit(c)||c=='A' || c=='B' || c=='C' || c=='D' || c=='E' || c=='F' ||c=='a' || c=='b' || c=='c' || c=='d' || c=='e' || c=='f';
+}
+
+int ishexstr(char *s)
+{
+	for(;*s!=0;s++) if(!ishex(*s)) return 0;
+	return 1;
+}
+
 HRESULT MyCreateFunc(MYAPP_PLAYER_INFO* playerInfo) {
 	HRESULT hr = S_OK;
 
@@ -808,11 +820,12 @@ HRESULT MyCreateFunc(MYAPP_PLAYER_INFO* playerInfo) {
 			g_PlayerData[i].ReceiveData.info.dpnidPlayer = dpnid[i];
 			g_DPlay->GetPlayersName(dpnid[i], g_PlayerData[i].ReceiveData.info.strPlayerName);
 			TCHAR* strLastSharp = _tcsrchr(g_PlayerData[i].ReceiveData.info.strPlayerName, TEXT('#'));
+			g_PlayerData[i].ReceiveData.info.color = 0xffffff;
 			if (strLastSharp == NULL) {
 				g_PlayerData[i].ReceiveData.info.color = 0xffffff;
 			}
 			else {
-				sscanf(strLastSharp + 1, "%x", &g_PlayerData[i].ReceiveData.info.color);
+				if(ishexstr(strLastSharp + 1) && strlen(strLastSharp + 1) <= 6) sscanf(strLastSharp + 1, "%x", &g_PlayerData[i].ReceiveData.info.color);
 				*strLastSharp = '\0';
 			}
 		}
@@ -834,11 +847,12 @@ HRESULT MyDestroyFunc(MYAPP_PLAYER_INFO* playerInfo) {
 			g_PlayerData[i].ReceiveData.info.dpnidPlayer = dpnid[i];
 			g_DPlay->GetPlayersName(dpnid[i], g_PlayerData[i].ReceiveData.info.strPlayerName);
 			TCHAR* strLastSharp = _tcsrchr(g_PlayerData[i].ReceiveData.info.strPlayerName, TEXT('#'));
+			g_PlayerData[i].ReceiveData.info.color = 0xffffff;
 			if (strLastSharp == NULL) {
 				g_PlayerData[i].ReceiveData.info.color = 0xffffff;
 			}
 			else {
-				sscanf(strLastSharp + 1, "%x", &g_PlayerData[i].ReceiveData.info.color);
+				if(ishexstr(strLastSharp + 1) && strlen(strLastSharp + 1) <= 6) sscanf(strLastSharp + 1, "%x", &g_PlayerData[i].ReceiveData.info.color);
 				*strLastSharp = '\0';
 			}
 		}
@@ -5452,6 +5466,9 @@ HRESULT CMyD3DApplication::_acquire_user_input()
 
 			lstrcpy(s_CurrDataDir, szDrive);
 			lstrcat(s_CurrDataDir, szPath);
+			
+			lstrcpy(szSystemFileName0,szTitle);
+			lstrcat(szSystemFileName0,szExt);
 
 			_tcscpy(s_CurrScenarioDir, s_CurrDataDir);
 			luaSystemInit();

@@ -4,7 +4,7 @@
 const int GCHIPMAX = 512;
 
 //最大オブジェクト数(e.g. ball)
-const int GOBJMAX = 2;
+const int GOBJMAX = 20;
 //生やせる子チップの最大数
 const int GCHILDMAX = 12;
 
