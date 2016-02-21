@@ -1992,7 +1992,7 @@ void GWorld::Move(bool initFlag)
 				for (j = 0;j < g_World->getChipCount();j++) {
 					if (g_Bullet->Vertex[i].Rigid != Rigid[j] && Rigid[j]->ChipType != 9 && (Rigid[j]->ChipType < 32 || myrand() % 100 >= 70)) {
 						t = Rigid[j]->X.distanceOnBallAndLine(0.3f, g_Bullet->Vertex[i].Pos, g_Bullet->Vertex[i].Vec.normalize2());
-						if (t >= 0 && t < g_Bullet->Vertex[i].Vec.abs() && t < t2) {
+						if(t>=0 && t<g_Bullet->Vertex[i].Vec.abs() && t<g_Bullet->Vertex[i].Dist && t<t2) {
 							t2 = t;
 							r = Rigid[j];
 						}
