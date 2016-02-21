@@ -2596,17 +2596,6 @@ void GWorld::DispNetChipInfo(int n, float zz)
 		}
 		l = l*0.25f;
 		D3DXMatrixScaling(&smat, l, l, l);
-		vmat = GMatView;
-		vmat._41 = 0.0f; vmat._42 = 0.0f; vmat._43 = 0.0f;
-		D3DXMatrixInverse(&vmat, NULL, &vmat);
-		vmat2 = vmat;
-		D3DXMatrixTranslation(&mat, x, y + 0.5f*l, z);
-		D3DXMatrixMultiply(&vmat, &vmat, &mat);
-		D3DXMatrixMultiply(&vmat, &vmat, &GMatWorld);
-
-		D3DXMatrixTranslation(&mat, x, y + 0.3f*l, z);
-		D3DXMatrixMultiply(&vmat2, &vmat2, &mat);
-		D3DXMatrixMultiply(&vmat2, &vmat2, &GMatWorld);
 		D3DXMatrixMultiply(&mat, &smat, &vmat2);
 		g_D3DDevice->SetTransform(D3DTS_WORLD, &mat);
 
