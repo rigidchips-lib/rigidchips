@@ -2542,7 +2542,13 @@ void GWorld::DispNetChipInfo(int n, float zz)
 	float y = hy + 1.2f;
 	float z = g_PlayerData[n].z;
 	GVector infoV = GVector(x, y, z);
-	float l;
+	float l = 0.0f, l2 = 0.0f;
+
+	vmat = GMatView;
+	vmat._41 = 0.0f; vmat._42 = 0.0f; vmat._43 = 0.0f;
+	D3DXMatrixInverse(&vmat, NULL, &vmat);
+	vmat2 = vmat;
+
 	if (g_MarkerSize != 0.0f) {
 		if (g_MarkerSize < 1.5) {
 			l = zz*0.1f*g_MarkerSize;
@@ -2551,22 +2557,14 @@ void GWorld::DispNetChipInfo(int n, float zz)
 			l = zz;
 			if (l < 50.0f) l = 1.0f;else l = l / 50.0f;
 		}
+		l2 = l;
 		D3DXMatrixScaling(&smat, l, l, l);
-		vmat = GMatView;
-		vmat._41 = 0.0f; vmat._42 = 0.0f; vmat._43 = 0.0f;
-		D3DXMatrixInverse(&vmat, NULL, &vmat);
-		vmat2 = vmat;
 		D3DXMatrixTranslation(&mat, x, y + 0.5f*l, z);
 		D3DXMatrixMultiply(&vmat, &vmat, &mat);
 		D3DXMatrixMultiply(&vmat, &vmat, &GMatWorld);
-
-		D3DXMatrixTranslation(&mat, x, y + 0.3f*l, z);
-		D3DXMatrixMultiply(&vmat2, &vmat2, &mat);
-		D3DXMatrixMultiply(&vmat2, &vmat2, &GMatWorld);
-
-
 		D3DXMatrixMultiply(&mat, &smat, &vmat);
 		g_D3DDevice->SetTransform(D3DTS_WORLD, &mat);
+
 		DWORD col = g_PlayerData[n].ReceiveData.info.color;
 		float r1 = (col >> 16) / 255.0f;
 		float g1 = ((col >> 8) & 0xff) / 255.0f;
@@ -2596,6 +2594,9 @@ void GWorld::DispNetChipInfo(int n, float zz)
 		}
 		l = l*0.25f;
 		D3DXMatrixScaling(&smat, l, l, l);
+		D3DXMatrixTranslation(&mat, x, y + 0.3f*l2, z);
+		D3DXMatrixMultiply(&vmat2, &vmat2, &mat);
+		D3DXMatrixMultiply(&vmat2, &vmat2, &GMatWorld);
 		D3DXMatrixMultiply(&mat, &smat, &vmat2);
 		g_D3DDevice->SetTransform(D3DTS_WORLD, &mat);
 
