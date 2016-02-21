@@ -2531,6 +2531,7 @@ void GWorld::DispNetChipInfo(int n, float zz)
 	if (g_PlayerData[n].ReceiveData.info.dpnidPlayer == 0) return;
 	if (g_PlayerData[n].ReceiveData.size == 0) return;
 	if (zz <= 0) return;
+	if (g_MarkerSize == 0 && g_NameSize == 0)return;
 	D3DXMATRIX smat, mat, vmat, vmat2;
 	g_D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 	g_D3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
