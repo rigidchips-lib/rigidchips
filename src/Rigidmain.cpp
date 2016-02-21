@@ -2573,6 +2573,7 @@ void GWorld::DispNetChipInfo(int n, float zz)
 		mesh->Render(g_D3DDevice);
 	}
 	if (g_NameSize != 0.0f) {
+		float l2 = l;
 		if (g_NameSize < 1.5) {
 			l = zz*0.1f*g_NameSize;
 		}
@@ -2586,11 +2587,11 @@ void GWorld::DispNetChipInfo(int n, float zz)
 		vmat._41 = 0.0f; vmat._42 = 0.0f; vmat._43 = 0.0f;
 		D3DXMatrixInverse(&vmat, NULL, &vmat);
 		vmat2 = vmat;
-		D3DXMatrixTranslation(&mat, x, y + 0.5f*l, z);
+		D3DXMatrixTranslation(&mat, x, y + 0.5f*l2, z);
 		D3DXMatrixMultiply(&vmat, &vmat, &mat);
 		D3DXMatrixMultiply(&vmat, &vmat, &GMatWorld);
 
-		D3DXMatrixTranslation(&mat, x, y + 0.3f*l, z);
+		D3DXMatrixTranslation(&mat, x, y + 0.3f*l2, z);
 		D3DXMatrixMultiply(&vmat2, &vmat2, &mat);
 		D3DXMatrixMultiply(&vmat2, &vmat2, &GMatWorld);
 		D3DXMatrixMultiply(&mat, &smat, &vmat2);
