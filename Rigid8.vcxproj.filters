@@ -67,9 +67,6 @@
     <ClInclude Include="src\GVector.hpp">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Land.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\luaScript.hpp">
       <Filter>src</Filter>
     </ClInclude>
@@ -80,9 +77,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\readData.hpp">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\readLand.hpp">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\readSub.hpp">
@@ -150,9 +144,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\readdata.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\readLand.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\readSub.cpp">

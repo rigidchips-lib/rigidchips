@@ -316,7 +316,7 @@ int luaLoadLand(lua_State *L)
 	if (strcmp(szLandFileName0, str) != 0) {
 		char *s = SearchFolder(GetCurrentDataDir(), str, st);
 		if (s == NULL) {
-			char *s = SearchFolder(GetDataDir(), str, st);
+			s = SearchFolder(GetDataDir(), str, st);
 			if (s == NULL) {
 				s = SearchFolder(GetResourceDir(), str, st);
 				if (s == NULL) {
@@ -347,6 +347,8 @@ int luaLoadLand(lua_State *L)
 			g_Chip[0]->R = GMatrix33();
 			g_World->RestoreLink(g_Chip[0], g_Chip[0]);
 			if (g_Chip[0]->X.y <= -100000.0f)g_Chip[0]->X.y = 0.0f;
+			g_pLandMesh->InvalidateDeviceObjects();
+			g_pLandMesh->RestoreDeviceObjects(g_D3DDevice);
 		}
 	}
 	g_World->MainStepCount = -1;
@@ -402,16 +404,19 @@ int luaAddBall(lua_State *L)
 	float z = (float)lua_tonumber(L, 4);
 	float d = (float)lua_tonumber(L, 5);
 
-	GRigid *rg = g_World->AddObject(GTYPE_BALL, false, r * 2, r * 2, r * 2, d);
-	if (rg) {
-		rg->X.x = x;
-		rg->X.y = y;
-		rg->X.z = z;
-		rg->Ux = 0.002f;
-		rg->RSet();
-		rg->CalcTotalCenter();
-		//	ObjectBallFlag=TRUE;
-		lua_pushnumber(L, rg->ID);
+	if(d > 0) {
+		GRigid *rg = g_World->AddObject(GTYPE_BALL, false, r * 2, r * 2, r * 2, d);
+		if (rg) {
+			rg->X.x = x;
+			rg->X.y = y;
+			rg->X.z = z;
+			rg->Ux = 0.002f;
+			rg->RSet();
+			rg->CalcTotalCenter();
+			//	ObjectBallFlag=TRUE;
+			lua_pushnumber(L, rg->ID);
+		}
+		else lua_pushnumber(L, -1);
 	}
 	else lua_pushnumber(L, -1);
 	return 1;
@@ -1141,6 +1146,7 @@ int luaSystemPrint(lua_State *L)
 	int a = (int)lua_tonumber(L, 1);
 	int i;
 	char str[256];
+	if(a >= GOUTPUTMAX || a < 0) return 0;
 	SystemOutput[a][0] = '\0';
 	for (i = 2; i <= n; i++) {
 		if (lua_isnumber(L, i)) {
