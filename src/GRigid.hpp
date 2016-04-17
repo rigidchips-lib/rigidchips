@@ -256,7 +256,7 @@ public:
 	void AddViewModel();
 	void Disp();
 	void DispObject();
-	void DispJet(LPDIRECT3DDEVICE8 g_D3DDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag);
+	void DispJet(LPDIRECT3DDEVICE9 g_D3DDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag);
 	void DispShadow();
 	GMatrix33	CalcMassMat(GVector &p);
 	void CalcTotalFuel(void);
@@ -348,7 +348,7 @@ public:
 	void ObjectDisp();
 	void DispNetJetAll();
 	void DispNetJet(int type, GMatrix tm, float f, int dir);
-	void DispJet(LPDIRECT3DDEVICE8 g_D3DDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag);
+	void DispJet(LPDIRECT3DDEVICE9 g_D3DDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag);
 	void CheckJoint(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVector &offsetB);
 	void CheckShaft(GRigid* rigidA, GVector &offsetA, GRigid* rigidB, GVector &offsetB, GVector &axis);
 	void CheckLink(GRigid* rigidA);

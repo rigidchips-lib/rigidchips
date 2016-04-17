@@ -7,7 +7,7 @@
 #include <dplay8.h>
 //#include <dplobby8.h>
 #include <dplobby.h>
-#include <dxerr8.h>
+#include <dxerr9.h>
 #include <locale.h>
 
 //メモリリーク検出用

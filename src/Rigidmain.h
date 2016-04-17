@@ -12,8 +12,8 @@
 #include <basetsd.h>
 #include <math.h>
 #include <stdio.h>
-#include <D3DX8.h>
-#include <DXErr8.h>
+#include <D3DX9.h>
+#include <DXErr9.h>
 #include <tchar.h>
 #include <dinput.h>
 #include "D3DApp.h"
@@ -141,7 +141,7 @@ public:
 
 	CInputDeviceManager*    m_pInputDeviceManager;  // DirectInput device manager
 	DIACTIONFORMAT          m_diafGame;             // Action format for game play
-	LPDIRECT3DSURFACE8      m_pDIConfigSurface;     // Surface for config'ing DInput devices
+	LPDIRECT3DSURFACE9      m_pDIConfigSurface;     // Surface for config'ing DInput devices
 	UserInput               m_UserInput;            // Struct for storing user input 
 
 	FLOAT                   m_fSoundPlayRepeatCountdown; // Sound repeat timer
@@ -173,7 +173,7 @@ protected:
 	HRESULT Render();
 	HRESULT FrameMove();
 	HRESULT FinalCleanup();
-	HRESULT ConfirmDevice(D3DCAPS8*, DWORD, D3DFORMAT);
+	HRESULT ConfirmDevice(D3DCAPS9*, DWORD, D3DFORMAT);
 
 	HRESULT RenderText();
 
