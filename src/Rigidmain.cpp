@@ -8253,17 +8253,15 @@ HRESULT CMyD3DApplication::RenderText()
 			if (japan) {
 				RECT rc = { left + 16,top + (int)fNextLine,16 * 40,16 };
 				rc.left = left + 17;rc.top = top + (int)fNextLine + 1;
-				LPD3DXSPRITE p_splite;
-				D3DXCreateSprite(g_D3DDevice, &p_splite);
-				g_pFont->DrawText(p_splite, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
 				rc.left = left + 15;rc.top = top + (int)fNextLine - 1;
-				g_pFont->DrawText(p_splite, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
 				rc.left = left + 17;rc.top = top + (int)fNextLine - 1;
-				g_pFont->DrawText(p_splite, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
 				rc.left = left + 15;rc.top = top + (int)fNextLine + 1;
-				g_pFont->DrawText(p_splite, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
 				rc.left = left + 16;rc.top = top + (int)fNextLine;
-				g_pFont->DrawText(p_splite, szMsg, -1, &rc, DT_NOCLIP, fontColor);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor);
 			}
 			else {
 				m_pFont->DrawText((float)left + 17, top + fNextLine + 1, fontColor2, szMsg);
@@ -8312,18 +8310,16 @@ HRESULT CMyD3DApplication::RenderText()
 			}
 			if (japan) {
 				RECT rc = { 16,(long)fNextLine,16 * 40,16 };
-				LPD3DXSPRITE p_splite;
-				D3DXCreateSprite(g_D3DDevice, &p_splite);
 				rc.left = 17;rc.top = (long)fNextLine + 1;
-				g_pFont->DrawText(p_splite, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
 				rc.left = 15;rc.top = (long)fNextLine - 1;
-				g_pFont->DrawText(p_splite, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
 				rc.left = 17;rc.top = (long)fNextLine - 1;
-				g_pFont->DrawText(p_splite, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
 				rc.left = 15;rc.top = (long)fNextLine + 1;
-				g_pFont->DrawText(p_splite, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
 				rc.left = 16;rc.top = (long)fNextLine;
-				g_pFont->DrawText(p_splite, szMsg, -1, &rc, DT_NOCLIP, fontColor);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor);
 			}
 			else {
 				m_pFont->DrawText(17, fNextLine + 1, fontColor2, szMsg);
