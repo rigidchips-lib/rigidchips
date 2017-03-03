@@ -2675,43 +2675,45 @@ void GRigid::DispShadow()
 	if (ShowShadowFlag && (Type == GTYPE_DISK || Type == GTYPE_FACE || Type == GTYPE_BALL)) {
 		static GVector sv1[GCHIPMAX * 2], sv2[GCHIPMAX * 2];
 		int sn2;
-		g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// カリングモード
 		g_D3DDevice->SetStreamSource(0, pPointVB, sizeof(D3DPOINTVERTEX));
 		g_D3DDevice->SetVertexShader(D3DFVF_POINTVERTEX);
 		g_D3DDevice->SetTexture(0, NULL);
+		g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// カリングモード
 		g_D3DDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 		g_D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 		g_D3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 		g_D3DDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESS);
-		D3DPOINTVERTEX* p2V;
+#define ShadowVertexMax 256 //Shape.PointNの最大値だけあれば足りる気はする(30くらい?)
+		D3DPOINTVERTEX ShadowVertexTable[ShadowVertexMax]; //頂点ﾊﾞｯﾌｧ
+		int ShadowVertexTable_n = 0;
 		g_D3DDevice->SetTransform(D3DTS_WORLD, &GMatWorld);
 		GVector n = GVector(0, 1, 0.5f).normalize2();
-		int lc = g_World->Land->List2Count;
-		int *list = g_World->Land->List2;
-		if (FastShadow) {
-			g_World->Land->List1up(Top->TotalCenter, Top->TotalRadius);
-			lc = g_World->Land->List1Count;
-			list = g_World->Land->List1;
 
+		World->Land->List1up(X - GVector(0, 10.0f / 2, 0), Radius + 10.0f / 2);
+		int *list = World->Land->List1;
+		int lc = World->Land->List1Count; //ほんとは参照型にすべき
+		if (FastShadow) {
+			World->Land->List1up(X - GVector(0, 3.0f / 2, 0), Radius + 3.0f / 2);
+			lc = World->Land->List1Count;
 		}
 		FLOAT f = (FLOAT)(pow((double)fabs((double)Power), 1.0 / 3.0) / 5.0);
-		if (f < 0.5f) f = 0.5f;
+		if (f<0.5f) f = 0.5f;
 		GMatrix m1 = GMatrix().scale(GVector(f, f, f)).translate(X);
 		GMatrix m2 = GMatrix().translate(X);
-		for (int i = 0;i < lc;i++) {
-			GVector norm = g_World->Land->Face[list[i]].Normal;
+		for (int i = 0; i<lc; i++) {
+			GVector norm = World->Land->Face[list[i]].Normal;
 			GVector norm0 = norm / 100.0f;
-			GVector vert = g_World->Land->Face[list[i]].Vertex[0];
+			GVector vert = World->Land->Face[list[i]].Vertex[0];
 			bool flag = false;
 			GFloat tmin = 0.1f;
 			int jj = 0;
-			for (int j = 0;j < Shape.PointN - 1;j++) {
+			for (int j = 0; j<Shape.PointN - 1; j++) {
 				if (ChipType == 7 && (Option == 1 || Option == 2)) { //気球
 					GVector v = Shape.Point[j] * m1;
 					GFloat t = v.distanceOnFaceAndLine(norm, vert, n);
-					if (t > 0.1) { flag = true;break; }
-					if (t < -1000000) t = -1000000;
-					if (t < tmin) tmin = t;
+					if (t>0.1) { flag = true; break; }
+					if (t<-1000000) t = -1000000;
+					if (t<tmin) tmin = t;
 					sv1[jj] = n*t + v + norm0;
 					sv1[jj].y -= 0.01f;
 					jj++;
@@ -2719,9 +2721,9 @@ void GRigid::DispShadow()
 				else if (Type == GTYPE_DISK) {
 					GVector v = Shape.Point[j] * TM;
 					GFloat t = v.distanceOnFaceAndLine(norm, vert, n);
-					if (t > 0.1) { flag = true;break; }
-					if (t < -1000000) t = -1000000;
-					if (t < tmin) tmin = t;
+					if (t>0.1) { flag = true; break; }
+					if (t<-1000000) t = -1000000;
+					if (t<tmin) tmin = t;
 					sv1[jj] = n*t + v + norm0;
 					sv1[jj].y -= 0.01f;
 					jj++;
@@ -2729,9 +2731,9 @@ void GRigid::DispShadow()
 				else if (Type == GTYPE_BALL) {
 					GVector v = Shape.Point[j] * m2;
 					GFloat t = v.distanceOnFaceAndLine(norm, vert, n);
-					if (t > 0.1) { flag = true;break; }
-					if (t < -1000000) t = -1000000;
-					if (t < tmin) tmin = t;
+					if (t>0.1) { flag = true; break; }
+					if (t<-1000000) t = -1000000;
+					if (t<tmin) tmin = t;
 					sv1[jj] = n*t + v + norm0;
 					sv1[jj].y -= 0.01f;
 					jj++;
@@ -2740,9 +2742,9 @@ void GRigid::DispShadow()
 					if (j >= 4) break;
 					GVector v = (Shape.Point[j + 4] * TM);
 					GFloat t = v.distanceOnFaceAndLine(norm, vert, n);
-					if (t > 0.1) { flag = true;break; }
-					if (t < -1000000) t = -1000000;
-					if (t < tmin) tmin = t;
+					if (t>0.1) { flag = true; break; }
+					if (t<-1000000) t = -1000000;
+					if (t<tmin) tmin = t;
 					sv1[jj] = n*t + v + norm0;
 					sv1[jj].y -= 0.01f;
 					jj++;
@@ -2750,32 +2752,30 @@ void GRigid::DispShadow()
 			}
 			if (flag) continue;
 			if (FastShadow) {
-				if (tmin < -3) tmin = -3;
+				if (tmin<-3) tmin = -3;
 				else if (tmin>0) tmin = 0;
 				tmin = tmin / 3.0f;
 			}
 			else {
-				if (tmin < -10) tmin = -10;
+				if (tmin<-10) tmin = -10;
 				else if (tmin>0) tmin = 0;
 				tmin = tmin / 10.0f;
 			}
 			if (tmin >= 0.9999) continue;
-			g_World->Land->ClipShadow(sv1, jj, list[i], sv2, &sn2);
-			if (sn2 > 2) {
-				pPointVB->Lock(0, 0, (BYTE**)&p2V, 0);
+			World->Land->ClipShadow(sv1, jj, list[i], sv2, &sn2);
+			if (sn2>2) {
 				int col = 0x00111111 + (long)((1.0 - tmin*tmin) * 0x88) * 0x01000000;
-				for (j = 0;j < sn2;j++) {
-					p2V[j].x = (float)sv2[j].x;
-					p2V[j].y = (float)sv2[j].y;
-					p2V[j].z = (float)sv2[j].z;
-					p2V[j].color = col;
+				for (j = 0; j<sn2; j++) {
+					ShadowVertexTable[j].x = (float)sv2[j].x;
+					ShadowVertexTable[j].y = (float)sv2[j].y;
+					ShadowVertexTable[j].z = (float)sv2[j].z;
+					ShadowVertexTable[j].color = col;
 				}
-				p2V[j].x = (float)sv2[0].x;
-				p2V[j].y = (float)sv2[0].y;
-				p2V[j].z = (float)sv2[0].z;
-				p2V[j].color = col;
-				pPointVB->Unlock();
-				g_D3DDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, 0, sn2 - 2);
+				ShadowVertexTable[j].x = (float)sv2[0].x;
+				ShadowVertexTable[j].y = (float)sv2[0].y;
+				ShadowVertexTable[j].z = (float)sv2[0].z;
+				ShadowVertexTable[j].color = col;
+				g_D3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, sn2 - 2, ShadowVertexTable, sizeof(D3DPOINTVERTEX));  //ﾎﾝﾄはDrawIndexedPrimitiveUPとD3DPT_TRIANGLELISTでまとめたほうがいいね
 			}
 		}
 		//水面の影の表示
@@ -2787,16 +2787,16 @@ void GRigid::DispShadow()
 		GFloat tmin = 0.1f;
 		int jj = 0;
 		sn2 = 0;
-		float ndot = n.dot(GVector(0, -1, 0));
-		for (int j = 0;j < Shape.PointN - 1;j++) {
+		GFloat ndot = n.dot(GVector(0, -1, 0));
+		for (int j = 0; j<Shape.PointN - 1; j++) {
 			if (Type == GTYPE_DISK) {
 				GVector v = (Shape.Point[j] * TM);
 				GFloat t = (v.y - WATER_LINE)*ndot;
 
 				sv2[sn2] = v + n*t;
-				if (t > 0.01) { flag = true;break; }
-				if (t < -1000000) t = -1000000;
-				if (t < tmin) tmin = t;
+				if (t>0.01) { flag = true; break; }
+				if (t<-1000000) t = -1000000;
+				if (t<tmin) tmin = t;
 				sv2[sn2].y = WATER_LINE - 1.0f / 100.0f;
 				sn2++;
 
@@ -2807,39 +2807,37 @@ void GRigid::DispShadow()
 				GFloat t = (v.y - WATER_LINE)*ndot;
 
 				sv2[sn2] = v + n*t;
-				if (t > 0.1) { flag = true;break; }
+				if (t>0.1) { flag = true; break; }
 				if (t<-1000000) t = -1000000;
-				if (t < tmin) tmin = t;
+				if (t<tmin) tmin = t;
 				sv2[sn2].y = WATER_LINE - 1.0f / 100.0f;
 				sn2++;
 			}
 		}
-		if (sn2 > 2) {
+		if (sn2>2) {
 			if (FastShadow) {
-				if (tmin < -3) tmin = -3;
+				if (tmin<-3) tmin = -3;
 				else if (tmin>0) tmin = 0;
 				tmin = tmin / 3.0f;
 			}
 			else {
-				if (tmin < -10) tmin = -10;
+				if (tmin<-10) tmin = -10;
 				else if (tmin>0) tmin = 0;
 				tmin = tmin / 10.0f;
 			}
 			if (flag == false && tmin>-1.0) {
-				pPointVB->Lock(0, 0, (BYTE**)&p2V, 0);
 				int col = 0x00111111 + (long)((1.0 - tmin*tmin) * 0x88) * 0x01000000;
-				for (j = 0;j < sn2;j++) {
-					p2V[j].x = (float)sv2[j].x;
-					p2V[j].y = (float)sv2[j].y;
-					p2V[j].z = (float)sv2[j].z;
-					p2V[j].color = col;
+				for (j = 0; j<sn2; j++) {
+					ShadowVertexTable[j].x = (float)sv2[j].x;
+					ShadowVertexTable[j].y = (float)sv2[j].y;
+					ShadowVertexTable[j].z = (float)sv2[j].z;
+					ShadowVertexTable[j].color = col;
 				}
-				p2V[j].x = (float)sv2[0].x;
-				p2V[j].y = (float)sv2[0].y;
-				p2V[j].z = (float)sv2[0].z;
-				p2V[j].color = col;
-				pPointVB->Unlock();
-				g_D3DDevice->DrawPrimitive(D3DPT_TRIANGLEFAN, 0, sn2 - 2);
+				ShadowVertexTable[j].x = (float)sv2[0].x;
+				ShadowVertexTable[j].y = (float)sv2[0].y;
+				ShadowVertexTable[j].z = (float)sv2[0].z;
+				ShadowVertexTable[j].color = col;
+				g_D3DDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, sn2 - 2, ShadowVertexTable, sizeof(D3DPOINTVERTEX));
 			}
 		}
 	}
@@ -2848,7 +2846,6 @@ void GRigid::DispShadow()
 	g_D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	g_D3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
 	g_D3DDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
-
 }
 
 void GRigid::ApplyExtForce()
