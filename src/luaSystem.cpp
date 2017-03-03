@@ -95,7 +95,7 @@ int luaSendAllMessage(lua_State *L)
 {
 	char *str = (char *)lua_tostring(L, 1);
 	//_tcsncpy(s_MessageData, str, MESSAGEMAX);
-	SetMessageData(str);
+	SetMessageData(str, lua_strlen(L, 1));
 	return 0;
 }
 int luaReceiveMessage(lua_State *L)
@@ -105,7 +105,7 @@ int luaReceiveMessage(lua_State *L)
 		lua_pushstring(L, "");
 		return 1;
 	}
-	lua_pushstring(L, GetMessageData(no));//s_RecieaveMessageData[no]);
+	lua_pushlstring(L, GetMessageData(no), GetMessageLen(no));//s_RecieaveMessageData[no]);
 	return 1;
 }
 int luaReceiveMessageClear(lua_State *L)

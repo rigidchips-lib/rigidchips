@@ -251,10 +251,11 @@ int GetRCTickCount();
 void SetRCTickCount(int v);
 int GetRCSystemTickCount();
 //シナリオから送るメッセージ分を入力
-void SetMessageData(const char* str);
+void SetMessageData(const char* str, size_t len);
 int GetReceiveMessageCode(int playerNumber);
 void ClearReceiveMessage(int playerNumber);
 const char* GetMessageData(int playerNumber);
+const size_t GetMessageLen(int playerNumber);
 //_SKEY関係
 bool GetSkey(int n);
 bool GetSkeyUp(int n);
