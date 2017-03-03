@@ -58,9 +58,9 @@ public:
 		GFloat d = p.distanceFromFace(Normal, D);
 		if (d > 0 || d<-r) return 100000.0f;
 		GVector p2 = p.pointOnFaceAndLine(Normal, D, Normal);
-		if (p2.dot(OutVec[0]) - OutD[0]>0.003) return 100000.0f;
-		if (p2.dot(OutVec[1]) - OutD[1] > 0.003) return 100000.0f;
-		if (p2.dot(OutVec[2]) - OutD[2] > 0.003) return 100000.0f;
+		if (p2.dot(OutVec2[0]) - OutD2[0]>0.003) return 100000.0f;
+		if (p2.dot(OutVec2[1]) - OutD2[1] > 0.003) return 100000.0f;
+		if (p2.dot(OutVec2[2]) - OutD2[2] > 0.003) return 100000.0f;
 		/*
 		if(p.dot(OutVec2[0])-OutD2[0]>0) {
 		d=p.distanceFromLine2(Vertex[0],Vertex[1]);
@@ -87,9 +87,9 @@ public:
 		int f = p2.pointOnFaceAndLine2(Normal, D, v, wp);
 		if (f != 0) return 100000.0f;
 		//		wp=p.pointOnFaceAndLine(Normal,D,Normal);
-		if (wp.dot(OutVec[0]) - OutD[0]>0.0f) return 100000.0f;
-		if (wp.dot(OutVec[1]) - OutD[1]>0.0f) return 100000.0f;
-		if (wp.dot(OutVec[2]) - OutD[2] > 0.0f) return 100000.0f;
+		if (wp.dot(OutVec2[0]) - OutD2[0]>0.0f) return 100000.0f;
+		if (wp.dot(OutVec2[1]) - OutD2[1]>0.0f) return 100000.0f;
+		if (wp.dot(OutVec2[2]) - OutD2[2] > 0.0f) return 100000.0f;
 		n = Normal;
 		return d;
 	}
@@ -400,9 +400,9 @@ public:
 	{
 		int wn1, wn2;
 		static GVector work1[64], work2[64];
-		ClipFace(&(Face[FaceID].OutVec[0]), &Face[FaceID].Vertex[0], shadow1, sn1, work1, wn1);
-		ClipFace(&(Face[FaceID].OutVec[1]), &Face[FaceID].Vertex[1], work1, wn1, work2, wn2);
-		ClipFace(&(Face[FaceID].OutVec[2]), &Face[FaceID].Vertex[2], work2, wn2, shadow2, *sn2);
+		ClipFace(&(Face[FaceID].OutVec2[0]), &Face[FaceID].Vertex[0], shadow1, sn1, work1, wn1);
+		ClipFace(&(Face[FaceID].OutVec2[1]), &Face[FaceID].Vertex[1], work1, wn1, work2, wn2);
+		ClipFace(&(Face[FaceID].OutVec2[2]), &Face[FaceID].Vertex[2], work2, wn2, shadow2, *sn2);
 
 	}
 	int CheckClip(GVector *A, GVector *P0, GVector *P1, GVector *P2, GVector *P)
