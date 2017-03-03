@@ -4824,11 +4824,11 @@ HRESULT CMyD3DApplication::_send_network_bullet(DWORD t, bool moveEnd)
 			if (g_Bullet->Vertex[i].Net != 0) {
 				float v = g_Bullet->Vertex[i].Vec.abs()*(g_Bullet->Vertex[i].Net - 1);
 				stream.data[j].Dist = g_Bullet->Vertex[i].Dist2;
-				stream.data[j].Pos = g_Bullet->Vertex[i].Pos2;
+				stream.data[j].Pos = (GVector_32)g_Bullet->Vertex[i].Pos2;
 				stream.data[j].Power = g_Bullet->Vertex[i].Power;
 				stream.data[j].Size = g_Bullet->Vertex[i].Size;
-				stream.data[j].Tar = g_Bullet->Vertex[i].Tar;
-				stream.data[j].Vec = g_Bullet->Vertex[i].Vec;
+				stream.data[j].Tar = (GVector_32)g_Bullet->Vertex[i].Tar;
+				stream.data[j].Vec = (GVector_32)g_Bullet->Vertex[i].Vec;
 				g_Bullet->Vertex[i].Net = 0;
 				j++;
 				if (j >= GBULLETDATAMAX) break;
@@ -4855,7 +4855,7 @@ HRESULT CMyD3DApplication::_send_network_explosion(DWORD t, bool moveEnd)
 			for (i = 0; i < g_JetParticle->MaxVertex; i++) {
 				if (g_JetParticle->Vertex[i].Net != 0) {
 					stream.data[j].Type = g_JetParticle->Vertex[i].Type;
-					stream.data[j].Pos = g_JetParticle->Vertex[i].Pos;
+					stream.data[j].Pos = (GVector_32)g_JetParticle->Vertex[i].Pos;
 					stream.data[j].Power = g_JetParticle->Vertex[i].Power;
 					stream.data[j].dpnid = g_JetParticle->Vertex[i].dpnid;
 					g_JetParticle->Vertex[i].Net = 0;
@@ -4877,7 +4877,7 @@ HRESULT CMyD3DApplication::_send_network_explosion(DWORD t, bool moveEnd)
 			for (i = 0; i < g_JetParticle->MaxVertex; i++) {
 				if (g_JetParticle->Vertex[i].Net != 0) {
 					stream.data[j].Type = g_JetParticle->Vertex[i].Type;
-					stream.data[j].Pos = g_JetParticle->Vertex[i].Pos;
+					stream.data[j].Pos = (GVector_32)g_JetParticle->Vertex[i].Pos;
 					stream.data[j].Power = g_JetParticle->Vertex[i].Power;
 					g_JetParticle->Vertex[i].Net = 0;
 					j++;
@@ -4897,7 +4897,7 @@ HRESULT CMyD3DApplication::_send_network_explosion(DWORD t, bool moveEnd)
 			for (i = 0; i < g_JetParticle->MaxVertex; i++) {
 				if (g_JetParticle->Vertex[i].Net != 0) {
 					stream.data[j].Type = g_JetParticle->Vertex[i].Type;
-					stream.data[j].Pos = g_JetParticle->Vertex[i].Pos;
+					stream.data[j].Pos = (GVector_32)g_JetParticle->Vertex[i].Pos;
 					stream.data[j].Power = g_JetParticle->Vertex[i].Power;
 					stream.data[j].dpnid = g_JetParticle->Vertex[i].dpnid;
 					g_JetParticle->Vertex[i].Net = 0;
