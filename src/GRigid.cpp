@@ -156,6 +156,11 @@ void GRigid::RSet()
 }
 void GRigid::CalcTotalFuel()
 {
+	if (Parent == NULL) {
+		Top->TotalFuelMax = 0;
+		Top->TotalFuel = 0;
+		Top->TotalFuel2 = 0;
+	}
 	Top->TotalFuelMax += FuelMax;
 	Top->TotalFuel += Fuel;
 	if (ChipType == GT_CHIPH) Top->TotalFuel2 += Fuel;
