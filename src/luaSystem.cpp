@@ -5,8 +5,8 @@
 #include <basetsd.h>
 #include <math.h>
 #include <stdio.h>
-#include <D3DX8.h>
-#include <DXErr8.h>
+#include <D3DX9.h>
+#include <DXErr9.h>
 #include <tchar.h>
 #include <dinput.h>
 #include "D3DApp.h"
@@ -795,8 +795,8 @@ int luaGetH(lua_State *L)
 	float z = (float)lua_tonumber(L, 2);
 	BOOL hit;
 	FLOAT dist;
-	LPDIRECT3DVERTEXBUFFER8 pVB;
-	LPDIRECT3DINDEXBUFFER8  pIB;
+	LPDIRECT3DVERTEXBUFFER9 pVB;
+	LPDIRECT3DINDEXBUFFER9  pIB;
 	WORD*            pIndices;
 	D3DVERTEX*    pVertices;
 	if (g_pLandMesh == NULL) {
@@ -805,8 +805,8 @@ int luaGetH(lua_State *L)
 	}
 	g_pLandMesh->GetSysMemMesh()->GetVertexBuffer(&pVB);
 	g_pLandMesh->GetSysMemMesh()->GetIndexBuffer(&pIB);
-	pIB->Lock(0, 0, (BYTE**)&pIndices, 0);
-	pVB->Lock(0, 0, (BYTE**)&pVertices, 0);
+	pIB->Lock(0, 0, (VOID**)&pIndices, 0);
+	pVB->Lock(0, 0, (VOID**)&pVertices, 0);
 	D3DXVECTOR3 v1, v2;
 	GVector dir2 = GVector(0, -1, 0);
 	v1.x = x;v1.y = 100000.0f;v1.z = z;

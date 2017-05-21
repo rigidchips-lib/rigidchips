@@ -89,14 +89,14 @@ typedef struct _D3DMATRIX {
 #define D3DMATRIX_DEFINED
 #endif
 
-typedef struct _D3DVIEWPORT8 {
+typedef struct _D3DVIEWPORT9 {
     DWORD       X;
     DWORD       Y;            /* Viewport Top left */
     DWORD       Width;
     DWORD       Height;       /* Viewport Dimensions */
     float       MinZ;         /* Min/max of clip Volume */
     float       MaxZ;
-} D3DVIEWPORT8;
+} D3DVIEWPORT9;
 
 /*
  * Values for clip fields.
@@ -149,13 +149,13 @@ typedef struct _D3DCLIPSTATUS8 {
     DWORD ClipIntersection;
 } D3DCLIPSTATUS8;
 
-typedef struct _D3DMATERIAL8 {
+typedef struct _D3DMATERIAL9 {
     D3DCOLORVALUE   Diffuse;        /* Diffuse color RGBA */
     D3DCOLORVALUE   Ambient;        /* Ambient color RGB */
     D3DCOLORVALUE   Specular;       /* Specular 'shininess' */
     D3DCOLORVALUE   Emissive;       /* Emissive color RGB */
     float           Power;          /* Sharpness if specular highlight */
-} D3DMATERIAL8;
+} D3DMATERIAL9;
 
 typedef enum _D3DLIGHTTYPE {
     D3DLIGHT_POINT          = 1,
@@ -164,7 +164,7 @@ typedef enum _D3DLIGHTTYPE {
     D3DLIGHT_FORCE_DWORD    = 0x7fffffff, /* force 32-bit size enum */
 } D3DLIGHTTYPE;
 
-typedef struct _D3DLIGHT8 {
+typedef struct _D3DLIGHT9 {
     D3DLIGHTTYPE    Type;            /* Type of light source */
     D3DCOLORVALUE   Diffuse;         /* Diffuse color of light */
     D3DCOLORVALUE   Specular;        /* Specular color of light */
@@ -178,7 +178,7 @@ typedef struct _D3DLIGHT8 {
     float           Attenuation2;     /* Quadratic attenuation */
     float           Theta;            /* Inner angle of spotlight cone */
     float           Phi;              /* Outer angle of spotlight cone */
-} D3DLIGHT8;
+} D3DLIGHT9;
 
 /*
  * Options for clearing
