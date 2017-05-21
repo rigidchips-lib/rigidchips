@@ -592,7 +592,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			sw[0] = w[0];
 			sw[1] = w[1];
 			DWORD size = sizeof(DWORD) * 4 + sizeof(short);
-			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
+			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size, 180, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 		}
 	}
 	else if (code == NC_PING_2) {
@@ -607,7 +607,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			sw[1] = w[1];
 			sw[2] = w[2];
 			DWORD size = sizeof(DWORD) * 4 + sizeof(short);
-			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
+			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size, 180, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 		}
 	}
 	else if (code == NC_PING_3) {
@@ -623,7 +623,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			sw[2] = w[2];
 			sw[3] = w[3];
 			DWORD size = sizeof(DWORD) * 4 + sizeof(short);
-			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
+			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size, 180, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 		}
 	}
 	else if (code == NC_PING_4) {
@@ -641,7 +641,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			char *str = (char*)strm2.data;
 			sprintf(str, "Land=%s(%X)", szLandFileName0, landCode);
 			DWORD size = strlen(str) + 1 + sizeof(short);
-			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
+			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size, 180, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 		}
 	}
 	else if (code == NC_SCENARIO) { //Scenario
@@ -651,7 +651,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			char *str = (char*)strm2.data;
 			sprintf(str, "Scenario=%s(%X)", szSystemFileName0, scenarioCode);
 			DWORD size = strlen(str) + 1 + sizeof(short);
-			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
+			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size, 180, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 		}
 	}
 	else if (code == NC_VERSION) { //Version
@@ -661,7 +661,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			char *str = (char*)strm2.data;
 			sprintf(str, "Version=1.5 B27");
 			DWORD size = strlen(str) + 1 + sizeof(short);
-			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
+			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size, 180, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 		}
 	}
 	else if (code == NC_POSITION) { //Position
@@ -671,7 +671,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			char *str = (char*)strm2.data;
 			sprintf(str, "Position=X:%.1f Y:%.1f Z:%.1f ", g_Chip[0]->X.x, g_Chip[0]->X.y, g_Chip[0]->X.z);
 			DWORD size = strlen(str) + 1 + sizeof(short);
-			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
+			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size, 180, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 		}
 	}
 	else if (code == NC_NAME) { //Name
@@ -683,7 +683,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			g_DPlay->GetPlayersName(g_DPlay->GetLocalPlayerDPNID(), buf);
 			sprintf(str, "Name=%s", buf);
 			DWORD size = strlen(str) + 1 + sizeof(short);
-			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
+			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size, 180, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 		}
 	}
 	else if (code == NC_ACQUIRE_KOKUTI) { //告知を要求
@@ -693,7 +693,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			char *str = (char*)strm2.data;
 			strcpy(str, Kokuti);
 			DWORD size = strlen(str) + 1 + sizeof(short);
-			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
+			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size, 180, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 		}
 	}
 	else if (code == NC_POST_KOKUTI) { //告知を出す
@@ -710,7 +710,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			if (g_World->NetStop) sprintf(str, "s_FPS=Pause (Base=%d) ", s_LimitFPS);
 			else sprintf(str, "s_FPS=%.1f (Base=%d) ", s_FPS, s_LimitFPS);
 			DWORD size = strlen(str) + 1 + sizeof(short);
-			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
+			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size, 180, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 		}
 	}
 	else if (code == NC_SYSTEM) { //OS
@@ -725,7 +725,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			sprintf(str, "OS=Major:%d,Minor:%d,Build:%d,ID:%d,CSD:%s",
 				version.dwMajorVersion, version.dwMinorVersion, version.dwBuildNumber, version.dwPlatformId, version.szCSDVersion);
 			DWORD size = strlen(str) + 1 + sizeof(short);
-			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
+			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size, 180, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 		}
 	}
 	else if (code == NC_CHIP) { //Chips
@@ -752,7 +752,7 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 			}
 			strcat(str, ")");
 			DWORD size = strlen(str) + 1 + sizeof(short);
-			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size);
+			g_DPlay->SendTo(playerInfo->dpnidPlayer, (BYTE*)&strm2, size, 180, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 		}
 	}
 	delete strm;
@@ -1759,17 +1759,17 @@ int CALLBACK DlgNetworkProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					}
 					if (id >= 0) {
 						if (g_PlayerData[id].ReceiveData.info.dpnidPlayer != g_DPlay->GetLocalPlayerDPNID()) {
-							g_DPlay->SendTo(g_PlayerData[id].ReceiveData.info.dpnidPlayer, (BYTE*)&stream, (DWORD)size);
+							g_DPlay->SendTo(g_PlayerData[id].ReceiveData.info.dpnidPlayer, (BYTE*)&stream, (DWORD)size, 180, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 						}
 					}
-					else g_DPlay->SendAll((BYTE*)&stream, (DWORD)size);
+					else g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP, (BYTE*)&stream, (DWORD)size, 180, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 					SendDlgItemMessage(hDlg, IDC_CHATEDIT, WM_SETTEXT, 0, (LPARAM)"");
 				}
 				else {
 					stream.code = NC_CHAT;//chat
 					strcpy((char*)stream.data, str1);
 					DWORD size = (DWORD)(strlen(str1) + 1 + sizeof(short));
-					g_DPlay->SendAll((BYTE*)&stream, size);
+					g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP, (BYTE*)&stream, size, 2000, DPNSEND_NOLOOPBACK | DPNSEND_GUARANTEED | DPNSEND_PRIORITY_HIGH);
 					g_DPlay->GetPlayersName(g_DPlay->GetLocalPlayerDPNID(), str2);
 					char *ret = ChatDataDisp(str2, (char*)str1);
 					strcpy(LastChatData, ret);
@@ -4837,7 +4837,7 @@ HRESULT CMyD3DApplication::_send_network_bullet(DWORD t, bool moveEnd)
 
 		if (j > 0) {
 			DWORD mySize = j*sizeof(GBULLETDATA) + sizeof(short);
-			g_DPlay->SendAll((BYTE*)&stream, mySize);
+			g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP, (BYTE*)&stream, mySize, 300, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 		}
 	}
 	return S_OK;
@@ -4867,7 +4867,7 @@ HRESULT CMyD3DApplication::_send_network_explosion(DWORD t, bool moveEnd)
 
 			if (j > 0) {
 				DWORD mySize = j*sizeof(GEXPDATA2) + sizeof(short);
-				g_DPlay->SendAll((BYTE*)&stream, mySize);
+				g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP, (BYTE*)&stream, mySize, GNETSPAN / 3, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE | DPNSEND_PRIORITY_LOW);
 			}
 		}
 		else if (g_World->B20Bullet) {
@@ -4887,7 +4887,7 @@ HRESULT CMyD3DApplication::_send_network_explosion(DWORD t, bool moveEnd)
 
 			if (j > 0) {
 				DWORD mySize = j*sizeof(GEXPDATA) + sizeof(short);
-				g_DPlay->SendAll((BYTE*)&stream, mySize);
+				g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP, (BYTE*)&stream, mySize, GNETSPAN / 3, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE | DPNSEND_PRIORITY_LOW);
 			}
 		}
 		else {
@@ -4909,7 +4909,7 @@ HRESULT CMyD3DApplication::_send_network_explosion(DWORD t, bool moveEnd)
 
 			if (j > 0) {
 				DWORD mySize = j*sizeof(GEXPDATA2) + sizeof(short);
-				g_DPlay->SendAll((BYTE*)&stream, mySize);
+				g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP,(BYTE*)&stream, mySize, GNETSPAN / 3, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE | DPNSEND_PRIORITY_LOW);
 			}
 		}
 	}
@@ -4925,7 +4925,7 @@ HRESULT CMyD3DApplication::_send_network_scenario_message(DWORD t, bool moveEnd)
 			*((int*)stream.data) = scenarioCode;
 			strcpy((char*)&stream.data[4], s_MessageData);
 			DWORD size = (DWORD)(sizeof(int) + strlen(s_MessageData) + 1 + sizeof(short));
-			g_DPlay->SendAll((BYTE*)&stream, size);
+			g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP,(BYTE*)&stream, size, GNETSPAN / 2, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 			s_MessageData[0] = '\0';
 		}
 	}
@@ -5006,7 +5006,7 @@ HRESULT CMyD3DApplication::_send_network_model_full(DWORD t, bool moveEnd)
 		} while (j < g_World->ChipCount);
 
 		MyNetDataSize = i*sizeof(GCHIPDATA) + sizeof(short);
-		g_DPlay->SendAll((BYTE*)&stream, MyNetDataSize);
+		g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP,(BYTE*)&stream, MyNetDataSize, GNETSPAN / 2, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE | DPNSEND_PRIORITY_LOW);
 	}
 	return S_OK;
 }
@@ -5023,7 +5023,7 @@ HRESULT CMyD3DApplication::_send_network_model_short(DWORD t, bool moveEnd)
 		stream.data[0].data.f[2] = g_World->Rigid[0]->X.z;
 
 		MyNetDataSize = sizeof(GCHIPDATA) + sizeof(short);//1Chip分だけ送る
-		g_DPlay->SendAll((BYTE*)&stream, MyNetDataSize);
+		g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP,(BYTE*)&stream, MyNetDataSize, GNETSPAN / 3, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE | DPNSEND_PRIORITY_LOW);
 	}
 	return S_OK;
 }
@@ -5167,7 +5167,7 @@ HRESULT CMyD3DApplication::_acquire_user_input()
 					g_MyPlayerData.init++;
 					stream.data = g_MyPlayerData;
 					DWORD sz = sizeof(GINFOSTREAM) + sizeof(short);//1Chip分だけ送る
-					g_DPlay->SendAll((BYTE*)&stream, sz);
+					g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP,(BYTE*)&stream, sz, 60, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 				}
 			}
 			if (win == FALSE)
@@ -5211,7 +5211,7 @@ HRESULT CMyD3DApplication::_acquire_user_input()
 					g_MyPlayerData.init++;
 					stream.data = g_MyPlayerData;
 					DWORD sz = sizeof(GINFOSTREAM) + sizeof(short);//1Chip分だけ送る
-					g_DPlay->SendAll((BYTE*)&stream, sz);
+					g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP,(BYTE*)&stream, sz, 60, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 
 				}
 				//			if(g_SystemLua!=NULL) luaSystemRun("OnOpenChips");
@@ -5414,7 +5414,7 @@ HRESULT CMyD3DApplication::_acquire_user_input()
 			g_MyPlayerData.scenarioCode = scenarioCode;
 			stream.data = g_MyPlayerData;
 			DWORD sz = sizeof(GINFOSTREAM) + sizeof(short);//1Chip分だけ送る
-			g_DPlay->SendAll((BYTE*)&stream, sz);
+			g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP,(BYTE*)&stream, sz, 60, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 		}
 	}
 	if (m_UserInput.bDoOpenScenario)
@@ -5480,7 +5480,7 @@ HRESULT CMyD3DApplication::_acquire_user_input()
 				g_MyPlayerData.scenarioCode = scenarioCode;
 				stream.data = g_MyPlayerData;
 				DWORD sz = sizeof(GINFOSTREAM) + sizeof(short);//1Chip分だけ送る
-				g_DPlay->SendAll((BYTE*)&stream, sz);
+				g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP,(BYTE*)&stream, sz, 60, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 			}
 		}
 		if (win == FALSE)
@@ -5730,7 +5730,7 @@ HRESULT CMyD3DApplication::_acquire_user_model_input()
 				g_MyPlayerData.init++;
 				stream.data = g_MyPlayerData;
 				DWORD sz = sizeof(GINFOSTREAM) + sizeof(short);//1Chip分だけ送る
-				g_DPlay->SendAll((BYTE*)&stream, sz);
+				g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP,(BYTE*)&stream, sz, 60, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 
 			}
 		}
@@ -5780,7 +5780,7 @@ HRESULT CMyD3DApplication::_acquire_user_model_input()
 				g_MyPlayerData.yforce++;
 				stream.data = g_MyPlayerData;
 				DWORD sz = sizeof(GINFOSTREAM) + sizeof(short);//1Chip分だけ送る
-				g_DPlay->SendAll((BYTE*)&stream, sz);
+				g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP,(BYTE*)&stream, sz, 60, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 			}
 		}
 	}
@@ -5855,7 +5855,7 @@ HRESULT CMyD3DApplication::_acquire_user_model_input()
 				g_MyPlayerData.reset++;
 				stream.data = g_MyPlayerData;
 				DWORD sz = sizeof(GINFOSTREAM) + sizeof(short);
-				g_DPlay->SendAll((BYTE*)&stream, sz);
+				g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP,(BYTE*)&stream, sz, 60, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 			}
 		}
 		else {
@@ -6166,7 +6166,7 @@ HRESULT CMyD3DApplication::_apply_vals()
 				g_MyPlayerData.crush++;
 				stream.data = g_MyPlayerData;
 				DWORD sz = sizeof(GINFOSTREAM) + sizeof(short);//1Chip分だけ送る
-				g_DPlay->SendAll((BYTE*)&stream, sz);
+				g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP,(BYTE*)&stream, sz, 60, DPNSEND_NOLOOPBACK | DPNSEND_NOCOMPLETE);
 			}
 		}
 		if (hMidiOut != NULL && SoundType == 1) {
@@ -8260,7 +8260,7 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 		if (wParam == SIZE_MINIMIZED) {
 			//			GCHIPSTREAM stream;
 			//			stream.code=-1;//CLEAR
-			//			if(g_DPlay)	g_DPlay->SendAll((BYTE*)&stream,sizeof(short));
+			//			if(g_DPlay)	g_DPlay->SendTo(DPNID_ALL_PLAYERS_GROUP,(BYTE*)&stream,sizeof(short));
 			//			CD3DApplication::MsgProc( hWnd, msg, wParam, lParam );
 			return S_OK;
 		}
