@@ -10,6 +10,10 @@
 #ifndef lua_h
 #define lua_h
 
+#ifndef _MBCS
+#define _MBCS
+#endif
+
 #include <stdarg.h>
 #include <stddef.h>
 
