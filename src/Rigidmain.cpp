@@ -7796,7 +7796,7 @@ HRESULT CMyD3DApplication::Render()
 		if (TitleAlpha > 0x00ffffff) TitleAlpha -= 0x11000000;
 	}
 	if (TitleAlpha != 0x00ffffff) {
-		pos.x = w / 2.0f - 128.0f;
+		pos.x = w / 2.0f - 160.0f;
 		pos.y = 0.0f;
 		pSprite->Draw(pMyTexture[15], NULL, NULL, NULL, NULL, &pos, TitleAlpha);
 	}
@@ -8294,7 +8294,7 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 			HDC hDC = GetDC(hWnd);
 			//TCHAR strMsg[MAX_PATH];
 			//wsprintf( strMsg, TEXT("Loading data ... ") );
-			HBRUSH hBrush = CreateSolidBrush(RGB(204, 204, 204));
+			HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255));
 			RECT rct;
 			GetClientRect(hWnd, &rct);
 			FillRect(hDC, &rct, hBrush);
@@ -8314,7 +8314,7 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 			hdc_mem = CreateCompatibleDC(hdc);
 			SelectObject(hdc_mem, hBit);
 			BitBlt(hdc, (rc.right - wx) / 2,
-				(rc.bottom - wy) * 4 / 5, wx, wy, hdc_mem, 0, 0, SRCCOPY);
+				(rc.bottom - wy) / 2, wx, wy, hdc_mem, 0, 0, SRCCOPY);
 			DeleteDC(hdc_mem);
 			DeleteObject(hBit);
 			EndPaint(hWnd, &ps);
