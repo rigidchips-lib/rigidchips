@@ -155,8 +155,6 @@ static TCHAR s_CurrDataDir[MAX_PATH];
 static TCHAR s_CurrScenarioDir[MAX_PATH];
 
 int RecTickCount = 0;
-DWORD frameGetTime = 0;
-DWORD frameElapsedTime = 100;
 
 bool LockGravityFlag = FALSE;
 bool LockAirFlag = FALSE;
@@ -230,7 +228,6 @@ int ResetCount = 90;
 GVector lightColor;
 GVector FogColor;
 GVector EyePos, RefPos, UpVec;
-GVector EyePos2; //KL<>移動分含む視点
 
 GFloat TurnLR;
 GFloat TurnUD;
@@ -430,38 +427,17 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 				g_PlayerData[i].ReceiveData.size = 0;
 				PrePlayerData[i] = g_PlayerData[i];
 				PrePlayerData[i].ReceiveData.info = g_PlayerData[i].ReceiveData.info;
-				for (int j = 0; j<s; j++) {
+				for (int j = 0;j < s;j++) {
 					((BYTE*)PrePlayerData[i].ReceiveData.data)[j] = ((BYTE*)g_PlayerData[i].ReceiveData.data)[j];
 				}
-				for (int j = 0; j<g_PlayerData[i].ChipCount; j++) {
+				for (int j = 0;j < g_PlayerData[i].ChipCount;j++) {
 					PrePlayerData[i].X[j] = g_PlayerData[i].X[j];
 				}
-				for (unsigned int j = 0; j<size; j++) {
+				for (unsigned int j = 0;j < size;j++) {
 					((BYTE*)g_PlayerData[i].ReceiveData.data)[j] = data[j];
 				}
-				PrePlayerData[i].sendtime = g_PlayerData[i].sendtime;
-				PrePlayerData[i].sendtime2 = g_PlayerData[i].sendtime2;
-				g_PlayerData[i].sendtime = g_PlayerData[i].sendtime2 = g_PlayerData[i].ReceiveData.data[0].color; //今のところ(C8)ｺｱ詳細座標のみでいいはず
-
-				PrePlayerData[i].span = g_PlayerData[i].span;
-				PrePlayerData[i].span2 = g_PlayerData[i].span2;
-				g_PlayerData[i].span = g_PlayerData[i].sendtime - PrePlayerData[i].sendtime;
-				g_PlayerData[i].span2 = g_PlayerData[i].sendtime2 - PrePlayerData[i].sendtime2;
-
-				PrePlayerData[i].rtime = g_PlayerData[i].rtime;
-				PrePlayerData[i].rtime2 = g_PlayerData[i].rtime2;
-				g_PlayerData[i].rtime = g_PlayerData[i].rtime + g_PlayerData[i].span + 1;
-				g_PlayerData[i].rtime2 = g_PlayerData[i].rtime2 + g_PlayerData[i].span2 + 1; //とりあえず1足しとく
-				DWORD timeGt = frameGetTime;
-				if (timeGt - g_PlayerData[i].rtime>1000) { //ﾛｰｶﾙで計算した相手の内部時間の積算誤差が60を超えたまたは0未満の時ﾘｾｯﾄ
-					g_PlayerData[i].rtime = timeGt;
-				}
-				if (timeGt - g_PlayerData[i].rtime2>1000) {
-					g_PlayerData[i].rtime2 = timeGt;
-				}
-				PrePlayerData[i].time = g_PlayerData[i].time;
-				PrePlayerData[i].time2 = g_PlayerData[i].time2;
-				g_PlayerData[i].time = g_PlayerData[i].time2 = timeGt;
+				g_PlayerData[i].time = timeGetTime();
+				g_PlayerData[i].time2 = timeGetTime();
 				PrePlayerData[i].ReceiveData.size = s;
 				g_PlayerData[i].ReceiveData.size = size;
 				break;
@@ -494,35 +470,14 @@ HRESULT MyReceiveFunc(MYAPP_PLAYER_INFO* playerInfo, DWORD size, BYTE *stream) {
 				int s2 = PrePlayerData[i].ReceiveData.size;
 				PrePlayerData[i].ReceiveData.size = 0;
 				g_PlayerData[i].ReceiveData.size = 0;
-				//位置情報だけを更新する
-				unsigned int k = 0;
-				for (unsigned int j = 0; j<size / sizeof(GCHIPDATA); j++) {
-					GCHIPDATA *chip = (GCHIPDATA*)&data[j * sizeof(GCHIPDATA)];
-					int id = chip->id & 0xfff;
-					for (k; k<s1 / sizeof(GCHIPDATA); k++) {
-						GCHIPDATA *chip2 = &g_PlayerData[i].ReceiveData.data[k];
-						if (id == (chip2->id & 0xfff)) {
-							PrePlayerData[i].ReceiveData.data[k] = g_PlayerData[i].ReceiveData.data[k];
-							PrePlayerData[i].X[id - 512] = g_PlayerData[i].X[id - 512];
-							g_PlayerData[i].ReceiveData.data[k] = *chip;
-							break;
-						}
-					}
-				}
-				PrePlayerData[i].sendtime2 = g_PlayerData[i].sendtime2;
-				g_PlayerData[i].sendtime2 = g_PlayerData[i].ReceiveData.data[0].color; //今のところ(C8)ｺｱ詳細座標のみでいいはず
-
-				PrePlayerData[i].span2 = g_PlayerData[i].span2;
-				g_PlayerData[i].span2 = g_PlayerData[i].sendtime2 - PrePlayerData[i].sendtime2;
-
-				PrePlayerData[i].rtime2 = g_PlayerData[i].rtime2;
-				g_PlayerData[i].rtime2 = g_PlayerData[i].rtime2 + g_PlayerData[i].span2 + 1; //とりあえず1足しとく
-				DWORD timeGt = frameGetTime;
-				if (timeGt - g_PlayerData[i].rtime2>1000) { //ﾛｰｶﾙで計算した相手の内部時間の積算誤差が60を超えたまたは0未満の時ﾘｾｯﾄ
-					g_PlayerData[i].rtime2 = timeGt;
-				}
 				PrePlayerData[i].time2 = g_PlayerData[i].time2;
-				g_PlayerData[i].time2 = timeGt;
+				PrePlayerData[i].ReceiveData.data[0] = g_PlayerData[i].ReceiveData.data[0];
+				PrePlayerData[i].X[0] = g_PlayerData[i].X[0];
+				//位置情報だけを更新する
+				GCHIPDATA *chip = (GCHIPDATA*)data;
+				g_PlayerData[i].ReceiveData.data[0] = *chip;
+
+				g_PlayerData[i].time2 = timeGetTime();
 				PrePlayerData[i].ReceiveData.size = s2;
 				g_PlayerData[i].ReceiveData.size = s1;
 				break;
@@ -2120,23 +2075,22 @@ void GWorld::DispNetChip(int n)
 	float w1 = 0.0f, w2 = 1.0f;
 	float ww1 = 0.0f, ww2 = 1.0f;
 	if (PrePlayerData[n].ReceiveData.size == g_PlayerData[n].ReceiveData.size) {
-		DWORD span = g_PlayerData[n].span;
-		DWORD span2 = g_PlayerData[n].span2;
-		DWORD timeGt = frameGetTime;
-		DWORD t = timeGt - g_PlayerData[n].rtime;
-		DWORD t2 = timeGt - g_PlayerData[n].rtime2;
-		if (t<span * 2) {
+		DWORD span = g_PlayerData[n].time - PrePlayerData[n].time;
+		DWORD span2 = g_PlayerData[n].time2 - PrePlayerData[n].time2;
+		DWORD t = timeGetTime() - g_PlayerData[n].time;
+		DWORD t2 = timeGetTime() - g_PlayerData[n].time2;
+		if (t < span) {
 			w2 = (float)t / (float)span;
 			w1 = 1.0f - w2;
-			if (t<0) {
+			if (t < 0) {
 				w2 = 0;
 				w1 = 1;
 			}
 		}
-		if (t2<span2 * 6) {
+		if (t2 < span2) {
 			ww2 = (float)t2 / (float)span2;
 			ww1 = 1.0f - ww2;
-			if (t2<0) {
+			if (t2 < 0) {
 				ww2 = 0;
 				ww1 = 1;
 			}
@@ -2175,15 +2129,22 @@ void GWorld::DispNetChip(int n)
 		GVector p;
 		GVector X1 = g_PlayerData[n].X[id];
 		GVector X2 = PrePlayerData[n].X[id];
-		GVector X = (((X1 - X2)*ww2 + X1) + g_PlayerData[n].X2[id]) / 2;
+		GVector X = (((X1 - X2)*w2 + X1) + g_PlayerData[n].X2[id]) / 2.0f;
 		g_PlayerData[n].X[g_PlayerData[n].ChipCount].x = chip->data.pos.x / 100.0f + X1.x;
 		g_PlayerData[n].X[g_PlayerData[n].ChipCount].y = chip->data.pos.y / 100.0f + X1.y;
 		g_PlayerData[n].X[g_PlayerData[n].ChipCount].z = chip->data.pos.z / 100.0f + X1.z;
-		p.x = (chip->data.pos.x / 100.0f + X.x)*w2 + (chip2->data.pos.x / 100.0f + X.x)*w1;
-		p.y = (chip->data.pos.y / 100.0f + X.y)*w2 + (chip2->data.pos.y / 100.0f + X.y)*w1;
-		p.z = (chip->data.pos.z / 100.0f + X.z)*w2 + (chip2->data.pos.z / 100.0f + X.z)*w1;
-		if (g_PlayerData[n].ChipCount == 0) { g_PlayerData[n].x = p.x; g_PlayerData[n].y = p.y; g_PlayerData[n].z = p.z; }
-		if (p.y>g_PlayerData[n].maxY) g_PlayerData[n].maxY = p.y;
+		if (i == 0) {
+			p.x = (chip->data.pos.x / 100.0f + X.x)*ww2 + (chip2->data.pos.x / 100.0f + X.x)*ww1;
+			p.y = (chip->data.pos.y / 100.0f + X.y)*ww2 + (chip2->data.pos.y / 100.0f + X.y)*ww1;
+			p.z = (chip->data.pos.z / 100.0f + X.z)*ww2 + (chip2->data.pos.z / 100.0f + X.z)*ww1;
+		}
+		else {
+			p.x = (chip->data.pos.x / 100.0f + X.x)*w2 + (chip2->data.pos.x / 100.0f + X.x)*w1;
+			p.y = (chip->data.pos.y / 100.0f + X.y)*w2 + (chip2->data.pos.y / 100.0f + X.y)*w1;
+			p.z = (chip->data.pos.z / 100.0f + X.z)*w2 + (chip2->data.pos.z / 100.0f + X.z)*w1;
+		}
+		if (g_PlayerData[n].ChipCount == 0) { g_PlayerData[n].x = p.x;g_PlayerData[n].y = p.y;g_PlayerData[n].z = p.z; }
+		if (p.y > g_PlayerData[n].maxY) g_PlayerData[n].maxY = p.y;
 		q.x = chip->data.quat.x / 100.0f;
 		q.y = chip->data.quat.y / 100.0f;
 		q.z = chip->data.quat.z / 100.0f;
@@ -2371,10 +2332,22 @@ void GWorld::DispNetChip(int n)
 			GVector p;
 			GVector X1 = g_PlayerData[n].X[id];
 			GVector X2 = PrePlayerData[n].X[id];
-			GVector X = (((X1 - X2)*ww2 + X1) + g_PlayerData[n].X2[id]) / 2.0f;
-			p.x = (chip->data.pos.x / 100.0f + X.x)*w2 + (chip2->data.pos.x / 100.0f + X.x)*w1;
-			p.y = (chip->data.pos.y / 100.0f + X.y)*w2 + (chip2->data.pos.y / 100.0f + X.y)*w1;
-			p.z = (chip->data.pos.z / 100.0f + X.z)*w2 + (chip2->data.pos.z / 100.0f + X.z)*w1;
+			GVector X = (((X1 - X2)*w2 + X1) + g_PlayerData[n].X2[id]) / 2.0f;
+			g_PlayerData[n].X[g_PlayerData[n].ChipCount].x = chip->data.pos.x / 100.0f + X1.x;
+			g_PlayerData[n].X[g_PlayerData[n].ChipCount].y = chip->data.pos.y / 100.0f + X1.y;
+			g_PlayerData[n].X[g_PlayerData[n].ChipCount].z = chip->data.pos.z / 100.0f + X1.z;
+			if (i == 0) {
+				p.x = (chip->data.pos.x / 100.0f + X.x)*ww2 + (chip2->data.pos.x / 100.0f + X.x)*ww1;
+				p.y = (chip->data.pos.y / 100.0f + X.y)*ww2 + (chip2->data.pos.y / 100.0f + X.y)*ww1;
+				p.z = (chip->data.pos.z / 100.0f + X.z)*ww2 + (chip2->data.pos.z / 100.0f + X.z)*ww1;
+			}
+			else {
+				p.x = (chip->data.pos.x / 100.0f + X.x)*w2 + (chip2->data.pos.x / 100.0f + X.x)*w1;
+				p.y = (chip->data.pos.y / 100.0f + X.y)*w2 + (chip2->data.pos.y / 100.0f + X.y)*w1;
+				p.z = (chip->data.pos.z / 100.0f + X.z)*w2 + (chip2->data.pos.z / 100.0f + X.z)*w1;
+			}
+			if (g_PlayerData[n].ChipCount == 0) { g_PlayerData[n].x = p.x;g_PlayerData[n].y = p.y;g_PlayerData[n].z = p.z; }
+			if (p.y > g_PlayerData[n].maxY) g_PlayerData[n].maxY = p.y;
 			q.x = chip->data.quat.x / 100.0f;
 			q.y = chip->data.quat.y / 100.0f;
 			q.z = chip->data.quat.z / 100.0f;
@@ -2447,10 +2420,10 @@ void GWorld::DispNetChip(int n)
 		}
 	}
 	g_D3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
-	for (int i = 0; i<g_PlayerData[n].ChipCount; i++) {
+	for (int i = 0;i < g_PlayerData[n].ChipCount;i++) {
 		GVector X1 = g_PlayerData[n].X[i];
 		GVector X2 = PrePlayerData[n].X[i];
-		g_PlayerData[n].X2[i] = (X1 - X2)*ww2 + X1;
+		g_PlayerData[n].X2[i] = (X1 - X2)*w2 + X1;
 	}
 }
 void GWorld::DispNetJetAll()
@@ -2459,11 +2432,10 @@ void GWorld::DispNetJetAll()
 		if (g_PlayerData[i].ReceiveData.info.dpnidPlayer == 0) continue;
 		float w1 = g_PlayerData[i].w1;
 		float w2 = g_PlayerData[i].w2;
-		float ww1 = g_PlayerData[i].ww1;
-		float ww2 = g_PlayerData[i].ww2;
 
 		for (int j = 0;j < g_PlayerData[i].ChipCount;j++) {
 			if (g_PlayerData[i].Jet[j]>0) {
+				//				MessageBox(NULL,"セッションの作成に失敗", "RigidChips Network", MB_OK | MB_ICONWARNING);
 				int n = g_PlayerData[i].Jet[j];
 				GCHIPDATA *chip = &g_PlayerData[i].ReceiveData.data[n];
 				GCHIPDATA *chip2 = &PrePlayerData[i].ReceiveData.data[n];
@@ -2478,7 +2450,7 @@ void GWorld::DispNetJetAll()
 				GVector p;
 				GVector X1 = g_PlayerData[i].X[id];
 				GVector X2 = PrePlayerData[i].X[id2];
-				GVector X = (X1 - X2)*ww2 + X1;
+				GVector X = (X1 - X2)*w2 + X1;
 
 
 				p.x = (chip->data.pos.x / 100.0f + X.x)*w2 + (chip2->data.pos.x / 100.0f + X.x)*w1;
@@ -2496,7 +2468,7 @@ void GWorld::DispNetJetAll()
 				q.matrix(r);
 				GMatrix tm = r.translate(p);
 
-				GFloat f = chip->data.option / 50.0f;
+				float f = chip->data.option / 50.0f;
 				if (chip->data.type&GT_OPTION2) f = -f;
 				DispNetJet(0, tm, f, dir);
 			}
@@ -3123,7 +3095,6 @@ CMyD3DApplication::CMyD3DApplication()
 		s_RecieaveMessageData[i][0] = '\0';
 	}
 
-	frameGetTime = timeGetTime();
 	MouseX = 0;
 	MouseY = 0;
 	MouseL = 0;
@@ -4270,7 +4241,6 @@ HFONT hFont = CreateFont(
 	if (FAILED(hr = m_pXMesh[35]->Create(m_pd3dDevice, _T("Explosion.X")))) return E_FAIL;
 	if (FAILED(hr = m_pXMesh[36]->Create(m_pd3dDevice, _T("Explosion2.X")))) return E_FAIL;
 	if (FAILED(hr = m_pXMesh[37]->Create(m_pd3dDevice, _T("userArm.X")))) return E_FAIL;
-	if (FAILED(hr = m_pXMesh[38]->Create(m_pd3dDevice, _T("Bullet2.X")))) return E_FAIL;
 
 	if (FAILED(hr = LoadLand(m_pd3dDevice, szLandFileName))) return E_FAIL;
 	for (int i = 0;i < g_VarCount;i++) {
@@ -4965,7 +4935,7 @@ HRESULT CMyD3DApplication::_send_network_model_full(DWORD t, bool moveEnd)
 {
 	int i, j;
 	//ネットデータ送信
-	if (g_DPlay->GetNumPlayers() > 0 && t - m_lastT > (DWORD)GNETSPAN/3 && moveEnd) {
+	if (g_DPlay->GetNumPlayers() > 0 && t - m_lastT > (DWORD)GNETSPAN && moveEnd) {
 		MoveEnd = false;
 		m_lastT = t;
 		m_lastT2 = t;
@@ -4976,7 +4946,6 @@ HRESULT CMyD3DApplication::_send_network_model_full(DWORD t, bool moveEnd)
 		do {
 			if (g_World->Rigid[j]->Parent == NULL) {
 				stream.data[i].id = j + 512;
-				stream.data[i].color = (unsigned short)t; //ほんとはｺｱ分だけでいい
 				stream.data[i].data.f[0] = g_World->Rigid[j]->X.x;
 				stream.data[i].data.f[1] = g_World->Rigid[j]->X.y;
 				stream.data[i].data.f[2] = g_World->Rigid[j]->X.z;
@@ -5048,18 +5017,12 @@ HRESULT CMyD3DApplication::_send_network_model_short(DWORD t, bool moveEnd)
 		m_lastT2 = t;
 		GCHIPSTREAM stream;
 		stream.code = 10;
-		int j = 0;
-		for (int i = 0; i<g_World->ChipCount; i++) {
-			if (g_World->Rigid[i]->Parent == NULL) {
-				stream.data[j].id = i + 512;
-				stream.data[j].color = (unsigned short)t; //ほんとはｺｱ分だけでいい 以降は他のﾃﾞｰﾀ入れてもいいけど系の数不定だし･･･
-				stream.data[j].data.f[0] = (float)g_World->Rigid[i]->X.x;
-				stream.data[j].data.f[1] = (float)g_World->Rigid[i]->X.y;
-				stream.data[j].data.f[2] = (float)g_World->Rigid[i]->X.z;
-				j++;
-			}
-		}
-		MyNetDataSize = j * sizeof(GCHIPDATA) + sizeof(short);//1Chip分だけ送る
+		stream.data[0].id = 512;
+		stream.data[0].data.f[0] = g_World->Rigid[0]->X.x;
+		stream.data[0].data.f[1] = g_World->Rigid[0]->X.y;
+		stream.data[0].data.f[2] = g_World->Rigid[0]->X.z;
+
+		MyNetDataSize = sizeof(GCHIPDATA) + sizeof(short);//1Chip分だけ送る
 		g_DPlay->SendAll((BYTE*)&stream, MyNetDataSize);
 	}
 	return S_OK;
@@ -6261,8 +6224,6 @@ HRESULT CMyD3DApplication::FrameMove()
 {
 	HRESULT hr;
 	DWORD t = timeGetTime();
-	frameElapsedTime = t - frameGetTime;
-	frameGetTime = t;
 	if (FAILED(hr=_record()))
 	{
 		return hr;
@@ -6466,7 +6427,7 @@ HRESULT CMyD3DApplication::ViewSet() {
 		GVector v = (EyePos - RefPos)*(GMatrix().rotate(r, TurnUD).rotate(UpVec, TurnLR));
 		eye = RefPos + v;
 	}
-	EyePos2 = eye;
+
 	//	light1.Position.x= (float)EyePos.x;
 	//	light1.Position.y= (float)EyePos.y;
 	//	light1.Position.z= (float)EyePos.z;
@@ -7392,27 +7353,27 @@ HRESULT CMyD3DApplication::Render()
 		D3DXMATRIX mat1, mat2;
 		k = 0;
 		//		GVector v=(EyePos-RefPos).normalize2();
-		for (i = 0; i<g_Bullet->MaxVertex; i++) {
+		for (i = 0;i < g_Bullet->MaxVertex;i++) {
 			if (g_Bullet->Vertex[i].Life>0 && g_Bullet->Vertex[i].Life != 1200.0f) {
-				//GVector v=Bullet->Vertex[i].Vec.normalize()*Bullet->Vertex[i].Size*10;
+				//GVector v=g_Bullet->Vertex[i].Vec.normalize()*g_Bullet->Vertex[i].Size*10;
 				GVector v = g_Bullet->Vertex[i].Vec;
-				GVector pos = g_Bullet->Vertex[i].Pos;
-				FLOAT size = (FLOAT)g_Bullet->Vertex[i].Size;
-				GFloat dist = g_Bullet->Vertex[i].Dist;
-				GVector v_norm = v.normalize2();
-				GFloat va = v.abs();
-				GFloat va_dist = va;
-				if (dist + size * 2<0) va_dist = va + dist + size * 2;
-				GFloat va_dist_norm = va_dist / va;
-				GFloat va_dist_inv_norm = (va - va_dist) / va;
-				FLOAT alpha = 1.0f;
-				alpha = 0.98f;
+				GFloat f = fabs((g_Bullet->Vertex[i].Pos - g_Bullet->Vertex[i].Vec / 2 - EyePos).normalize2().dot(v.normalize2()));
+				int fn = (int)((4 + (int)((1.0f - f*f) * 15)) / g_Bullet->Vertex[i].Size);
+				if (fn > 50) fn = 50;
+				for (int j = 0;j < fn;j++) {
+					float x = (float)g_Bullet->Vertex[i].Pos.x - v.x + v.x*j / fn;
+					float y = (float)g_Bullet->Vertex[i].Pos.y - v.y + v.y*j / fn;
+					float z = (float)g_Bullet->Vertex[i].Pos.z - v.z + v.z*j / fn;
 
-				FLOAT x, y, z;
-				CD3DMesh *mesh;
-				//-----------------弾頭
-				if (va_dist == va) {
-					mesh = m_pXMesh[32];
+					float size = g_Bullet->Vertex[i].Size;
+					//pV[k].alpha=1.0f-j/(float)fn;
+					float alpha = 1.0f;
+					float va = v.abs();
+					alpha = (float)j / fn;
+					if ((g_Bullet->Vertex[i].Dist + va - va*(float)j / fn) <= 0) alpha = 0.0f;
+
+					CD3DMesh *mesh;
+					mesh = m_pXMesh[MESH_BULLET];
 					mesh->m_pMaterials[0].Diffuse.a = alpha;
 					D3DXMatrixRotationZ(&mat1, (FLOAT)i);
 					D3DXMatrixScaling(&mat2, size, size, size);
@@ -7421,47 +7382,12 @@ HRESULT CMyD3DApplication::Render()
 					mat2._41 = 0.0f; mat2._42 = 0.0f; mat2._43 = 0.0f;
 					D3DXMatrixInverse(&mat2, NULL, &mat2);
 					D3DXMatrixMultiply(&mat1, &mat1, &mat2);
-					x = (FLOAT)(pos.x);
-					y = (FLOAT)(pos.y);
-					z = (FLOAT)(pos.z);
 					D3DXMatrixTranslation(&mat2, x, y, z);
-					D3DXMatrixMultiply(&mat2, &mat1, &mat2);
-					D3DXMatrixMultiply(&mat2, &mat2, &GMatWorld);
-					m_pd3dDevice->SetTransform(D3DTS_WORLD, &mat2);
+					D3DXMatrixMultiply(&mat1, &mat1, &mat2);
+					D3DXMatrixMultiply(&mat1, &mat1, &GMatWorld);
+					m_pd3dDevice->SetTransform(D3DTS_WORLD, &mat1);
 					mesh->Render(m_pd3dDevice);
 				}
-				//----------------尾ひれ
-				mesh = m_pXMesh[38];
-				mesh->m_pMaterials[0].Diffuse.a = alpha;
-
-				GFloat temp = (va - va_dist / 2) / va;
-				x = (FLOAT)(pos.x - v.x*temp);
-				y = (FLOAT)(pos.y - v.y*temp);
-				z = (FLOAT)(pos.z - v.z*temp);
-				D3DXMatrixScaling(&mat1, size, (FLOAT)va_dist, size);
-				//-----------------尾ひれの向き
-				GVector Eye_norm = (EyePos2 - pos).normalize2();
-				GVector PertVecY = Eye_norm.cross(v_norm);
-				GVector PertVecZ = v_norm.cross(PertVecY);
-
-				D3DXVECTOR3 vFromPt = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-				D3DXVECTOR3 vLookatPt = D3DXVECTOR3((FLOAT)PertVecZ.x, (FLOAT)PertVecZ.y, (FLOAT)PertVecZ.z);
-				D3DXVECTOR3 vUpVec = D3DXVECTOR3((FLOAT)v_norm.x, (FLOAT)v_norm.y, (FLOAT)v_norm.z);
-				D3DXMatrixLookAtLH(&mat2, &vFromPt, &vLookatPt, &vUpVec);
-				//-----------------
-				D3DXMatrixInverse(&mat2, NULL, &mat2);
-				D3DXMatrixMultiply(&mat1, &mat1, &mat2);
-				D3DXMatrixTranslation(&mat2, x, y, z);
-				D3DXMatrixMultiply(&mat2, &mat1, &mat2);
-				D3DXMatrixMultiply(&mat2, &mat2, &GMatWorld);
-				m_pd3dDevice->SetTransform(D3DTS_WORLD, &mat2);
-				//-----------------
-				m_pd3dDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT2);
-				D3DXMatrixScaling(&mat1, 1.0f, (FLOAT)va_dist_norm, 1.0f);
-				mat1._31 = 0.0f; mat1._32 = (FLOAT)va_dist_inv_norm;
-				m_pd3dDevice->SetTransform(D3DTS_TEXTURE0, &mat1); //地形衝突時のﾃｸｽﾁｬｼﾌﾄ
-				mesh->Render(m_pd3dDevice);
-				m_pd3dDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
 			}
 		}
 
