@@ -9,7 +9,7 @@
 #include <dmusicc.h>
 #include <dmusici.h>
 #include <dsound.h>
-#include <dxerr8.h>
+#include <dxerr9.h>
 #include "DMUtil.h"
 #include "DXUtil.h"
 
@@ -24,6 +24,7 @@ CMusicManager::CMusicManager()
 {
 	m_pLoader = NULL;
 	m_pPerformance = NULL;
+	m_pDSListener = NULL;
 
 	// Initialize COM
 	HRESULT hr = CoInitialize(NULL);
@@ -40,6 +41,7 @@ CMusicManager::CMusicManager()
 CMusicManager::~CMusicManager()
 {
 	SAFE_RELEASE(m_pLoader);
+	SAFE_RELEASE(m_pDSListener);
 
 	if (m_pPerformance)
 	{
@@ -61,34 +63,54 @@ CMusicManager::~CMusicManager()
 // Name: CMusicManager::Initialize()
 // Desc: Inits DirectMusic using a standard audio path
 //-----------------------------------------------------------------------------
-HRESULT CMusicManager::Initialize(HWND hWnd, DWORD dwPChannels, DWORD dwDefaultPathType)
+HRESULT CMusicManager::Initialize(HWND hWnd, DWORD dwPChannels, DWORD dwDefaultPathType, LPDIRECTSOUND pDS)
 {
 	HRESULT hr;
+	IDirectSound** ppDirectSound;
+
+	if (pDS)
+		ppDirectSound = &pDS;
+	else
+		ppDirectSound = NULL;
 
 	// Create loader object
 	if (FAILED(hr = CoCreateInstance(CLSID_DirectMusicLoader, NULL, CLSCTX_INPROC,
 		IID_IDirectMusicLoader8, (void**)&m_pLoader)))
-		return DXTRACE_ERR(TEXT("CoCreateInstance"), hr);
+		return DXTRACE_ERR_MSGBOX(TEXT("CoCreateInstance"), hr);
 
 	// Create performance object
 	if (FAILED(hr = CoCreateInstance(CLSID_DirectMusicPerformance, NULL, CLSCTX_INPROC,
 		IID_IDirectMusicPerformance8, (void**)&m_pPerformance)))
-		return DXTRACE_ERR(TEXT("CoCreateInstance"), hr);
+		return DXTRACE_ERR_MSGBOX(TEXT("CoCreateInstance"), hr);
 
 	// Initialize the performance with the standard audio path.
 	// This initializes both DirectMusic and DirectSound and 
 	// sets up the synthesizer. Typcially its easist to use an 
 	// audio path for playing music and sound effects.
-	if (FAILED(hr = m_pPerformance->InitAudio(NULL, NULL, hWnd, dwDefaultPathType,
+	if (FAILED(hr = m_pPerformance->InitAudio(NULL, ppDirectSound, hWnd, dwDefaultPathType,
 		dwPChannels, DMUS_AUDIOF_ALL, NULL)))
 	{
 		if (hr == DSERR_NODRIVER)
 		{
-			DXTRACE("Warning: No sound card found\n");
+			DXTRACE(TEXT("Warning: No sound card found\n"));
 			return hr;
 		}
 
-		return DXTRACE_ERR(TEXT("InitAudio"), hr);
+		return DXTRACE_ERR_MSGBOX(TEXT("InitAudio"), hr);
+	}
+
+	// Get the listener from the in the default audio path.
+	IDirectMusicAudioPath8* pAudioPath = GetDefaultAudioPath();
+	if (pAudioPath) // might be NULL if dwDefaultPathType == 0
+	{
+		if (SUCCEEDED(hr = pAudioPath->GetObjectInPath(0, DMUS_PATH_PRIMARY_BUFFER, 0,
+			GUID_NULL, 0, IID_IDirectSound3DListener,
+			(LPVOID*)&m_pDSListener)))
+		{
+			// Get listener parameters
+			m_dsListenerParams.dwSize = sizeof(DS3DLISTENER);
+			m_pDSListener->GetAllParameters(&m_dsListenerParams);
+		}
 	}
 
 	return S_OK;
@@ -106,13 +128,16 @@ HRESULT CMusicManager::SetSearchDirectory(const TCHAR* strMediaPath)
 {
 	if (NULL == m_pLoader)
 		return E_UNEXPECTED;
+	if (NULL == strMediaPath)
+		return E_INVALIDARG;
 
 	// DMusic only takes wide strings
 	WCHAR wstrMediaPath[MAX_PATH];
-	DXUtil_ConvertGenericStringToWide(wstrMediaPath, strMediaPath);
+	DXUtil_ConvertGenericStringToWideCb(wstrMediaPath, strMediaPath, sizeof(wstrMediaPath));
 
 	return m_pLoader->SetSearchDirectory(GUID_DirectMusicAllTypes,
 		wstrMediaPath, FALSE);
+
 }
 
 
@@ -150,6 +175,19 @@ VOID CMusicManager::CollectGarbage()
 
 
 //-----------------------------------------------------------------------------
+// Name: CMusicManager::StopAll()
+// Desc: Stops all segments.  Also simply calling Stop() on the segment won't 
+//       stop any MIDI sustain pedals, but calling StopAll() will.
+//-----------------------------------------------------------------------------
+VOID CMusicManager::StopAll()
+{
+	if (m_pPerformance)
+		m_pPerformance->Stop(NULL, NULL, 0, 0);
+}
+
+
+
+//-----------------------------------------------------------------------------
 // Name: CMusicManager::CreateSegmentFromFile()
 // Desc: 
 //-----------------------------------------------------------------------------
@@ -163,7 +201,7 @@ HRESULT CMusicManager::CreateSegmentFromFile(CMusicSegment** ppSegment,
 
 	// DMusic only takes wide strings
 	WCHAR wstrFileName[MAX_PATH];
-	DXUtil_ConvertGenericStringToWide(wstrFileName, strFileName);
+	DXUtil_ConvertGenericStringToWideCb(wstrFileName, strFileName, sizeof(wstrFileName));
 
 	if (FAILED(hr = m_pLoader->LoadObjectFromFile(CLSID_DirectMusicSegment,
 		IID_IDirectMusicSegment8,
@@ -172,7 +210,7 @@ HRESULT CMusicManager::CreateSegmentFromFile(CMusicSegment** ppSegment,
 	{
 		if (hr == DMUS_E_LOADER_FAILEDOPEN)
 			return hr;
-		return DXTRACE_ERR(TEXT("LoadObjectFromFile"), hr);
+		return DXTRACE_ERR_MSGBOX(TEXT("LoadObjectFromFile"), hr);
 	}
 
 	*ppSegment = new CMusicSegment(m_pPerformance, m_pLoader, pSegment);
@@ -183,13 +221,13 @@ HRESULT CMusicManager::CreateSegmentFromFile(CMusicSegment** ppSegment,
 	{
 		if (FAILED(hr = pSegment->SetParam(GUID_StandardMIDIFile,
 			0xFFFFFFFF, 0, 0, NULL)))
-			return DXTRACE_ERR(TEXT("SetParam"), hr);
+			return DXTRACE_ERR_MSGBOX(TEXT("SetParam"), hr);
 	}
 
 	if (bDownloadNow)
 	{
 		if (FAILED(hr = (*ppSegment)->Download()))
-			return DXTRACE_ERR(TEXT("Download"), hr);
+			return DXTRACE_ERR_MSGBOX(TEXT("Download"), hr);
 	}
 
 	return S_OK;
@@ -242,7 +280,7 @@ HRESULT CMusicManager::CreateSegmentFromResource(CMusicSegment** ppSegment,
 	{
 		if (hr == DMUS_E_LOADER_FAILEDOPEN)
 			return hr;
-		return DXTRACE_ERR(TEXT("LoadObjectFromFile"), hr);
+		return DXTRACE_ERR_MSGBOX(TEXT("LoadObjectFromFile"), hr);
 	}
 
 	*ppSegment = new CMusicSegment(m_pPerformance, m_pLoader, pSegment);
@@ -256,7 +294,7 @@ HRESULT CMusicManager::CreateSegmentFromResource(CMusicSegment** ppSegment,
 		// all instruments sound correct.                  
 		if (FAILED(hr = pSegment->SetParam(GUID_StandardMIDIFile,
 			0xFFFFFFFF, 0, 0, NULL)))
-			return DXTRACE_ERR(TEXT("SetParam"), hr);
+			return DXTRACE_ERR_MSGBOX(TEXT("SetParam"), hr);
 	}
 
 	if (bDownloadNow)
@@ -267,6 +305,59 @@ HRESULT CMusicManager::CreateSegmentFromResource(CMusicSegment** ppSegment,
 		// instruments. The more instruments currently downloaded, 
 		// the more memory is in use by the synthesizer.
 		if (FAILED(hr = (*ppSegment)->Download()))
+			return DXTRACE_ERR_MSGBOX(TEXT("Download"), hr);
+	}
+
+	return S_OK;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// Name: CMusicManager::Create3DSegmentFromFile()
+// Desc: 
+//-----------------------------------------------------------------------------
+HRESULT CMusicManager::Create3DSegmentFromFile(C3DMusicSegment** pp3DMusicSegment,
+	TCHAR* strFileName,
+	BOOL bDownloadNow,
+	BOOL bIsMidiFile,
+	IDirectMusicAudioPath8* p3DAudioPath)
+{
+	HRESULT               hr;
+	IDirectMusicSegment8* pSegment = NULL;
+
+	// DMusic only takes wide strings
+	WCHAR wstrFileName[MAX_PATH];
+	DXUtil_ConvertGenericStringToWideCb(wstrFileName, strFileName, sizeof(wstrFileName));
+
+	if (FAILED(hr = m_pLoader->LoadObjectFromFile(CLSID_DirectMusicSegment,
+		IID_IDirectMusicSegment8,
+		wstrFileName,
+		(LPVOID*)&pSegment)))
+	{
+		if (hr == DMUS_E_LOADER_FAILEDOPEN)
+			return hr;
+		return DXTRACE_ERR(TEXT("LoadObjectFromFile"), hr);
+	}
+
+	*pp3DMusicSegment = new C3DMusicSegment(m_pPerformance, m_pLoader, pSegment, p3DAudioPath);
+	if (!*pp3DMusicSegment)
+		return E_OUTOFMEMORY;
+
+	if (FAILED(hr = (*pp3DMusicSegment)->Init()))
+		return DXTRACE_ERR(TEXT("SetParam"), hr);
+
+	if (bIsMidiFile)
+	{
+		if (FAILED(hr = pSegment->SetParam(GUID_StandardMIDIFile,
+			0xFFFFFFFF, 0, 0, NULL)))
+			return DXTRACE_ERR(TEXT("SetParam"), hr);
+	}
+
+	if (bDownloadNow)
+	{
+		if (FAILED(hr = (*pp3DMusicSegment)->Download()))
 			return DXTRACE_ERR(TEXT("Download"), hr);
 	}
 
@@ -288,16 +379,16 @@ HRESULT CMusicManager::CreateScriptFromFile(CMusicScript** ppScript,
 
 	// DMusic only takes wide strings
 	WCHAR wstrFileName[MAX_PATH];
-	DXUtil_ConvertGenericStringToWide(wstrFileName, strFileName);
+	DXUtil_ConvertGenericStringToWideCb(wstrFileName, strFileName, sizeof(wstrFileName));
 
 	if (FAILED(hr = m_pLoader->LoadObjectFromFile(CLSID_DirectMusicScript,
 		IID_IDirectMusicScript8,
 		wstrFileName,
 		(LPVOID*)&pScript)))
-		return DXTRACE_ERR_NOMSGBOX(TEXT("LoadObjectFromFile"), hr);
+		return DXTRACE_ERR(TEXT("LoadObjectFromFile"), hr);
 
 	if (FAILED(hr = pScript->Init(m_pPerformance, NULL)))
-		return DXTRACE_ERR(TEXT("Init"), hr);
+		return DXTRACE_ERR_MSGBOX(TEXT("Init"), hr);
 
 	*ppScript = new CMusicScript(m_pPerformance, m_pLoader, pScript);
 	if (!*ppScript)
@@ -318,7 +409,7 @@ HRESULT CMusicManager::CreateChordMapFromFile(IDirectMusicChordMap8** ppChordMap
 {
 	// DMusic only takes wide strings
 	WCHAR wstrFileName[MAX_PATH];
-	DXUtil_ConvertGenericStringToWide(wstrFileName, strFileName);
+	DXUtil_ConvertGenericStringToWideCb(wstrFileName, strFileName, sizeof(wstrFileName));
 
 	return m_pLoader->LoadObjectFromFile(CLSID_DirectMusicChordMap,
 		IID_IDirectMusicChordMap8,
@@ -337,7 +428,7 @@ HRESULT CMusicManager::CreateStyleFromFile(IDirectMusicStyle8** ppStyle,
 {
 	// DMusic only takes wide strings
 	WCHAR wstrFileName[MAX_PATH];
-	DXUtil_ConvertGenericStringToWide(wstrFileName, strFileName);
+	DXUtil_ConvertGenericStringToWideCb(wstrFileName, strFileName, sizeof(wstrFileName));
 
 	return m_pLoader->LoadObjectFromFile(CLSID_DirectMusicStyle,
 		IID_IDirectMusicStyle8,
@@ -354,29 +445,48 @@ HRESULT CMusicManager::CreateStyleFromFile(IDirectMusicStyle8** ppStyle,
 HRESULT CMusicManager::GetMotifFromStyle(IDirectMusicSegment8** ppMotif8,
 	TCHAR* strStyle, TCHAR* strMotif)
 {
+	UNREFERENCED_PARAMETER(strMotif);
+
 	HRESULT              hr;
 	IDirectMusicStyle8*  pStyle = NULL;
 	IDirectMusicSegment* pMotif = NULL;
 
 	if (FAILED(hr = CreateStyleFromFile(&pStyle, strStyle)))
-		return DXTRACE_ERR(TEXT("CreateStyleFromFile"), hr);
+		return DXTRACE_ERR_MSGBOX(TEXT("CreateStyleFromFile"), hr);
 
 	if (pStyle)
 	{
 		// DMusic only takes wide strings
 		WCHAR wstrMotif[MAX_PATH];
-		DXUtil_ConvertGenericStringToWide(wstrMotif, strMotif);
+		DXUtil_ConvertGenericStringToWideCb(wstrMotif, strStyle, sizeof(wstrMotif));
 
 		hr = pStyle->GetMotif(wstrMotif, &pMotif);
 		SAFE_RELEASE(pStyle);
 
 		if (FAILED(hr))
-			return DXTRACE_ERR(TEXT("GetMotif"), hr);
+			return DXTRACE_ERR_MSGBOX(TEXT("GetMotif"), hr);
 
 		pMotif->QueryInterface(IID_IDirectMusicSegment8, (LPVOID*)ppMotif8);
 	}
 
 	return S_OK;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// Name: Set3DParameters
+// Desc: 
+//-----------------------------------------------------------------------------
+VOID CMusicManager::Set3DParameters(FLOAT fDistanceFactor, FLOAT fDopplerFactor, FLOAT fRolloffFactor)
+{
+	m_dsListenerParams.flDistanceFactor = fDistanceFactor;
+	m_dsListenerParams.flDopplerFactor = fDopplerFactor;
+	m_dsListenerParams.flRolloffFactor = fRolloffFactor;
+
+	if (m_pDSListener)
+		m_pDSListener->SetAllParameters(&m_dsListenerParams, DS3D_IMMEDIATE);
 }
 
 
@@ -545,7 +655,7 @@ HRESULT CMusicSegment::Unload(IDirectMusicAudioPath8* pAudioPath)
 BOOL CMusicSegment::IsPlaying()
 {
 	if (m_pSegment == NULL || m_pPerformance == NULL)
-		return CO_E_NOTINITIALIZED;
+		return FALSE;
 
 	return (m_pPerformance->IsPlaying(m_pSegment, NULL) == S_OK);
 }
@@ -602,6 +712,152 @@ HRESULT CMusicSegment::GetStyle(IDirectMusicStyle8** ppStyle, DWORD dwStyleIndex
 
 
 
+
+
+//-----------------------------------------------------------------------------
+// Name: C3DMusicSegment::C3DMusicSegment()
+// Desc: Constructs the class
+//-----------------------------------------------------------------------------
+C3DMusicSegment::C3DMusicSegment(IDirectMusicPerformance8* pPerformance,
+	IDirectMusicLoader8*      pLoader,
+	IDirectMusicSegment8*     pSegment,
+	IDirectMusicAudioPath8* pAudioPath) :
+	CMusicSegment(pPerformance, pLoader, pSegment)
+{
+	m_p3DAudioPath = pAudioPath;
+	m_pDS3DBuffer = NULL;
+	m_bDeferSettings = FALSE;
+	m_bCleanupAudioPath = FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// Name: C3DMusicSegment::~C3DMusicSegment()
+// Desc: Destroys the class
+//-----------------------------------------------------------------------------
+C3DMusicSegment::~C3DMusicSegment()
+{
+	SAFE_RELEASE(m_pDS3DBuffer);
+	if (m_bCleanupAudioPath)
+		SAFE_RELEASE(m_p3DAudioPath);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// Name: Init()
+// Desc: 
+//-----------------------------------------------------------------------------
+HRESULT C3DMusicSegment::Init()
+{
+	HRESULT hr;
+
+	if (NULL == m_p3DAudioPath)
+	{
+		// Create a 3D audiopath with a 3d buffer.
+		// We can then play all segments into this buffer and directly control its
+		// 3D parameters.
+		if (FAILED(hr = m_pPerformance->CreateStandardAudioPath(DMUS_APATH_DYNAMIC_3D,
+			64, TRUE, &m_p3DAudioPath)))
+			return DXTRACE_ERR(TEXT("CreateStandardAudioPath"), hr);
+		m_bCleanupAudioPath = TRUE;
+	}
+
+	// Get the 3D buffer in the audio path.
+	if (FAILED(hr = m_p3DAudioPath->GetObjectInPath(0, DMUS_PATH_BUFFER, 0,
+		GUID_NULL, 0, IID_IDirectSound3DBuffer,
+		(LPVOID*)&m_pDS3DBuffer)))
+		return DXTRACE_ERR(TEXT("GetObjectInPath"), hr);
+
+	// Get the 3D buffer parameters
+	m_dsBufferParams.dwSize = sizeof(DS3DBUFFER);
+	m_pDS3DBuffer->GetAllParameters(&m_dsBufferParams);
+
+	// Set new 3D buffer parameters
+	m_dsBufferParams.dwMode = DS3DMODE_HEADRELATIVE;
+	m_pDS3DBuffer->SetAllParameters(&m_dsBufferParams, DS3D_IMMEDIATE);
+
+	return S_OK;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// Name: Play
+// Desc: 
+//-----------------------------------------------------------------------------
+HRESULT C3DMusicSegment::Play(DWORD dwFlags, IDirectMusicAudioPath8* pAudioPath)
+{
+	if (pAudioPath)
+		return CMusicSegment::Play(dwFlags, pAudioPath);
+	else
+		return CMusicSegment::Play(dwFlags, m_p3DAudioPath);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// Name: Set3DParameters
+// Desc: 
+//-----------------------------------------------------------------------------
+VOID C3DMusicSegment::Set3DParameters(FLOAT fMinDistance, FLOAT fMaxDistance)
+{
+	// Every change to 3-D sound buffer and listener settings causes 
+	// DirectSound to remix, at the expense of CPU cycles. 
+	// To minimize the performance impact of changing 3-D settings, 
+	// use the DS3D_DEFERRED flag in the dwApply parameter of any of 
+	// the IDirectSound3DListener or IDirectSound3DBuffer methods that 
+	// change 3-D settings. Then call the IDirectSound3DListener::CommitDeferredSettings 
+	// method to execute all of the deferred commands at once.
+	DWORD dwApplyFlag = (m_bDeferSettings) ? DS3D_DEFERRED : DS3D_IMMEDIATE;
+
+	m_dsBufferParams.flMinDistance = fMinDistance;
+	m_dsBufferParams.flMaxDistance = fMaxDistance;
+
+	if (m_pDS3DBuffer)
+		m_pDS3DBuffer->SetAllParameters(&m_dsBufferParams, dwApplyFlag);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// Name: SetObjectProperties
+// Desc: 
+//-----------------------------------------------------------------------------
+VOID C3DMusicSegment::SetObjectProperties(D3DVECTOR* pvPosition, D3DVECTOR* pvVelocity)
+{
+	DWORD dwApplyFlag = (m_bDeferSettings) ? DS3D_DEFERRED : DS3D_IMMEDIATE;
+
+	// Every change to 3-D sound buffer and listener settings causes 
+	// DirectSound to remix, at the expense of CPU cycles. 
+	// To minimize the performance impact of changing 3-D settings, 
+	// use the DS3D_DEFERRED flag in the dwApply parameter of any of 
+	// the IDirectSound3DListener or IDirectSound3DBuffer methods that 
+	// change 3-D settings. Then call the IDirectSound3DListener::CommitDeferredSettings 
+	// method to execute all of the deferred commands at once.
+	memcpy(&m_dsBufferParams.vPosition, pvPosition, sizeof(D3DVECTOR));
+	memcpy(&m_dsBufferParams.vVelocity, pvVelocity, sizeof(D3DVECTOR));
+
+	if (m_pDS3DBuffer)
+	{
+		m_pDS3DBuffer->SetPosition(m_dsBufferParams.vPosition.x,
+			m_dsBufferParams.vPosition.y,
+			m_dsBufferParams.vPosition.z, dwApplyFlag);
+
+		m_pDS3DBuffer->SetVelocity(m_dsBufferParams.vVelocity.x,
+			m_dsBufferParams.vVelocity.y,
+			m_dsBufferParams.vVelocity.z, dwApplyFlag);
+	}
+}
+
+
+
 //-----------------------------------------------------------------------------
 // Name: CMusicScript::CMusicScript()
 // Desc: Constructs the class
@@ -646,7 +902,7 @@ HRESULT CMusicScript::CallRoutine(TCHAR* strRoutine)
 {
 	// DMusic only takes wide strings
 	WCHAR wstrRoutine[MAX_PATH];
-	DXUtil_ConvertGenericStringToWide(wstrRoutine, strRoutine);
+	DXUtil_ConvertGenericStringToWideCb(wstrRoutine, strRoutine, sizeof(wstrRoutine));
 
 	return m_pScript->CallRoutine(wstrRoutine, NULL);
 }
@@ -662,7 +918,7 @@ HRESULT CMusicScript::SetVariableNumber(TCHAR* strVariable, LONG lValue)
 {
 	// DMusic only takes wide strings
 	WCHAR wstrVariable[MAX_PATH];
-	DXUtil_ConvertGenericStringToWide(wstrVariable, strVariable);
+	DXUtil_ConvertGenericStringToWideCb(wstrVariable, strVariable, sizeof(wstrVariable));
 
 	return m_pScript->SetVariableNumber(wstrVariable, lValue, NULL);
 }
@@ -678,10 +934,39 @@ HRESULT CMusicScript::GetVariableNumber(TCHAR* strVariable, LONG* plValue)
 {
 	// DMusic only takes wide strings
 	WCHAR wstrVariable[MAX_PATH];
-	DXUtil_ConvertGenericStringToWide(wstrVariable, strVariable);
+	DXUtil_ConvertGenericStringToWideCb(wstrVariable, strVariable, sizeof(wstrVariable));
 
 	return m_pScript->GetVariableNumber(wstrVariable, plValue, NULL);
 }
 
 
+
+//-----------------------------------------------------------------------------
+// Name: CMusicScript::SetVariableObject()
+// Desc: Sets an object in the script
+//-----------------------------------------------------------------------------
+HRESULT CMusicScript::SetVariableObject(TCHAR* strVariable, IUnknown *punkValue)
+{
+	// DMusic only takes wide strings
+	WCHAR wstrVariable[MAX_PATH];
+	DXUtil_ConvertGenericStringToWideCb(wstrVariable, strVariable, sizeof(wstrVariable));
+
+	return m_pScript->SetVariableObject(wstrVariable, punkValue, NULL);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// Name: CMusicScript::GetVariableObject()
+// Desc: Gets an object from the script
+//-----------------------------------------------------------------------------
+HRESULT CMusicScript::GetVariableObject(TCHAR* strVariable, REFIID riid, LPVOID FAR *ppv)
+{
+	// DMusic only takes wide strings
+	WCHAR wstrVariable[MAX_PATH];
+	DXUtil_ConvertGenericStringToWideCb(wstrVariable, strVariable, sizeof(wstrVariable));
+
+	return m_pScript->GetVariableObject(wstrVariable, riid, ppv, NULL);
+}
 
