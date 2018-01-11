@@ -17,7 +17,7 @@ extern "C" {
 
 
 
-HRESULT LoadLand(LPDIRECT3DDEVICE8 Device, char *fname);
+HRESULT LoadLand(LPDIRECT3DDEVICE9 Device, char *fname);
 char *SearchFolder(const TCHAR *path, char *filename, char *result);
 void ResetChip2(int n, GFloat a);
 void setOption(GRigid *rigid, GFloat value);

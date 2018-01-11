@@ -4,24 +4,26 @@
 // Desc: Shortcut macros and functions for using DX objects
 //-----------------------------------------------------------------------------
 #define STRICT
+#include <Windows.h>
+#include <WindowsX.h>
 #include <tchar.h>
 #include <stdio.h>
 #include "D3DUtil.h"
 #include "DXUtil.h"
-#include "D3DX8.h"
+#include "D3DX9.h"
 
 
 
 
 //-----------------------------------------------------------------------------
 // Name: D3DUtil_InitMaterial()
-// Desc: Initializes a D3DMATERIAL8 structure, setting the diffuse and ambient
+// Desc: Initializes a D3DMATERIAL9 structure, setting the diffuse and ambient
 //       colors. It does not set emissive or specular colors.
 //-----------------------------------------------------------------------------
-VOID D3DUtil_InitMaterial(D3DMATERIAL8& mtrl, FLOAT r, FLOAT g, FLOAT b,
+VOID D3DUtil_InitMaterial(D3DMATERIAL9& mtrl, FLOAT r, FLOAT g, FLOAT b,
 	FLOAT a)
 {
-	ZeroMemory(&mtrl, sizeof(D3DMATERIAL8));
+	ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
 	mtrl.Diffuse.r = mtrl.Ambient.r = r;
 	mtrl.Diffuse.g = mtrl.Ambient.g = g;
 	mtrl.Diffuse.b = mtrl.Ambient.b = b;
@@ -36,15 +38,16 @@ VOID D3DUtil_InitMaterial(D3DMATERIAL8& mtrl, FLOAT r, FLOAT g, FLOAT b,
 // Desc: Initializes a D3DLIGHT structure, setting the light position. The
 //       diffuse color is set to white; specular and ambient are left as black.
 //-----------------------------------------------------------------------------
-VOID D3DUtil_InitLight(D3DLIGHT8& light, D3DLIGHTTYPE ltType,
+VOID D3DUtil_InitLight(D3DLIGHT9& light, D3DLIGHTTYPE ltType,
 	FLOAT x, FLOAT y, FLOAT z)
 {
-	ZeroMemory(&light, sizeof(D3DLIGHT8));
+	D3DXVECTOR3 vecLightDirUnnormalized(x, y, z);
+	ZeroMemory(&light, sizeof(D3DLIGHT9));
 	light.Type = ltType;
 	light.Diffuse.r = 1.0f;
 	light.Diffuse.g = 1.0f;
 	light.Diffuse.b = 1.0f;
-	D3DXVec3Normalize((D3DXVECTOR3*)&light.Direction, &D3DXVECTOR3(x, y, z));
+	D3DXVec3Normalize((D3DXVECTOR3*)&light.Direction, &vecLightDirUnnormalized);
 	light.Position.x = x;
 	light.Position.y = y;
 	light.Position.z = z;
@@ -59,102 +62,21 @@ VOID D3DUtil_InitLight(D3DLIGHT8& light, D3DLIGHTTYPE ltType,
 // Desc: Helper function to create a texture. It checks the root path first,
 //       then tries the DXSDK media path (as specified in the system registry).
 //-----------------------------------------------------------------------------
-HRESULT D3DUtil_CreateTexture(LPDIRECT3DDEVICE8 pd3dDevice, TCHAR* strTexture,
-	LPDIRECT3DTEXTURE8* ppTexture, D3DFORMAT d3dFormat)
+HRESULT D3DUtil_CreateTexture(LPDIRECT3DDEVICE9 pd3dDevice, TCHAR* strTexture,
+	LPDIRECT3DTEXTURE9* ppTexture, D3DFORMAT d3dFormat)
 {
-	// Get the path to the texture
+	HRESULT hr;
 	TCHAR strPath[MAX_PATH];
-	DXUtil_FindMediaFile(strPath, strTexture);
+
+	// Get the path to the texture
+	if (FAILED(hr = DXUtil_FindMediaFileCb(strPath, sizeof(strPath), strTexture)))
+		return hr;
 
 	// Create the texture using D3DX
 	return D3DXCreateTextureFromFileEx(pd3dDevice, strPath,
 		D3DX_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, d3dFormat,
 		D3DPOOL_MANAGED, D3DX_FILTER_TRIANGLE | D3DX_FILTER_MIRROR,
 		D3DX_FILTER_TRIANGLE | D3DX_FILTER_MIRROR, 0, NULL, NULL, ppTexture);
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// Name: D3DUtil_SetColorKey()
-// Desc: Changes all texels matching the colorkey to transparent, black.
-//-----------------------------------------------------------------------------
-HRESULT D3DUtil_SetColorKey(LPDIRECT3DTEXTURE8 pTexture, DWORD dwColorKey)
-{
-	// Get colorkey's red, green, and blue components
-	DWORD r = ((dwColorKey & 0x00ff0000) >> 16);
-	DWORD g = ((dwColorKey & 0x0000ff00) >> 8);
-	DWORD b = ((dwColorKey & 0x000000ff) >> 0);
-
-	// Put the colorkey in the texture's native format
-	D3DSURFACE_DESC d3dsd;
-	pTexture->GetLevelDesc(0, &d3dsd);
-	if (d3dsd.Format == D3DFMT_A4R4G4B4)
-		dwColorKey = 0xf000 + ((r >> 4) << 8) + ((g >> 4) << 4) + (b >> 4);
-	else if (d3dsd.Format == D3DFMT_A1R5G5B5)
-		dwColorKey = 0x8000 + ((r >> 3) << 10) + ((g >> 3) << 5) + (b >> 3);
-	else if (d3dsd.Format != D3DFMT_A8R8G8B8)
-		return E_FAIL;
-
-	// Lock the texture
-	D3DLOCKED_RECT  d3dlr;
-	if (FAILED(pTexture->LockRect(0, &d3dlr, 0, 0)))
-		return E_FAIL;
-
-	// Scan through each pixel, looking for the colorkey to replace
-	for (DWORD y = 0; y < d3dsd.Height; y++)
-	{
-		for (DWORD x = 0; x < d3dsd.Width; x++)
-		{
-			if (d3dsd.Format == D3DFMT_A8R8G8B8)
-			{
-				// Handle 32-bit formats
-				if (((DWORD*)d3dlr.pBits)[d3dsd.Width*y + x] == dwColorKey)
-					((DWORD*)d3dlr.pBits)[d3dsd.Width*y + x] = 0x00000000;
-			}
-			else
-			{
-				// Handle 16-bit formats
-				if (((WORD*)d3dlr.pBits)[d3dsd.Width*y + x] == dwColorKey)
-					((WORD*)d3dlr.pBits)[d3dsd.Width*y + x] = 0x0000;
-			}
-		}
-	}
-
-	// Unlock the texture and return OK.
-	pTexture->UnlockRect(0);
-	return S_OK;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// Name: D3DUtil_CreateVertexShader()
-// Desc: Assembles and creates a file-based vertex shader
-//-----------------------------------------------------------------------------
-HRESULT D3DUtil_CreateVertexShader(LPDIRECT3DDEVICE8 pd3dDevice,
-	TCHAR* strFilename, DWORD* pdwVertexDecl,
-	DWORD* pdwVertexShader)
-{
-	LPD3DXBUFFER pCode;
-	TCHAR        strPath[MAX_PATH];
-	HRESULT      hr;
-
-	// Get the path to the vertex shader file
-	DXUtil_FindMediaFile(strPath, strFilename);
-
-	// Assemble the vertex shader file
-	if (FAILED(hr = D3DXAssembleShaderFromFile(strPath, 0, NULL, &pCode, NULL)))
-		return hr;
-
-	// Create the vertex shader
-	hr = pd3dDevice->CreateVertexShader(pdwVertexDecl,
-		(DWORD*)pCode->GetBufferPointer(),
-		pdwVertexShader, 0);
-	pCode->Release();
-	return hr;
 }
 
 
@@ -199,7 +121,7 @@ D3DXMATRIX D3DUtil_GetCubeMapViewMatrix(DWORD dwFace)
 	}
 
 	// Set the view transform for this cubemap surface
-	D3DXMATRIX matView;
+	D3DXMATRIXA16 matView;
 	D3DXMatrixLookAtLH(&matView, &vEyePt, &vLookDir, &vUpDir);
 	return matView;
 }
@@ -227,7 +149,6 @@ D3DXQUATERNION D3DUtil_GetRotationFromCursor(HWND hWnd,
 	if (sx == 0.0f && sy == 0.0f)
 		return D3DXQUATERNION(0.0f, 0.0f, 0.0f, 1.0f);
 
-	FLOAT d1 = 0.0f;
 	FLOAT d2 = sqrtf(sx*sx + sy*sy);
 
 	if (d2 < fTrackBallRadius * 0.70710678118654752440) // Inside sphere
@@ -244,7 +165,8 @@ D3DXQUATERNION D3DUtil_GetRotationFromCursor(HWND hWnd,
 	D3DXVec3Cross(&vAxis, &p1, &p2);
 
 	// Calculate angle for the rotation about that axis
-	FLOAT t = D3DXVec3Length(&(p2 - p1)) / (2.0f*fTrackBallRadius);
+	D3DXVECTOR3 vecDiff = p2 - p1;
+	FLOAT t = D3DXVec3Length(&vecDiff) / (2.0f*fTrackBallRadius);
 	if (t > +1.0f) t = +1.0f;
 	if (t < -1.0f) t = -1.0f;
 	FLOAT fAngle = 2.0f * asinf(t);
@@ -262,13 +184,13 @@ D3DXQUATERNION D3DUtil_GetRotationFromCursor(HWND hWnd,
 // Name: D3DUtil_SetDeviceCursor
 // Desc: Gives the D3D device a cursor with image and hotspot from hCursor.
 //-----------------------------------------------------------------------------
-HRESULT D3DUtil_SetDeviceCursor(LPDIRECT3DDEVICE8 pd3dDevice, HCURSOR hCursor,
+HRESULT D3DUtil_SetDeviceCursor(LPDIRECT3DDEVICE9 pd3dDevice, HCURSOR hCursor,
 	BOOL bAddWatermark)
 {
 	HRESULT hr = E_FAIL;
 	ICONINFO iconinfo;
 	BOOL bBWCursor;
-	LPDIRECT3DSURFACE8 pCursorBitmap = NULL;
+	LPDIRECT3DSURFACE9 pCursorSurface = NULL;
 	HDC hdcColor = NULL;
 	HDC hdcMask = NULL;
 	HDC hdcScreen = NULL;
@@ -307,8 +229,8 @@ HRESULT D3DUtil_SetDeviceCursor(LPDIRECT3DDEVICE8 pd3dDevice, HCURSOR hCursor,
 	}
 
 	// Create a surface for the fullscreen cursor
-	if (FAILED(hr = pd3dDevice->CreateImageSurface(dwWidth, dwHeightDest,
-		D3DFMT_A8R8G8B8, &pCursorBitmap)))
+	if (FAILED(hr = pd3dDevice->CreateOffscreenPlainSurface(dwWidth, dwHeightDest,
+		D3DFMT_A8R8G8B8, D3DPOOL_SCRATCH, &pCursorSurface, NULL)))
 	{
 		goto End;
 	}
@@ -338,7 +260,7 @@ HRESULT D3DUtil_SetDeviceCursor(LPDIRECT3DDEVICE8 pd3dDevice, HCURSOR hCursor,
 	if (!bBWCursor)
 	{
 		pcrArrayColor = new DWORD[dwWidth * dwHeightDest];
-		hdcColor = CreateCompatibleDC(GetDC(NULL));
+		hdcColor = CreateCompatibleDC(hdcScreen);
 		if (hdcColor == NULL)
 		{
 			hr = E_FAIL;
@@ -351,7 +273,7 @@ HRESULT D3DUtil_SetDeviceCursor(LPDIRECT3DDEVICE8 pd3dDevice, HCURSOR hCursor,
 
 	// Transfer cursor image into the surface
 	D3DLOCKED_RECT lr;
-	pCursorBitmap->LockRect(&lr, NULL, 0);
+	pCursorSurface->LockRect(&lr, NULL, 0);
 	pBitmap = (DWORD*)lr.pBits;
 	for (y = 0; y < dwHeightDest; y++)
 	{
@@ -394,11 +316,11 @@ HRESULT D3DUtil_SetDeviceCursor(LPDIRECT3DDEVICE8 pd3dDevice, HCURSOR hCursor,
 			}
 		}
 	}
-	pCursorBitmap->UnlockRect();
+	pCursorSurface->UnlockRect();
 
 	// Set the device cursor
 	if (FAILED(hr = pd3dDevice->SetCursorProperties(iconinfo.xHotspot,
-		iconinfo.yHotspot, pCursorBitmap)))
+		iconinfo.yHotspot, pCursorSurface)))
 	{
 		goto End;
 	}
@@ -418,11 +340,84 @@ End:
 		DeleteDC(hdcMask);
 	SAFE_DELETE_ARRAY(pcrArrayColor);
 	SAFE_DELETE_ARRAY(pcrArrayMask);
-	SAFE_RELEASE(pCursorBitmap);
+	SAFE_RELEASE(pCursorSurface);
 	return hr;
 }
 
 
+
+//-----------------------------------------------------------------------------
+// Name: D3DFormatToString
+// Desc: Returns the string for the given D3DFORMAT.
+//-----------------------------------------------------------------------------
+TCHAR* D3DUtil_D3DFormatToString(D3DFORMAT format, bool bWithPrefix)
+{
+	TCHAR* pstr = NULL;
+	switch (format)
+	{
+	case D3DFMT_UNKNOWN:         pstr = TEXT("D3DFMT_UNKNOWN"); break;
+	case D3DFMT_R8G8B8:          pstr = TEXT("D3DFMT_R8G8B8"); break;
+	case D3DFMT_A8R8G8B8:        pstr = TEXT("D3DFMT_A8R8G8B8"); break;
+	case D3DFMT_X8R8G8B8:        pstr = TEXT("D3DFMT_X8R8G8B8"); break;
+	case D3DFMT_R5G6B5:          pstr = TEXT("D3DFMT_R5G6B5"); break;
+	case D3DFMT_X1R5G5B5:        pstr = TEXT("D3DFMT_X1R5G5B5"); break;
+	case D3DFMT_A1R5G5B5:        pstr = TEXT("D3DFMT_A1R5G5B5"); break;
+	case D3DFMT_A4R4G4B4:        pstr = TEXT("D3DFMT_A4R4G4B4"); break;
+	case D3DFMT_R3G3B2:          pstr = TEXT("D3DFMT_R3G3B2"); break;
+	case D3DFMT_A8:              pstr = TEXT("D3DFMT_A8"); break;
+	case D3DFMT_A8R3G3B2:        pstr = TEXT("D3DFMT_A8R3G3B2"); break;
+	case D3DFMT_X4R4G4B4:        pstr = TEXT("D3DFMT_X4R4G4B4"); break;
+	case D3DFMT_A2B10G10R10:     pstr = TEXT("D3DFMT_A2B10G10R10"); break;
+	case D3DFMT_A8B8G8R8:        pstr = TEXT("D3DFMT_A8B8G8R8"); break;
+	case D3DFMT_X8B8G8R8:        pstr = TEXT("D3DFMT_X8B8G8R8"); break;
+	case D3DFMT_G16R16:          pstr = TEXT("D3DFMT_G16R16"); break;
+	case D3DFMT_A2R10G10B10:     pstr = TEXT("D3DFMT_A2R10G10B10"); break;
+	case D3DFMT_A16B16G16R16:    pstr = TEXT("D3DFMT_A16B16G16R16"); break;
+	case D3DFMT_A8P8:            pstr = TEXT("D3DFMT_A8P8"); break;
+	case D3DFMT_P8:              pstr = TEXT("D3DFMT_P8"); break;
+	case D3DFMT_L8:              pstr = TEXT("D3DFMT_L8"); break;
+	case D3DFMT_A8L8:            pstr = TEXT("D3DFMT_A8L8"); break;
+	case D3DFMT_A4L4:            pstr = TEXT("D3DFMT_A4L4"); break;
+	case D3DFMT_V8U8:            pstr = TEXT("D3DFMT_V8U8"); break;
+	case D3DFMT_L6V5U5:          pstr = TEXT("D3DFMT_L6V5U5"); break;
+	case D3DFMT_X8L8V8U8:        pstr = TEXT("D3DFMT_X8L8V8U8"); break;
+	case D3DFMT_Q8W8V8U8:        pstr = TEXT("D3DFMT_Q8W8V8U8"); break;
+	case D3DFMT_V16U16:          pstr = TEXT("D3DFMT_V16U16"); break;
+	case D3DFMT_A2W10V10U10:     pstr = TEXT("D3DFMT_A2W10V10U10"); break;
+	case D3DFMT_UYVY:            pstr = TEXT("D3DFMT_UYVY"); break;
+	case D3DFMT_YUY2:            pstr = TEXT("D3DFMT_YUY2"); break;
+	case D3DFMT_DXT1:            pstr = TEXT("D3DFMT_DXT1"); break;
+	case D3DFMT_DXT2:            pstr = TEXT("D3DFMT_DXT2"); break;
+	case D3DFMT_DXT3:            pstr = TEXT("D3DFMT_DXT3"); break;
+	case D3DFMT_DXT4:            pstr = TEXT("D3DFMT_DXT4"); break;
+	case D3DFMT_DXT5:            pstr = TEXT("D3DFMT_DXT5"); break;
+	case D3DFMT_D16_LOCKABLE:    pstr = TEXT("D3DFMT_D16_LOCKABLE"); break;
+	case D3DFMT_D32:             pstr = TEXT("D3DFMT_D32"); break;
+	case D3DFMT_D15S1:           pstr = TEXT("D3DFMT_D15S1"); break;
+	case D3DFMT_D24S8:           pstr = TEXT("D3DFMT_D24S8"); break;
+	case D3DFMT_D24X8:           pstr = TEXT("D3DFMT_D24X8"); break;
+	case D3DFMT_D24X4S4:         pstr = TEXT("D3DFMT_D24X4S4"); break;
+	case D3DFMT_D16:             pstr = TEXT("D3DFMT_D16"); break;
+	case D3DFMT_L16:             pstr = TEXT("D3DFMT_L16"); break;
+	case D3DFMT_VERTEXDATA:      pstr = TEXT("D3DFMT_VERTEXDATA"); break;
+	case D3DFMT_INDEX16:         pstr = TEXT("D3DFMT_INDEX16"); break;
+	case D3DFMT_INDEX32:         pstr = TEXT("D3DFMT_INDEX32"); break;
+	case D3DFMT_Q16W16V16U16:    pstr = TEXT("D3DFMT_Q16W16V16U16"); break;
+	case D3DFMT_MULTI2_ARGB8:    pstr = TEXT("D3DFMT_MULTI2_ARGB8"); break;
+	case D3DFMT_R16F:            pstr = TEXT("D3DFMT_R16F"); break;
+	case D3DFMT_G16R16F:         pstr = TEXT("D3DFMT_G16R16F"); break;
+	case D3DFMT_A16B16G16R16F:   pstr = TEXT("D3DFMT_A16B16G16R16F"); break;
+	case D3DFMT_R32F:            pstr = TEXT("D3DFMT_R32F"); break;
+	case D3DFMT_G32R32F:         pstr = TEXT("D3DFMT_G32R32F"); break;
+	case D3DFMT_A32B32G32R32F:   pstr = TEXT("D3DFMT_A32B32G32R32F"); break;
+	case D3DFMT_CxV8U8:          pstr = TEXT("D3DFMT_CxV8U8"); break;
+	default:                     pstr = TEXT("Unknown format"); break;
+	}
+	if (bWithPrefix || _tcsstr(pstr, TEXT("D3DFMT_")) == NULL)
+		return pstr;
+	else
+		return pstr + lstrlen(TEXT("D3DFMT_"));
+}
 
 
 //-----------------------------------------------------------------------------
@@ -471,6 +466,18 @@ inline D3DXQUATERNION* WINAPI D3DXQuaternionAxisToAxis
 // Desc:
 //-----------------------------------------------------------------------------
 CD3DArcBall::CD3DArcBall()
+{
+	Init();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// Name:
+// Desc:
+//-----------------------------------------------------------------------------
+void CD3DArcBall::Init()
 {
 	D3DXQuaternionIdentity(&m_qDown);
 	D3DXQuaternionIdentity(&m_qNow);
@@ -555,13 +562,15 @@ VOID CD3DArcBall::SetRadius(FLOAT fRadius)
 LRESULT CD3DArcBall::HandleMouseMessages(HWND hWnd, UINT uMsg, WPARAM wParam,
 	LPARAM lParam)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+
 	static int         iCurMouseX;      // Saved mouse position
 	static int         iCurMouseY;
 	static D3DXVECTOR3 s_vDown;         // Button down vector
 
-	// Current mouse position
-	int iMouseX = LOWORD(lParam);
-	int iMouseY = HIWORD(lParam);
+										// Current mouse position
+	int iMouseX = GET_X_LPARAM(lParam);
+	int iMouseY = GET_Y_LPARAM(lParam);
 
 	switch (uMsg)
 	{
@@ -640,8 +649,10 @@ LRESULT CD3DArcBall::HandleMouseMessages(HWND hWnd, UINT uMsg, WPARAM wParam,
 CD3DCamera::CD3DCamera()
 {
 	// Set attributes for the view matrix
-	SetViewParams(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f),
-		D3DXVECTOR3(0.0f, 1.0f, 0.0f));
+	D3DXVECTOR3 vEyePt(0.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 1.0f);
+	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
+	SetViewParams(vEyePt, vLookatPt, vUpVec);
 
 	// Set attributes for the projection matrix
 	SetProjParams(D3DX_PI / 4, 1.0f, 1.0f, 1000.0f);
@@ -661,7 +672,8 @@ VOID CD3DCamera::SetViewParams(D3DXVECTOR3 &vEyePt, D3DXVECTOR3& vLookatPt,
 	m_vEyePt = vEyePt;
 	m_vLookatPt = vLookatPt;
 	m_vUpVec = vUpVec;
-	D3DXVec3Normalize(&m_vView, &(m_vLookatPt - m_vEyePt));
+	D3DXVECTOR3 vDir = m_vLookatPt - m_vEyePt;
+	D3DXVec3Normalize(&m_vView, &vDir);
 	D3DXVec3Cross(&m_vCross, &m_vView, &m_vUpVec);
 
 	D3DXMatrixLookAtLH(&m_matView, &m_vEyePt, &m_vLookatPt, &m_vUpVec);

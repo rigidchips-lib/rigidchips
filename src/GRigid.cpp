@@ -1233,7 +1233,7 @@ GMatrix33	GRigid::CalcMassMat(GVector &p)
 	return mm;
 }
 
-void GRigid::DispJet(LPDIRECT3DDEVICE8 g_D3DDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag)
+void GRigid::DispJet(LPDIRECT3DDEVICE9 g_D3DDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag)
 {
 	//ジェットの表示
 	//	g_D3DDevice->SetTexture(0,NULL);
@@ -2345,7 +2345,7 @@ void GWorld::ObjectDisp()
 //************************************************
 // 世界：JET表示処理
 //************************************************
-void GWorld::DispJet(LPDIRECT3DDEVICE8 g_D3DDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag)
+void GWorld::DispJet(LPDIRECT3DDEVICE9 g_D3DDevice, D3DXMATRIX worldMatrix, CD3DMesh* jetMesh, CD3DMesh* fireMesh, bool JetFlag)
 {
 	int j;
 	for (j = 0; j < g_World->getChipCount(); j++) if (Rigid[j])Rigid[j]->DispJet(g_D3DDevice, worldMatrix, jetMesh, fireMesh, JetFlag);

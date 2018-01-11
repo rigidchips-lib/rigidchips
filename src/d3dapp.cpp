@@ -11,7 +11,7 @@
 #include <mmsystem.h>
 #include <stdio.h>
 #include <tchar.h>
-#include <D3D8.h>
+#include <D3D9.h>
 #include "D3DApp.h"
 #include "D3DUtil.h"
 #include "DXUtil.h"
@@ -48,7 +48,7 @@ CD3DApplication::CD3DApplication()
 	m_strDeviceStats[0] = _T('\0');
 	m_strFrameStats[0] = _T('\0');
 
-	m_strWindowTitle = _T("D3D8 Application");
+	m_strWindowTitle = _T("D3D9 Application");
 	m_dwCreationWidth = 400;
 	m_dwCreationHeight = 300;
 	m_bUseDepthBuffer = FALSE;
@@ -87,7 +87,7 @@ HRESULT CD3DApplication::Create(HINSTANCE hInstance)
 	HRESULT hr;
 
 	// Create the Direct3D object
-	m_pD3D = Direct3DCreate8(D3D_SDK_VERSION);
+	m_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
 	if (m_pD3D == NULL)
 		return DisplayErrorMsg(D3DAPPERR_NODIRECT3D, MSGERR_APPMUSTEXIT);
 
@@ -208,7 +208,7 @@ HRESULT CD3DApplication::BuildDeviceList()
 	{
 		// Fill in adapter info
 		D3DAdapterInfo* pAdapter = &m_Adapters[m_dwNumAdapters];
-		m_pD3D->GetAdapterIdentifier(iAdapter, D3DENUM_NO_WHQL_LEVEL, &pAdapter->d3dAdapterIdentifier);
+		m_pD3D->GetAdapterIdentifier(iAdapter, 0, &pAdapter->d3dAdapterIdentifier);
 		m_pD3D->GetAdapterDisplayMode(iAdapter, &pAdapter->d3ddmDesktop);
 		pAdapter->dwNumDevices = 0;
 		pAdapter->dwCurrentDevice = 0;
@@ -218,7 +218,7 @@ HRESULT CD3DApplication::BuildDeviceList()
 		D3DFORMAT      formats[40];
 		DWORD dwNumFormats = 0;
 		DWORD dwNumModes = 0;
-		DWORD dwNumAdapterModes = m_pD3D->GetAdapterModeCount(iAdapter);
+		DWORD dwNumAdapterModes = m_pD3D->GetAdapterModeCount(iAdapter, D3DFMT_X8R8G8B8);
 
 		// Add the adapter's current desktop format to the list of formats
 		formats[dwNumFormats++] = pAdapter->d3ddmDesktop.Format;
@@ -227,7 +227,7 @@ HRESULT CD3DApplication::BuildDeviceList()
 		{
 			// Get the display mode attributes
 			D3DDISPLAYMODE DisplayMode;
-			m_pD3D->EnumAdapterModes(iAdapter, iMode, &DisplayMode);
+			m_pD3D->EnumAdapterModes(iAdapter, D3DFMT_X8R8G8B8, iMode, &DisplayMode);
 
 			// Filter out low-resolution modes
 			if (DisplayMode.Width < 640 || DisplayMode.Height < 400)
@@ -304,7 +304,7 @@ HRESULT CD3DApplication::BuildDeviceList()
 					// This system has a HAL device
 					bHALExists = TRUE;
 
-					if (pDevice->d3dCaps.Caps2 & D3DCAPS2_CANRENDERWINDOWED)
+					if (pDevice->d3dCaps.Caps2)
 					{
 						// HAL can run in a window for some mode
 						bHALIsWindowedCompatible = TRUE;
@@ -412,7 +412,7 @@ HRESULT CD3DApplication::BuildDeviceList()
 
 			// Check if the device is compatible with the desktop display mode
 			// (which was added initially as formats[0])
-			if (bFormatConfirmed[0] && (pDevice->d3dCaps.Caps2 & D3DCAPS2_CANRENDERWINDOWED))
+			if (bFormatConfirmed[0] && (pDevice->d3dCaps.Caps2))
 			{
 				pDevice->bCanDoWindowed = TRUE;
 				pDevice->bWindowed = TRUE;
@@ -971,8 +971,8 @@ HRESULT CD3DApplication::Initialize3DEnvironment()
 		}
 
 		// Store render target surface desc
-		LPDIRECT3DSURFACE8 pBackBuffer;
-		m_pd3dDevice->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer);
+		LPDIRECT3DSURFACE9 pBackBuffer;
+		m_pd3dDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer);
 		pBackBuffer->GetDesc(&m_d3dsdBackBuffer);
 		pBackBuffer->Release();
 
@@ -1083,8 +1083,8 @@ HRESULT CD3DApplication::Resize3DEnvironment()
 		return hr;
 
 	// Store render target surface desc
-	LPDIRECT3DSURFACE8 pBackBuffer;
-	m_pd3dDevice->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer);
+	LPDIRECT3DSURFACE9 pBackBuffer;
+	m_pd3dDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer);
 	pBackBuffer->GetDesc(&m_d3dsdBackBuffer);
 	pBackBuffer->Release();
 
@@ -1583,7 +1583,7 @@ INT_PTR CALLBACK CD3DApplication::SelectDeviceProc(HWND hDlg, UINT msg,
 				continue;
 
 			if (SUCCEEDED(pd3dApp->m_pD3D->CheckDeviceMultiSampleType(dwNewAdapter,
-				pDevice->DeviceType, fmt, bNewWindowed, (D3DMULTISAMPLE_TYPE)m)))
+				pDevice->DeviceType, fmt, bNewWindowed, (D3DMULTISAMPLE_TYPE)m, 0)))
 			{
 				if (m == 0)
 					lstrcpy(strDesc, _T("none"));

@@ -5,8 +5,8 @@
 #include <basetsd.h>
 #include <math.h>
 #include <stdio.h>
-#include <D3DX8.h>
-#include <DXErr8.h>
+#include <D3DX9.h>
+#include <DXErr9.h>
 #include <tchar.h>
 #include <dinput.h>
 #include "Consts.hpp"

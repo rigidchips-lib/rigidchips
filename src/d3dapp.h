@@ -9,6 +9,7 @@
 // basetsd.h defines INT_PTR (used below).  It is not included by default
 // under VC 5.0.  If you are using VC6 or later, it is included via Windows.h.
 #include <basetsd.h> 
+#include <d3d9caps.h>
 
 
 //-----------------------------------------------------------------------------
@@ -58,7 +59,7 @@ struct D3DDeviceInfo
 {
 	// Device data
 	D3DDEVTYPE   DeviceType;      // Reference, HAL, etc.
-	D3DCAPS8     d3dCaps;         // Capabilities of this device
+	D3DCAPS9     d3dCaps;         // Capabilities of this device
 	const TCHAR* strDesc;         // Name of this device
 	BOOL         bCanDoWindowed;  // Whether this device can work in windowed mode
 
@@ -84,7 +85,7 @@ struct D3DDeviceInfo
 struct D3DAdapterInfo
 {
 	// Adapter data
-	D3DADAPTER_IDENTIFIER8 d3dAdapterIdentifier;
+	D3DADAPTER_IDENTIFIER9 d3dAdapterIdentifier;
 	D3DDISPLAYMODE d3ddmDesktop;      // Desktop display mode for this adapter
 
 	// Devices for this adapter
@@ -155,9 +156,9 @@ protected:
 	HWND              m_hWnd;              // The main app window
 	HWND              m_hWndFocus;         // The D3D focus window (usually same as m_hWnd)
 public:
-	LPDIRECT3D8       m_pD3D;              // The main D3D object
-	LPDIRECT3DDEVICE8 m_pd3dDevice;        // The D3D rendering device
-	D3DCAPS8          m_d3dCaps;           // Caps for the device
+	LPDIRECT3D9       m_pD3D;              // The main D3D object
+	LPDIRECT3DDEVICE9 m_pd3dDevice;        // The D3D rendering device
+	D3DCAPS9          m_d3dCaps;           // Caps for the device
 protected:
 	D3DSURFACE_DESC   m_d3dsdBackBuffer;   // Surface desc of the backbuffer
 	DWORD             m_dwCreateFlags;     // Indicate sw or hw vertex processing
@@ -183,7 +184,7 @@ protected:
 	BOOL              m_bClipCursorWhenFullscreen; // Whether to limit cursor pos when fullscreen
 
 	// Overridable functions for the 3D scene created by the app
-	virtual HRESULT ConfirmDevice(D3DCAPS8*, DWORD, D3DFORMAT) { return S_OK; }
+	virtual HRESULT ConfirmDevice(D3DCAPS9*, DWORD, D3DFORMAT) { return S_OK; }
 	virtual HRESULT OneTimeSceneInit() { return S_OK; }
 	virtual HRESULT InitDeviceObjects() { return S_OK; }
 	virtual HRESULT RestoreDeviceObjects() { return S_OK; }
