@@ -3107,7 +3107,8 @@ CMyD3DApplication::CMyD3DApplication()
 	m_dwCreationWidth = 640;
 	m_dwCreationHeight = 480;
 	m_strWindowTitle = TEXT("RigidChips 1.5.B27");
-	m_bUseDepthBuffer = TRUE;
+	m_d3dEnumeration.AppUsesDepthBuffer = TRUE;
+	m_d3dEnumeration.AppMinDepthBits = 24;
 
 	m_dLimidFPS = 1000 / s_LimitFPS;
 	m_inputFocus = true;

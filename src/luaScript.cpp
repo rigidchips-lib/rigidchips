@@ -10,14 +10,16 @@
 #include <tchar.h>
 #include <dinput.h>
 #include "Consts.hpp"
+#include "D3DUtil.h"
+#include "DXUtil.h"
+#include "D3DEnumeration.h"
+#include "D3DSettings.h"
 #include "D3DApp.h"
 #include "D3DFont.h"
 #include "D3DFile.h"
-#include "D3DUtil.h"
 #include "DIUtil.h"
 #include "DMUtil.h"
 #include "DSUtil.h"
-#include "DXUtil.h"
 #include "D3Dtypes.h"
 
 #include <stdio.h>

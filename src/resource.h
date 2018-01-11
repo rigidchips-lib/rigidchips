@@ -166,6 +166,14 @@
 #define ID_SETTING_                     40174
 #define IDM_ENERGY                      40176
 #define IDM_WEBHELP                     40181
+#define IDC_BACKBUFFERFORMAT_COMBO      1007
+#define IDC_DEPTHSTENCILBUFFERFORMAT_COMBO 1008
+#define IDC_VERTEXPROCESSING_COMBO      1009
+#define IDC_PRESENTINTERVAL_COMBO       1010
+#define IDC_MULTISAMPLE_QUALITY_COMBO   1011
+#define IDC_ADAPTERFORMAT_COMBO         1003
+#define IDC_REFRESHRATE_COMBO           1006
+#define IDC_RESOLUTION_COMBO            1004
 
 // Next default values for new objects
 // 

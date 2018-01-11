@@ -16,14 +16,16 @@
 #include <DXErr9.h>
 #include <tchar.h>
 #include <dinput.h>
+#include "D3DUtil.h"
+#include "DXUtil.h"
+#include "D3DEnumeration.h"
+#include "D3DSettings.h"
 #include "D3DApp.h"
 #include "D3DFont.h"
 #include "D3DFile.h"
-#include "D3DUtil.h"
 #include "DIUtil.h"
 //#include "DMUtil.h"
 #include "DSUtil.h"
-#include "DXUtil.h"
 #include "D3Dtypes.h"
 #include "GVector.hpp"
 
@@ -266,4 +268,7 @@ const TCHAR* GetResourceDir();
 const TCHAR* GetDataDir();
 const TCHAR* GetCurrentDataDir();
 const TCHAR* GetCurrentScenarioDir();
+
+#define Resize3DEnvironment Reset3DEnvironment
+
 #endif // !defined(AFX_RIGID_H__F533E4AC_435C_4933_8AC7_50A6C021E6DF__INCLUDED_)

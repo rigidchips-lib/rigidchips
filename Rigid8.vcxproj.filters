@@ -94,6 +94,12 @@
     <ClInclude Include="src\Globals.hpp">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\d3denumeration.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\d3dsettings.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Rigid.ico">
@@ -156,6 +162,12 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Globals.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\d3denumeration.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\d3dsettings.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
