@@ -1,0 +1,9 @@
+version: 1.0.{build}
+image: Visual Studio 2013
+configuration: Release
+build:
+  project: Rigid8.sln
+  verbosity: minimal
+artifacts:
+- path: Release
+  name: Release
