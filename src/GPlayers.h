@@ -72,6 +72,12 @@ typedef struct {
 	float maxY;
 	DWORD time;
 	DWORD time2;
+	DWORD rtime;
+	DWORD rtime2;
+	short sendtime;
+	short sendtime2;
+	DWORD span;
+	DWORD span2;
 	GRECEIVEDATA	ReceiveData;
 	int ChipCount;
 

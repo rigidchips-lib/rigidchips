@@ -18,7 +18,7 @@ const int GTYPE_CAN = 4;//円筒
 const int GTYPE_CONE = 5;//円錐
 const int GTYPE_DUMMY = 6;
 
-const int GMODELMAX = 38;//読み込むXファイル（ポリゴンモデル）の最大数
+const int GMODELMAX = 39;//読み込むXファイル（ポリゴンモデル）の最大数
 const int  GTEXMAX = 23;
 //設置可能チェックポイントの最大数
 const int GCHECKPOINTMAX = 100;
@@ -53,7 +53,7 @@ const int GDTSTEP = 10;
 const int GLOOP = 10;
 
 //ネットワークの送信間隔[ms]。実際にはコレにメッセージごとの比率をかけて使う
-const int GNETSPAN = 200;
+const int GNETSPAN = 190;
 //Armのたまの速度
 const float ARMSPEED = 20.0f;
 
@@ -107,7 +107,7 @@ enum NetworkCode
 	NC_CHAT = 1,
 	NC_B20_BULLET = 11,
 	NC_B20_EXPLOSION = 12,	
-	NC_CORE_ONLY = 20,
+	NC_CORE_ONLY = 10,
 	NC_UNKNOWN_BULLET = 21,
 	NC_UNKNOWN_EXPLOSION = 22,
 	NC_SCENARIO_MESSAGE = 30,
