@@ -7035,39 +7035,32 @@ HRESULT CMyD3DApplication::Render()
 			g_D3DDevice->SetRenderState(D3DRS_SPECULARENABLE, FALSE);
 			g_D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 			g_D3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+			m_pd3dDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT2);
+			m_pd3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTEXF_POINT);
+			m_pd3dDevice->SetTextureStageState(0, D3DTSS_MIPMAPLODBIAS, FtoDW(-3.5f));
 			D3DXMATRIX mat1;
 			D3DXMATRIX mat2;
-			float x, z;
-			int ii = (int)(g_FarMax / 10);
-			int s = (int)(g_FarMax / 600);
-			if (s == 0) {
-				x = (int)(EyePos.x / 60)*60.0f;
-				z = (int)(EyePos.z / 60)*60.0f;
-				D3DXMatrixTranslation(&mat1, x + (GFloat)sin(count / 90.0*M_PI), WATER_LINE, z);
-				D3DXMatrixScaling(&mat2, 2.0, 1.0f, 2.0);
-				D3DXMatrixMultiply(&mat1, &mat2, &mat1);
-				D3DXMatrixMultiply(&mat1, &mat1, &GMatWorld);
-				m_pd3dDevice->SetTransform(D3DTS_WORLD, &mat1);
-				m_pXMesh[14]->Render(g_D3DDevice);
-			}
-			else {
-				int xx = (int)(EyePos.x / 60) * 60;
-				int zz = (int)(EyePos.z / 60) * 60;
-				float si = (GFloat)sin(count / 88.0*M_PI) - 30;
-				D3DXMatrixScaling(&mat2, 2.0f, 1.0f, 2.0f);
-				for (int i = 0;i < s;i++) {
-					for (int j = 0;j < s;j++) {
-						x = (float)(xx + i * 1200 - (s - 1) * 600);
-						z = (float)(zz + j * 1200 - (s - 1) * 600);
-						D3DXMatrixTranslation(&mat1, x + si, WATER_LINE, z - 30);
-						D3DXMatrixMultiply(&mat1, &mat2, &mat1);
-						D3DXMatrixMultiply(&mat1, &mat1, &GMatWorld);
-						m_pd3dDevice->SetTransform(D3DTS_WORLD, &mat1);
-						m_pXMesh[14]->Render(g_D3DDevice);
-					}
-				}
-			}
+			FLOAT s = (FLOAT)(g_FarMax / 600);
+			if (g_FarMax <= 0) s = 64;
+			GFloat si = (GFloat)sin(count / 88.0 * M_PI) - 30;
+
+			D3DXMatrixScaling(&mat2, 2.0f * s, 1.0f, 2.0f * s);
+			D3DXMatrixTranslation(&mat1, (FLOAT)(EyePos.x + si), (FLOAT)WATER_LINE, (FLOAT)(EyePos.z - 30));
+			D3DXMatrixMultiply(&mat1, &mat2, &mat1);
+			D3DXMatrixMultiply(&mat1, &mat1, &GMatWorld);
+			m_pd3dDevice->SetTransform(D3DTS_WORLD, &mat1);
+
+			D3DXMatrixScaling(&mat1, (FLOAT)(s), (FLOAT)(s), 1);
+			mat1._31 = (FLOAT)fmod(EyePos.x / 60, 1.0);
+			mat1._32 = (FLOAT)fmod(EyePos.z / 60, 1.0);
+			m_pd3dDevice->SetTransform(D3DTS_TEXTURE0, &mat1);
+			m_pXMesh[14]->Render(g_D3DDevice);
+
 			count++;
+
+			m_pd3dDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
+			m_pd3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTEXF_NONE);
+			m_pd3dDevice->SetTextureStageState(0, D3DTSS_MIPMAPLODBIAS, FtoDW(0.0f));
 		}
 		g_D3DDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
 		g_World->DispJet(g_D3DDevice, GMatWorld, m_pXMesh[31], m_pXMesh[11], JetFlag);
