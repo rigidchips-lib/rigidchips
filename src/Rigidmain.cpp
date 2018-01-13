@@ -1268,7 +1268,7 @@ void Line2D(GFloat x0, GFloat y0, GFloat x1, GFloat y1, int col)
 		g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// カリングモード
 
 																	//G3dDevice->SetRenderState( D3DRS_ZENABLE, FALSE );
-		g_D3DDevice->SetVertexShader(D3DFVF_POINTVERTEX);
+		g_D3DDevice->SetFVF(D3DFVF_POINTVERTEX);
 		g_D3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, Vertex_num / 2, line2dVertexTable, sizeof(D3DPOINTVERTEX)); //_MOVEと_LINE分けてDrawIndexedPrimitiveUPで一つにまとめたほうが頂点数が半分近くに減らせるね
 
 																											   /*	G3dDevice->SetRenderState( D3DRS_ALPHAREF, 0x00000000);
@@ -1302,7 +1302,7 @@ void Line(GVector &p1, GVector &p2, unsigned int col)
 		g_D3DDevice->SetTexture(0, NULL);
 		g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// カリングモード
 
-		g_D3DDevice->SetVertexShader(D3DFVF_POINTVERTEX);
+		g_D3DDevice->SetFVF(D3DFVF_POINTVERTEX);
 		g_D3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, Vertex_num / 2, line3dVertexTable, sizeof(D3DPOINTVERTEX));
 
 		g_D3DDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
