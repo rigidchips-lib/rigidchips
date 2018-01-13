@@ -7051,8 +7051,8 @@ HRESULT CMyD3DApplication::Render()
 			m_pd3dDevice->SetTransform(D3DTS_WORLD, &mat1);
 
 			D3DXMatrixScaling(&mat1, (FLOAT)(s), (FLOAT)(s), 1);
-			mat1._31 = (FLOAT)fmod(EyePos.x / 60, 1.0);
-			mat1._32 = (FLOAT)fmod(EyePos.z / 60, 1.0);
+			mat1._31 = (FLOAT)fmod((GFloat)EyePos.x / 60, (GFloat)1.0);
+			mat1._32 = (FLOAT)fmod((GFloat)EyePos.z / 60, (GFloat)1.0);
 			m_pd3dDevice->SetTransform(D3DTS_TEXTURE0, &mat1);
 			m_pXMesh[14]->Render(g_D3DDevice);
 
