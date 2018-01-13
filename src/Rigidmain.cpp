@@ -8159,7 +8159,7 @@ HRESULT CMyD3DApplication::Render()
 		if (TitleAlpha > 0x00ffffff) TitleAlpha -= 0x11000000;
 	}
 	if (TitleAlpha != 0x00ffffff) {
-		pos.x = w / 2.0f - 128.0f;
+		pos.x = w / 2.0f - 160.0f;
 		pos.y = 0.0f;
 		pSprite->Draw(pMyTexture[15], NULL, NULL, &pos, TitleAlpha);
 	}
