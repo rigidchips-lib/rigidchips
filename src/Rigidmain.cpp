@@ -1276,75 +1276,84 @@ void Text3Dm(CD3DFont*font, D3DXMATRIX &m, char *str, DWORD col) {
 	g_D3DDevice->SetMaterial(&mtrlText);
 	font->Render3DText(str, D3DFONT_CENTERED);
 }
+
+#define line2dVertexMax 2048 //奇数が始点 偶数が終点の線
+D3DPOINTVERTEX line2dVertexTable[line2dVertexMax]; //頂点ﾊﾞｯﾌｧ 埋まったら描画
+int line2dVertexTable_n = 0;
+
 void Line2D(GFloat x0, GFloat y0, GFloat x1, GFloat y1, int col)
 {
-	D3DXMATRIX mat1;
-	D3DXMATRIX matV, mat2;
-	g_D3DDevice->GetTransform(D3DTS_VIEW, &matV);
-	D3DXMatrixInverse(&mat1, NULL, &matV);
-	D3DXMatrixScaling(&mat1, 1, 1, 1);
-	//	D3DXMatrixMultiply(&mat2,&mat1,&GMatWorld);
-	g_D3DDevice->SetTransform(D3DTS_VIEW, &mat1);
-
-	g_D3DDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-	g_D3DDevice->SetRenderState(D3DRS_AMBIENT, 0xFFFFFFFF);
-	g_D3DDevice->SetStreamSource(0, pPointVB, sizeof(D3DPOINTVERTEX));
-	g_D3DDevice->SetVertexShader(D3DFVF_POINTVERTEX);
-	g_D3DDevice->SetTexture(0, NULL);
-	g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// カリングモード
-	D3DPOINTVERTEX* p2V;
-	pPointVB->Lock(0, 0, (BYTE**)&p2V, 0);
-
 	float t;
 	if (ViewType == 7) t = (float)tan(CCDZoom*M_PI / 360.0);
 	else t = (float)tan(Zoom*M_PI / 360.0);
 	float t2 = (t + 1) / t;
 
-	p2V[0].x = (float)x0*t;
-	p2V[0].y = (float)y0*t;
-	p2V[0].z = (float)1;
-	p2V[0].color = col | 0xff000000;
-	p2V[1].x = (float)x1*t;
-	p2V[1].y = (float)y1*t;
-	p2V[1].z = (float)1;
-	p2V[1].color = col | 0xff000000;
+	line2dVertexTable[line2dVertexTable_n] = { (float)x0*t,(float)y0*t,1,col | 0xff000000 };
+	line2dVertexTable[line2dVertexTable_n + 1] = { (float)x1*t,(float)y1*t,1,col | 0xff000000 };
+	line2dVertexTable_n = line2dVertexTable_n + 2;
 
-	pPointVB->Unlock();
-	//	g_D3DDevice->SetRenderState( D3DRS_ZENABLE, FALSE );
-	g_D3DDevice->DrawPrimitive(D3DPT_LINELIST, 0, 1);
+	if (line2dVertexTable_n >= line2dVertexMax || col & 0xFF000000) { //colが0x01000000以上の時ﾊﾞｯﾌｧ分強制描画
+		int Vertex_num = line2dVertexTable_n;
+		line2dVertexTable_n = 0;
+		D3DXMATRIX mat1;
+		//D3DXMATRIX matV,mat2;
+		//G3dDevice->GetTransform(D3DTS_VIEW,&matV);
+		//D3DXMatrixInverse(&mat1,NULL,&matV);
+		D3DXMatrixScaling(&mat1, 1, 1, 1);
+		//D3DXMatrixMultiply(&mat2,&mat1,&GMatWorld);
+		g_D3DDevice->SetTransform(D3DTS_VIEW, &mat1);
 
-	g_D3DDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
-	g_D3DDevice->SetRenderState(D3DRS_AMBIENT, 0x000F0F0F);
-	g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	// カリングモード
-	g_D3DDevice->SetTransform(D3DTS_VIEW, &GMatView);
+		/*	G3dDevice->SetRenderState( D3DRS_ALPHAREF, 0x00000008);
+		G3dDevice->SetRenderState( D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+		G3dDevice->SetRenderState( D3DRS_ALPHATESTENABLE, TRUE);
+		G3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE,TRUE );*/
+		g_D3DDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+		g_D3DDevice->SetRenderState(D3DRS_AMBIENT, 0xFFFFFFFF);
+		g_D3DDevice->SetTexture(0, NULL);
+		g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// カリングモード
 
+																	//G3dDevice->SetRenderState( D3DRS_ZENABLE, FALSE );
+		g_D3DDevice->SetVertexShader(D3DFVF_POINTVERTEX);
+		g_D3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, Vertex_num / 2, line2dVertexTable, sizeof(D3DPOINTVERTEX)); //_MOVEと_LINE分けてDrawIndexedPrimitiveUPで一つにまとめたほうが頂点数が半分近くに減らせるね
+
+																											   /*	G3dDevice->SetRenderState( D3DRS_ALPHAREF, 0x00000000);
+																											   G3dDevice->SetRenderState( D3DRS_ALPHAFUNC, D3DCMP_ALWAYS);
+																											   G3dDevice->SetRenderState( D3DRS_ALPHATESTENABLE, FALSE);
+																											   G3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE,FALSE );*/
+		g_D3DDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
+		g_D3DDevice->SetRenderState(D3DRS_AMBIENT, 0x000F0F0F);
+		g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	// カリングモード
+		g_D3DDevice->SetTransform(D3DTS_VIEW, &GMatView);
+	}
 }
+
+#define line3dVertexMax 2048 //奇数が始点 偶数が終点の線
+D3DPOINTVERTEX line3dVertexTable[line3dVertexMax]; //頂点ﾊﾞｯﾌｧ 埋まったら描画
+int line3dVertexTable_n = 0;
 
 void Line(GVector &p1, GVector &p2, unsigned int col)
 {
-	g_D3DDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-	g_D3DDevice->SetRenderState(D3DRS_AMBIENT, 0xFFFFFFFF);
-	g_D3DDevice->SetStreamSource(0, pPointVB, sizeof(D3DPOINTVERTEX));
-	g_D3DDevice->SetVertexShader(D3DFVF_POINTVERTEX);
-	g_D3DDevice->SetTexture(0, NULL);
-	g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// カリングモード
-	D3DPOINTVERTEX* p2V;
-	pPointVB->Lock(0, 0, (BYTE**)&p2V, 0);
-	p2V[0].x = (float)p1.x;
-	p2V[0].y = (float)p1.y;
-	p2V[0].z = (float)p1.z;
-	p2V[0].color = col | 0xff000000;
-	p2V[1].x = (float)p2.x;
-	p2V[1].y = (float)p2.y;
-	p2V[1].z = (float)p2.z;
-	p2V[1].color = col | 0xff000000;
 
-	pPointVB->Unlock();
-	g_D3DDevice->DrawPrimitive(D3DPT_LINELIST, 0, 1);
+	line3dVertexTable[line3dVertexTable_n] = { (float)p1.x,(float)p1.y,(float)p1.z,col | 0xff000000 };
+	line3dVertexTable[line3dVertexTable_n + 1] = { (float)p2.x,(float)p2.y,(float)p2.z,col | 0xff000000 };
+	line3dVertexTable_n = line3dVertexTable_n + 2;
 
-	g_D3DDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
-	g_D3DDevice->SetRenderState(D3DRS_AMBIENT, 0x000F0F0F);
-	g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	// カリングモード
+	if (line3dVertexTable_n >= line3dVertexMax || col & 0xFF000000) { //colが0x01000000以上の時ﾊﾞｯﾌｧ分強制描画
+		int Vertex_num = line3dVertexTable_n;
+		line3dVertexTable_n = 0;
+
+		g_D3DDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+		g_D3DDevice->SetRenderState(D3DRS_AMBIENT, 0xFFFFFFFF);
+		g_D3DDevice->SetTexture(0, NULL);
+		g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// カリングモード
+
+		g_D3DDevice->SetVertexShader(D3DFVF_POINTVERTEX);
+		g_D3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, Vertex_num / 2, line3dVertexTable, sizeof(D3DPOINTVERTEX));
+
+		g_D3DDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
+		g_D3DDevice->SetRenderState(D3DRS_AMBIENT, 0x000F0F0F);
+		g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	// カリングモード
+	}
 }
 int CALLBACK DlgDataProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -6928,6 +6937,8 @@ HRESULT CMyD3DApplication::Render()
 		for (i = 0;i < GVALMAX;i++) {
 			g_ValList[i].Updated = false;
 		}
+		Line(GVector(0, 0, 0), GVector(0, 0, 0), 0xff000000); //Lineﾊﾞｯﾌｧ強制描画 ｼﾅﾘｵ分
+		Line2D(0, 0, 0, 0, 0xff000000); //Lineﾊﾞｯﾌｧ強制描画
 		if (ViewUpdate)	ViewSet();
 		if (g_World->Stop == false && g_World->NetStop == false) {
 			for (i = 0;i < GOUTPUTMAX;i++) ScriptOutput[i][0] = '\0';
@@ -6996,6 +7007,8 @@ HRESULT CMyD3DApplication::Render()
 				}
 			}
 		}
+		Line(GVector(0, 0, 0), GVector(0, 0, 0), 0xff000000); //Lineﾊﾞｯﾌｧ強制描画
+		Line2D(0, 0, 0, 0, 0xff000000); //Lineﾊﾞｯﾌｧ強制描画
 
 		if (ViewType >= 0) viewFlag = 0;
 
@@ -7870,7 +7883,7 @@ HRESULT CMyD3DApplication::Render()
 		if (TitleAlpha > 0x00ffffff) TitleAlpha -= 0x11000000;
 	}
 	if (TitleAlpha != 0x00ffffff) {
-		pos.x = w / 2.0f - 128.0f;
+		pos.x = w / 2.0f - 160.0f;
 		pos.y = 0.0f;
 		pSprite->Draw(pMyTexture[15], NULL, NULL, NULL, NULL, &pos, TitleAlpha);
 	}
@@ -8368,7 +8381,7 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 			HDC hDC = GetDC(hWnd);
 			//TCHAR strMsg[MAX_PATH];
 			//wsprintf( strMsg, TEXT("Loading data ... ") );
-			HBRUSH hBrush = CreateSolidBrush(RGB(204, 204, 204));
+			HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255));
 			RECT rct;
 			GetClientRect(hWnd, &rct);
 			FillRect(hDC, &rct, hBrush);
@@ -8388,7 +8401,7 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 			hdc_mem = CreateCompatibleDC(hdc);
 			SelectObject(hdc_mem, hBit);
 			BitBlt(hdc, (rc.right - wx) / 2,
-				(rc.bottom - wy) * 4 / 5, wx, wy, hdc_mem, 0, 0, SRCCOPY);
+				(rc.bottom - wy) / 2, wx, wy, hdc_mem, 0, 0, SRCCOPY);
 			DeleteDC(hdc_mem);
 			DeleteObject(hBit);
 			EndPaint(hWnd, &ps);
