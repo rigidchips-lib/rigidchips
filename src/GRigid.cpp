@@ -1199,7 +1199,10 @@ void GRigid::CalcLight()
 
 
 	//新しい位置・姿勢用行列の作成
-//	TM=R.translate(X);
+	TM=R.translate(X);
+
+	for (int i = 0; i < ChildCount; i++)
+		if (Child[i].RigidB && Child[i].RigidB->ChipType != GT_COWL) Child[i].RigidB->CalcLight();
 }
 //************************************************
 // 剛体：質量行列の算出
@@ -1948,6 +1951,16 @@ void GWorld::Move(bool initFlag)
 	int c, i, j, k;
 	Dt = StepTime / SubStep;
 	if (Stop || NetStop) return;
+
+	int rootList[512], rootNum = 0;
+
+	for (j = 0; j < g_World->getChipCount(); j++) {
+		if (Rigid[j]->Parent == NULL) {
+			rootList[rootNum] = j;
+			rootNum++;
+		}
+	}
+
 	for (j = 0;j < g_World->getChipCount();j++) {
 		Rigid[j]->preX = Rigid[j]->X;
 		Rigid[j]->HitChip = 0;
@@ -2135,6 +2148,7 @@ void GWorld::Move(bool initFlag)
 		}
 	}
 	//	}
+
 	GFloat dt1 = Dt;
 	GFloat dt2 = StepTime / SubStep / (GFloat)lc;
 	GFloat dt3 = StepTime / SubStep;
@@ -2148,13 +2162,11 @@ void GWorld::Move(bool initFlag)
 			RndTable[k] = n;
 		}
 		//		if(i%3==0) {
-		for (j = 0;j < g_World->getChipCount();j++) {
-			k = RndTable[j];
-			if (Rigid[k]->Parent == NULL) {
-				Rigid[k]->TranslateWithParentAll(Rigid[k]->TopBias);
-				CheckLink(Rigid[k]);
-				Rigid[k]->CalcTotalCenter();
-			}
+		for (j = 0;j < rootNum;j++) {
+			k = rootList[j];
+			Rigid[k]->TranslateWithParentAll(Rigid[k]->TopBias);
+			CheckLink(Rigid[k]);
+			Rigid[k]->CalcTotalCenter();
 		}
 		for (j = 0;j < ObjectCount;j++) {
 			if (Object[j]->Parent == NULL) {
@@ -2256,34 +2268,26 @@ void GWorld::Move(bool initFlag)
 		//		}
 				//連結部の拘束処理
 		//		FILE *fp=fopen("test.dat","w");
-		for (c = 0;c < lc;c++) {
-			Dt = dt3;
-			for (j = 0;j < g_World->getChipCount();j++) {
-				k = RndTable[j];
-				if (Rigid[k]->Parent == NULL) {
-					CalcLink(Rigid[k]);
-				}
 
+		for (j = 0; j < rootNum; j++) {
+			for (c = 0; c < lc; c++) {
+				k = rootList[j];
+				Dt = dt3;
+				CalcLink(Rigid[k]);
+				Dt = dt2;
+				Rigid[k]->CalcLight();
 			}
-			Dt = dt2;
-
-			for (j = 0;j < g_World->getChipCount();j++) {
-				k = RndTable[j];
-				if (Rigid[k]->ChipType == GT_COWL) continue;
-				Rigid[k]->Calc();
-			}
-			Dt = dt1;
 		}
+
+		Dt = dt1;
+
 		for (j = 0;j < ObjectCount;j++) {//計算
 			k = j;
 			Object[k]->Calc();
 		}
-		for (j = 0;j < g_World->getChipCount();j++) {
-			k = RndTable[j];
-			if (Rigid[j]->Parent == NULL) {
-				CalcLinkCowl(Rigid[j]);
-			}
-
+		for (j = 0;j < rootNum;j++) {
+			k = rootList[j];
+			CalcLinkCowl(Rigid[j]);
 		}
 		/*
 				for(j=0;j<g_World->getChipCount();j++) {
