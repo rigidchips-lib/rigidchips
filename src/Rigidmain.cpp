@@ -8619,13 +8619,13 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 	switch (msg)
 	{
 	case WM_SIZE:
-		if (wParam == SIZE_MINIMIZED) {
+		//if (wParam == SIZE_MINIMIZED) {
 			//			GCHIPSTREAM stream;
 			//			stream.code=-1;//CLEAR
 			//			if(g_DPlay)	g_DPlay->SendAll((BYTE*)&stream,sizeof(short));
 			//			CD3DApplication::MsgProc( hWnd, msg, wParam, lParam );
 			return S_OK;
-		}
+		//}
 		break;
 	case WM_SETFOCUS:
 		//    m_hWndFocused = GetFocus( )->GetSafeHwnd( );
