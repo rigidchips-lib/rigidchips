@@ -7076,8 +7076,9 @@ HRESULT CMyD3DApplication::Render()
 			g_D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 			g_D3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 			m_pd3dDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT2);
-			m_pd3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTEXF_POINT);
-			m_pd3dDevice->SetTextureStageState(0, D3DTSS_MIPMAPLODBIAS, FtoDW(-3.5f));
+			m_pd3dDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT);
+			m_pd3dDevice->SetSamplerState(0, D3DSAMP_MIPMAPLODBIAS, FtoDW(-3.5f));
+
 			D3DXMATRIX mat1;
 			D3DXMATRIX mat2;
 			FLOAT s = (FLOAT)(g_FarMax / 600);
@@ -7099,8 +7100,8 @@ HRESULT CMyD3DApplication::Render()
 			count++;
 
 			m_pd3dDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
-			m_pd3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTEXF_NONE);
-			m_pd3dDevice->SetTextureStageState(0, D3DTSS_MIPMAPLODBIAS, FtoDW(0.0f));
+			m_pd3dDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
+			m_pd3dDevice->SetSamplerState(0, D3DSAMP_MIPMAPLODBIAS, FtoDW(0.0f));
 		}
 		g_D3DDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
 		g_World->DispJet(g_D3DDevice, GMatWorld, m_pXMesh[31], m_pXMesh[11], JetFlag);
