@@ -1,4 +1,3 @@
-#pragma warning(disable : 4996)
 //-----------------------------------------------------------------------------
 // File: D3DFile.cpp
 //
@@ -7,8 +6,8 @@
 #define STRICT
 #include <tchar.h>
 #include <stdio.h>
-#include <d3d8.h>
-#include <d3dx8.h>
+#include <d3d9.h>
+#include <d3dx9.h>
 #include <dxfile.h>
 #include <rmxfguid.h>
 #include <rmxftmpl.h>
@@ -24,7 +23,8 @@
 //-----------------------------------------------------------------------------
 CD3DMesh::CD3DMesh(TCHAR* strName)
 {
-	_tcscpy(m_strName, strName);
+	_tcsncpy(m_strName, strName, sizeof(m_strName) / sizeof(TCHAR));
+	m_strName[sizeof(m_strName) / sizeof(TCHAR) - 1] = _T('\0');
 	m_pSysMemMesh = NULL;
 	m_pLocalMesh = NULL;
 	m_dwNumMaterials = 0L;
@@ -52,21 +52,19 @@ CD3DMesh::~CD3DMesh()
 // Name:
 // Desc:
 //-----------------------------------------------------------------------------
-HRESULT CD3DMesh::Create(LPDIRECT3DDEVICE8 pd3dDevice, TCHAR* strFilename)
+HRESULT CD3DMesh::Create(LPDIRECT3DDEVICE9 pd3dDevice, TCHAR* strFilename)
 {
 	TCHAR        strPath[MAX_PATH];
-	CHAR         strPathANSI[MAX_PATH];
 	LPD3DXBUFFER pAdjacencyBuffer = NULL;
 	LPD3DXBUFFER pMtrlBuffer = NULL;
 	HRESULT      hr;
 
 	// Find the path for the file, and convert it to ANSI (for the D3DX API)
-	DXUtil_FindMediaFile(strPath, strFilename);
-	DXUtil_ConvertGenericStringToAnsi(strPathANSI, strPath);
+	DXUtil_FindMediaFileCb(strPath, sizeof(strPath), strFilename);
 
 	// Load the mesh
-	if (FAILED(hr = D3DXLoadMeshFromX(strPathANSI, D3DXMESH_SYSTEMMEM, pd3dDevice,
-		&pAdjacencyBuffer, &pMtrlBuffer,
+	if (FAILED(hr = D3DXLoadMeshFromX(strPath, D3DXMESH_SYSTEMMEM, pd3dDevice,
+		&pAdjacencyBuffer, &pMtrlBuffer, NULL,
 		&m_dwNumMaterials, &m_pSysMemMesh)))
 	{
 		return hr;
@@ -88,11 +86,21 @@ HRESULT CD3DMesh::Create(LPDIRECT3DDEVICE8 pd3dDevice, TCHAR* strFilename)
 	{
 		// Allocate memory for the materials and textures
 		D3DXMATERIAL* d3dxMtrls = (D3DXMATERIAL*)pMtrlBuffer->GetBufferPointer();
-		m_pMaterials = new D3DMATERIAL8[m_dwNumMaterials];
-		m_pTextures = new LPDIRECT3DTEXTURE8[m_dwNumMaterials];
+		m_pMaterials = new D3DMATERIAL9[m_dwNumMaterials];
+		if (m_pMaterials == NULL)
+		{
+			hr = E_OUTOFMEMORY;
+			goto LEnd;
+		}
+		m_pTextures = new LPDIRECT3DTEXTURE9[m_dwNumMaterials];
+		if (m_pTextures == NULL)
+		{
+			hr = E_OUTOFMEMORY;
+			goto LEnd;
+		}
 
 		// Copy each material and create its texture
-		for (DWORD i = 0; i < m_dwNumMaterials; i++)
+		for (DWORD i = 0; i<m_dwNumMaterials; i++)
 		{
 			// Copy the material
 			m_pMaterials[i] = d3dxMtrls[i].MatD3D;
@@ -104,8 +112,8 @@ HRESULT CD3DMesh::Create(LPDIRECT3DDEVICE8 pd3dDevice, TCHAR* strFilename)
 			{
 				TCHAR strTexture[MAX_PATH];
 				TCHAR strTextureTemp[MAX_PATH];
-				DXUtil_ConvertAnsiStringToGeneric(strTextureTemp, d3dxMtrls[i].pTextureFilename);
-				DXUtil_FindMediaFile(strTexture, strTextureTemp);
+				DXUtil_ConvertAnsiStringToGenericCb(strTextureTemp, d3dxMtrls[i].pTextureFilename, sizeof(strTextureTemp));
+				DXUtil_FindMediaFileCb(strTexture, sizeof(strTexture), strTextureTemp);
 
 				if (FAILED(D3DXCreateTextureFromFile(pd3dDevice, strTexture,
 					&m_pTextures[i])))
@@ -113,11 +121,13 @@ HRESULT CD3DMesh::Create(LPDIRECT3DDEVICE8 pd3dDevice, TCHAR* strFilename)
 			}
 		}
 	}
+	hr = S_OK;
 
+LEnd:
 	SAFE_RELEASE(pAdjacencyBuffer);
 	SAFE_RELEASE(pMtrlBuffer);
 
-	return S_OK;
+	return hr;
 }
 
 
@@ -127,7 +137,7 @@ HRESULT CD3DMesh::Create(LPDIRECT3DDEVICE8 pd3dDevice, TCHAR* strFilename)
 // Name:
 // Desc:
 //-----------------------------------------------------------------------------
-HRESULT CD3DMesh::Create(LPDIRECT3DDEVICE8 pd3dDevice,
+HRESULT CD3DMesh::Create(LPDIRECT3DDEVICE9 pd3dDevice,
 	LPDIRECTXFILEDATA pFileData)
 {
 	LPD3DXBUFFER pMtrlBuffer = NULL;
@@ -135,8 +145,8 @@ HRESULT CD3DMesh::Create(LPDIRECT3DDEVICE8 pd3dDevice,
 	HRESULT      hr;
 
 	// Load the mesh from the DXFILEDATA object
-	if (FAILED(hr = D3DXLoadMeshFromXof(pFileData, D3DXMESH_SYSTEMMEM, pd3dDevice,
-		&pAdjacencyBuffer, &pMtrlBuffer,
+	if (FAILED(hr = D3DXLoadMeshFromXof((LPD3DXFILEDATA)pFileData, D3DXMESH_SYSTEMMEM, pd3dDevice,
+		&pAdjacencyBuffer, &pMtrlBuffer, NULL,
 		&m_dwNumMaterials, &m_pSysMemMesh)))
 	{
 		return hr;
@@ -158,11 +168,21 @@ HRESULT CD3DMesh::Create(LPDIRECT3DDEVICE8 pd3dDevice,
 	{
 		// Allocate memory for the materials and textures
 		D3DXMATERIAL* d3dxMtrls = (D3DXMATERIAL*)pMtrlBuffer->GetBufferPointer();
-		m_pMaterials = new D3DMATERIAL8[m_dwNumMaterials];
-		m_pTextures = new LPDIRECT3DTEXTURE8[m_dwNumMaterials];
+		m_pMaterials = new D3DMATERIAL9[m_dwNumMaterials];
+		if (m_pMaterials == NULL)
+		{
+			hr = E_OUTOFMEMORY;
+			goto LEnd;
+		}
+		m_pTextures = new LPDIRECT3DTEXTURE9[m_dwNumMaterials];
+		if (m_pTextures == NULL)
+		{
+			hr = E_OUTOFMEMORY;
+			goto LEnd;
+		}
 
 		// Copy each material and create its texture
-		for (DWORD i = 0; i < m_dwNumMaterials; i++)
+		for (DWORD i = 0; i<m_dwNumMaterials; i++)
 		{
 			// Copy the material
 			m_pMaterials[i] = d3dxMtrls[i].MatD3D;
@@ -174,8 +194,8 @@ HRESULT CD3DMesh::Create(LPDIRECT3DDEVICE8 pd3dDevice,
 			{
 				TCHAR strTexture[MAX_PATH];
 				TCHAR strTextureTemp[MAX_PATH];
-				DXUtil_ConvertAnsiStringToGeneric(strTextureTemp, d3dxMtrls[i].pTextureFilename);
-				DXUtil_FindMediaFile(strTexture, strTextureTemp);
+				DXUtil_ConvertAnsiStringToGenericCb(strTextureTemp, d3dxMtrls[i].pTextureFilename, sizeof(strTextureTemp));
+				DXUtil_FindMediaFileCb(strTexture, sizeof(strTexture), strTextureTemp);
 
 				if (FAILED(D3DXCreateTextureFromFile(pd3dDevice, strTexture,
 					&m_pTextures[i])))
@@ -183,11 +203,13 @@ HRESULT CD3DMesh::Create(LPDIRECT3DDEVICE8 pd3dDevice,
 			}
 		}
 	}
+	hr = S_OK;
 
+LEnd:
 	SAFE_RELEASE(pAdjacencyBuffer);
 	SAFE_RELEASE(pMtrlBuffer);
 
-	return S_OK;
+	return hr;
 }
 
 
@@ -197,7 +219,7 @@ HRESULT CD3DMesh::Create(LPDIRECT3DDEVICE8 pd3dDevice,
 // Name:
 // Desc:
 //-----------------------------------------------------------------------------
-HRESULT CD3DMesh::SetFVF(LPDIRECT3DDEVICE8 pd3dDevice, DWORD dwFVF)
+HRESULT CD3DMesh::SetFVF(LPDIRECT3DDEVICE9 pd3dDevice, DWORD dwFVF)
 {
 	LPD3DXMESH pTempSysMemMesh = NULL;
 	LPD3DXMESH pTempLocalMesh = NULL;
@@ -226,17 +248,10 @@ HRESULT CD3DMesh::SetFVF(LPDIRECT3DDEVICE8 pd3dDevice, DWORD dwFVF)
 
 	// Compute normals in case the meshes have them
 	if (m_pSysMemMesh)
-#if (D3D_SDK_VERSION >= 220)
 		D3DXComputeNormals(m_pSysMemMesh, NULL);
-#else
-		D3DXComputeNormals(m_pSysMemMesh);
-#endif
 	if (m_pLocalMesh)
-#if (D3D_SDK_VERSION >= 220)
 		D3DXComputeNormals(m_pLocalMesh, NULL);
-#else
-		D3DXComputeNormals(m_pLocalMesh);
-#endif
+
 	return S_OK;
 }
 
@@ -247,7 +262,7 @@ HRESULT CD3DMesh::SetFVF(LPDIRECT3DDEVICE8 pd3dDevice, DWORD dwFVF)
 // Name:
 // Desc:
 //-----------------------------------------------------------------------------
-HRESULT CD3DMesh::RestoreDeviceObjects(LPDIRECT3DDEVICE8 pd3dDevice)
+HRESULT CD3DMesh::RestoreDeviceObjects(LPDIRECT3DDEVICE9 pd3dDevice)
 {
 	if (NULL == m_pSysMemMesh)
 		return E_FAIL;
@@ -286,7 +301,7 @@ HRESULT CD3DMesh::InvalidateDeviceObjects()
 HRESULT CD3DMesh::Destroy()
 {
 	InvalidateDeviceObjects();
-	for (UINT i = 0; i < m_dwNumMaterials; i++)
+	for (UINT i = 0; i<m_dwNumMaterials; i++)
 		SAFE_RELEASE(m_pTextures[i]);
 	SAFE_DELETE_ARRAY(m_pTextures);
 	SAFE_DELETE_ARRAY(m_pMaterials);
@@ -305,8 +320,8 @@ HRESULT CD3DMesh::Destroy()
 // Name:
 // Desc:
 //-----------------------------------------------------------------------------
-HRESULT CD3DMesh::Render(LPDIRECT3DDEVICE8 pd3dDevice, BOOL bDrawOpaqueSubsets,
-	BOOL bDrawAlphaSubsets)
+HRESULT CD3DMesh::Render(LPDIRECT3DDEVICE9 pd3dDevice, bool bDrawOpaqueSubsets,
+	bool bDrawAlphaSubsets)
 {
 	if (NULL == m_pLocalMesh)
 		return E_FAIL;
@@ -314,7 +329,7 @@ HRESULT CD3DMesh::Render(LPDIRECT3DDEVICE8 pd3dDevice, BOOL bDrawOpaqueSubsets,
 	// Frist, draw the subsets without alpha
 	if (bDrawOpaqueSubsets)
 	{
-		for (DWORD i = 0; i < m_dwNumMaterials; i++)
+		for (DWORD i = 0; i<m_dwNumMaterials; i++)
 		{
 			if (m_bUseMaterials)
 			{
@@ -330,7 +345,7 @@ HRESULT CD3DMesh::Render(LPDIRECT3DDEVICE8 pd3dDevice, BOOL bDrawOpaqueSubsets,
 	// Then, draw the subsets with alpha
 	if (bDrawAlphaSubsets && m_bUseMaterials)
 	{
-		for (DWORD i = 0; i < m_dwNumMaterials; i++)
+		for (DWORD i = 0; i<m_dwNumMaterials; i++)
 		{
 			if (m_pMaterials[i].Diffuse.a == 1.0f)
 				continue;
@@ -354,7 +369,8 @@ HRESULT CD3DMesh::Render(LPDIRECT3DDEVICE8 pd3dDevice, BOOL bDrawOpaqueSubsets,
 //-----------------------------------------------------------------------------
 CD3DFrame::CD3DFrame(TCHAR* strName)
 {
-	_tcscpy(m_strName, strName);
+	_tcsncpy(m_strName, strName, sizeof(m_strName) / sizeof(TCHAR));
+	m_strName[sizeof(m_strName) / sizeof(TCHAR) - 1] = _T('\0');
 	D3DXMatrixIdentity(&m_mat);
 	m_pMesh = NULL;
 
@@ -382,8 +398,8 @@ CD3DFrame::~CD3DFrame()
 // Name:
 // Desc:
 //-----------------------------------------------------------------------------
-BOOL CD3DFrame::EnumMeshes(BOOL(*EnumMeshCB)(CD3DMesh*, VOID*),
-	VOID* pContext)
+bool CD3DFrame::EnumMeshes(bool(*EnumMeshCB)(CD3DMesh*, void*),
+	void* pContext)
 {
 	if (m_pMesh)
 		EnumMeshCB(m_pMesh, pContext);
@@ -473,7 +489,7 @@ HRESULT CD3DFrame::Destroy()
 // Name:
 // Desc:
 //-----------------------------------------------------------------------------
-HRESULT CD3DFrame::RestoreDeviceObjects(LPDIRECT3DDEVICE8 pd3dDevice)
+HRESULT CD3DFrame::RestoreDeviceObjects(LPDIRECT3DDEVICE9 pd3dDevice)
 {
 	if (m_pMesh)  m_pMesh->RestoreDeviceObjects(pd3dDevice);
 	if (m_pChild) m_pChild->RestoreDeviceObjects(pd3dDevice);
@@ -503,13 +519,13 @@ HRESULT CD3DFrame::InvalidateDeviceObjects()
 // Name:
 // Desc:
 //-----------------------------------------------------------------------------
-HRESULT CD3DFrame::Render(LPDIRECT3DDEVICE8 pd3dDevice, BOOL bDrawOpaqueSubsets,
-	BOOL bDrawAlphaSubsets, D3DXMATRIX* pmatWorldMatrix)
+HRESULT CD3DFrame::Render(LPDIRECT3DDEVICE9 pd3dDevice, bool bDrawOpaqueSubsets,
+	bool bDrawAlphaSubsets, D3DXMATRIX* pmatWorldMatrix)
 {
 	// For pure devices, specify the world transform. If the world transform is not
 	// specified on pure devices, this function will fail.
 
-	D3DXMATRIX matSavedWorld, matWorld;
+	D3DXMATRIXA16 matSavedWorld, matWorld;
 
 	if (NULL == pmatWorldMatrix)
 		pd3dDevice->GetTransform(D3DTS_WORLD, &matSavedWorld);
@@ -540,7 +556,7 @@ HRESULT CD3DFrame::Render(LPDIRECT3DDEVICE8 pd3dDevice, BOOL bDrawOpaqueSubsets,
 // Name:
 // Desc:
 //-----------------------------------------------------------------------------
-HRESULT CD3DFile::LoadFrame(LPDIRECT3DDEVICE8 pd3dDevice,
+HRESULT CD3DFile::LoadFrame(LPDIRECT3DDEVICE9 pd3dDevice,
 	LPDIRECTXFILEDATA pFileData,
 	CD3DFrame* pParentFrame)
 {
@@ -564,7 +580,7 @@ HRESULT CD3DFile::LoadFrame(LPDIRECT3DDEVICE8 pd3dDevice,
 	if (*pGUID == TID_D3DRMFrameTransformMatrix)
 	{
 		D3DXMATRIX* pmatMatrix;
-		hr = pFileData->GetData(NULL, &cbSize, (VOID**)&pmatMatrix);
+		hr = pFileData->GetData(NULL, &cbSize, (void**)&pmatMatrix);
 		if (FAILED(hr))
 			return hr;
 
@@ -575,15 +591,16 @@ HRESULT CD3DFile::LoadFrame(LPDIRECT3DDEVICE8 pd3dDevice,
 	{
 		// Get the frame name
 		CHAR  strAnsiName[512] = "";
-		TCHAR strName[MAX_PATH];
-		DWORD dwNameLength;
-		pFileData->GetName(NULL, &dwNameLength);
-		if (dwNameLength > 0)
-			pFileData->GetName(strAnsiName, &dwNameLength);
-		DXUtil_ConvertAnsiStringToGeneric(strName, strAnsiName);
+		TCHAR strName[512];
+		DWORD dwNameLength = 512;
+		if (FAILED(hr = pFileData->GetName(strAnsiName, &dwNameLength)))
+			return hr;
+		DXUtil_ConvertAnsiStringToGenericCb(strName, strAnsiName, sizeof(strName));
 
 		// Create the frame
 		pCurrentFrame = new CD3DFrame(strName);
+		if (pCurrentFrame == NULL)
+			return E_OUTOFMEMORY;
 
 		pCurrentFrame->m_pNext = pParentFrame->m_pChild;
 		pParentFrame->m_pChild = pCurrentFrame;
@@ -593,7 +610,7 @@ HRESULT CD3DFile::LoadFrame(LPDIRECT3DDEVICE8 pd3dDevice,
 		{
 			// Query the child for its FileData
 			hr = pChildObj->QueryInterface(IID_IDirectXFileData,
-				(VOID**)&pChildData);
+				(void**)&pChildData);
 			if (SUCCEEDED(hr))
 			{
 				hr = LoadFrame(pd3dDevice, pChildData, pCurrentFrame);
@@ -617,7 +634,7 @@ HRESULT CD3DFile::LoadFrame(LPDIRECT3DDEVICE8 pd3dDevice,
 // Name:
 // Desc:
 //-----------------------------------------------------------------------------
-HRESULT CD3DFile::LoadMesh(LPDIRECT3DDEVICE8 pd3dDevice,
+HRESULT CD3DFile::LoadMesh(LPDIRECT3DDEVICE9 pd3dDevice,
 	LPDIRECTXFILEDATA pFileData,
 	CD3DFrame* pParentFrame)
 {
@@ -627,15 +644,17 @@ HRESULT CD3DFile::LoadMesh(LPDIRECT3DDEVICE8 pd3dDevice,
 
 	// Get the mesh name
 	CHAR  strAnsiName[512] = { 0 };
-	TCHAR strName[MAX_PATH];
-	DWORD dwNameLength;
-	pFileData->GetName(NULL, &dwNameLength);
-	if (dwNameLength > 0)
-		pFileData->GetName(strAnsiName, &dwNameLength);
-	DXUtil_ConvertAnsiStringToGeneric(strName, strAnsiName);
+	TCHAR strName[512];
+	DWORD dwNameLength = 512;
+	HRESULT hr;
+	if (FAILED(hr = pFileData->GetName(strAnsiName, &dwNameLength)))
+		return hr;
+	DXUtil_ConvertAnsiStringToGenericCb(strName, strAnsiName, sizeof(strName));
 
 	// Create the mesh
 	pParentFrame->m_pMesh = new CD3DMesh(strName);
+	if (pParentFrame->m_pMesh == NULL)
+		return E_OUTOFMEMORY;
 	pParentFrame->m_pMesh->Create(pd3dDevice, pFileData);
 
 	return S_OK;
@@ -648,7 +667,7 @@ HRESULT CD3DFile::LoadMesh(LPDIRECT3DDEVICE8 pd3dDevice,
 // Name:
 // Desc:
 //-----------------------------------------------------------------------------
-HRESULT CD3DFile::CreateFromResource(LPDIRECT3DDEVICE8 pd3dDevice, TCHAR* strResource, TCHAR* strType)
+HRESULT CD3DFile::CreateFromResource(LPDIRECT3DDEVICE9 pd3dDevice, TCHAR* strResource, TCHAR* strType)
 {
 	LPDIRECTXFILE           pDXFile = NULL;
 	LPDIRECTXFILEENUMOBJECT pEnumObj = NULL;
@@ -660,7 +679,7 @@ HRESULT CD3DFile::CreateFromResource(LPDIRECT3DDEVICE8 pd3dDevice, TCHAR* strRes
 		return E_FAIL;
 
 	// Register templates for d3drm and patch extensions.
-	if (FAILED(hr = pDXFile->RegisterTemplates((VOID*)D3DRM_XTEMPLATES,
+	if (FAILED(hr = pDXFile->RegisterTemplates((void*)D3DRM_XTEMPLATES,
 		D3DRM_XTEMPLATE_BYTES)))
 	{
 		pDXFile->Release();
@@ -668,7 +687,7 @@ HRESULT CD3DFile::CreateFromResource(LPDIRECT3DDEVICE8 pd3dDevice, TCHAR* strRes
 	}
 
 	CHAR strTypeAnsi[MAX_PATH];
-	DXUtil_ConvertGenericStringToAnsi(strTypeAnsi, strType);
+	DXUtil_ConvertGenericStringToAnsiCb(strTypeAnsi, strType, sizeof(strTypeAnsi));
 
 	DXFILELOADRESOURCE dxlr;
 	dxlr.hModule = NULL;
@@ -676,7 +695,7 @@ HRESULT CD3DFile::CreateFromResource(LPDIRECT3DDEVICE8 pd3dDevice, TCHAR* strRes
 	dxlr.lpType = (TCHAR*)strTypeAnsi;
 
 	// Create enum object
-	hr = pDXFile->CreateEnumObject((VOID*)&dxlr, DXFILELOAD_FROMRESOURCE,
+	hr = pDXFile->CreateEnumObject((void*)&dxlr, DXFILELOAD_FROMRESOURCE,
 		&pEnumObj);
 	if (FAILED(hr))
 	{
@@ -711,7 +730,7 @@ HRESULT CD3DFile::CreateFromResource(LPDIRECT3DDEVICE8 pd3dDevice, TCHAR* strRes
 // Name:
 // Desc:
 //-----------------------------------------------------------------------------
-HRESULT CD3DFile::Create(LPDIRECT3DDEVICE8 pd3dDevice, TCHAR* strFilename)
+HRESULT CD3DFile::Create(LPDIRECT3DDEVICE9 pd3dDevice, TCHAR* strFilename)
 {
 	LPDIRECTXFILE           pDXFile = NULL;
 	LPDIRECTXFILEENUMOBJECT pEnumObj = NULL;
@@ -723,7 +742,7 @@ HRESULT CD3DFile::Create(LPDIRECT3DDEVICE8 pd3dDevice, TCHAR* strFilename)
 		return E_FAIL;
 
 	// Register templates for d3drm and patch extensions.
-	if (FAILED(hr = pDXFile->RegisterTemplates((VOID*)D3DRM_XTEMPLATES,
+	if (FAILED(hr = pDXFile->RegisterTemplates((void*)D3DRM_XTEMPLATES,
 		D3DRM_XTEMPLATE_BYTES)))
 	{
 		pDXFile->Release();
@@ -733,11 +752,11 @@ HRESULT CD3DFile::Create(LPDIRECT3DDEVICE8 pd3dDevice, TCHAR* strFilename)
 	// Find the path to the file, and convert it to ANSI (for the D3DXOF API)
 	TCHAR strPath[MAX_PATH];
 	CHAR  strPathANSI[MAX_PATH];
-	DXUtil_FindMediaFile(strPath, strFilename);
-	DXUtil_ConvertGenericStringToAnsi(strPathANSI, strPath);
+	DXUtil_FindMediaFileCb(strPath, sizeof(strPath), strFilename);
+	DXUtil_ConvertGenericStringToAnsiCb(strPathANSI, strPath, sizeof(strPathANSI));
 
 	// Create enum object
-	hr = pDXFile->CreateEnumObject((VOID*)strPathANSI, DXFILELOAD_FROMFILE,
+	hr = pDXFile->CreateEnumObject((void*)strPathANSI, DXFILELOAD_FROMFILE,
 		&pEnumObj);
 	if (FAILED(hr))
 	{
@@ -772,7 +791,7 @@ HRESULT CD3DFile::Create(LPDIRECT3DDEVICE8 pd3dDevice, TCHAR* strFilename)
 // Name:
 // Desc:
 //-----------------------------------------------------------------------------
-HRESULT CD3DFile::Render(LPDIRECT3DDEVICE8 pd3dDevice, D3DXMATRIX* pmatWorldMatrix)
+HRESULT CD3DFile::Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX* pmatWorldMatrix)
 {
 
 	// For pure devices, specify the world transform. If the world transform is not

@@ -12,18 +12,20 @@
 #include <basetsd.h>
 #include <math.h>
 #include <stdio.h>
-#include <D3DX8.h>
-#include <DXErr8.h>
+#include <D3DX9.h>
+#include <DXErr9.h>
 #include <tchar.h>
 #include <dinput.h>
+#include "D3DUtil.h"
+#include "DXUtil.h"
+#include "D3DEnumeration.h"
+#include "D3DSettings.h"
 #include "D3DApp.h"
 #include "D3DFont.h"
 #include "D3DFile.h"
-#include "D3DUtil.h"
 #include "DIUtil.h"
 //#include "DMUtil.h"
 #include "DSUtil.h"
-#include "DXUtil.h"
 #include "D3Dtypes.h"
 #include "GVector.hpp"
 
@@ -141,7 +143,7 @@ public:
 
 	CInputDeviceManager*    m_pInputDeviceManager;  // DirectInput device manager
 	DIACTIONFORMAT          m_diafGame;             // Action format for game play
-	LPDIRECT3DSURFACE8      m_pDIConfigSurface;     // Surface for config'ing DInput devices
+	LPDIRECT3DSURFACE9      m_pDIConfigSurface;     // Surface for config'ing DInput devices
 	UserInput               m_UserInput;            // Struct for storing user input 
 
 	FLOAT                   m_fSoundPlayRepeatCountdown; // Sound repeat timer
@@ -173,7 +175,7 @@ protected:
 	HRESULT Render();
 	HRESULT FrameMove();
 	HRESULT FinalCleanup();
-	HRESULT ConfirmDevice(D3DCAPS8*, DWORD, D3DFORMAT);
+	HRESULT ConfirmDevice(D3DCAPS9*, DWORD, D3DFORMAT);
 
 	HRESULT RenderText();
 
@@ -266,4 +268,7 @@ const TCHAR* GetResourceDir();
 const TCHAR* GetDataDir();
 const TCHAR* GetCurrentDataDir();
 const TCHAR* GetCurrentScenarioDir();
+
+#define Resize3DEnvironment Reset3DEnvironment
+
 #endif // !defined(AFX_RIGID_H__F533E4AC_435C_4933_8AC7_50A6C021E6DF__INCLUDED_)

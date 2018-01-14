@@ -1799,7 +1799,7 @@ typedef struct _D3DDEVINFO_D3DVERTEXSTATS
 
 
 typedef struct _D3DDEVINFO_VCACHE {
-    DWORD   Pattern;                    /* bit pattern, return value must be FOUR_CC(ëCí, ëAí, ëCí, ëHí) */
+    DWORD   Pattern;                    /* bit pattern, return value must be FOUR_CC(ëCÅE ëAÅE ëCÅE ëHÅE */
     DWORD   OptMethod;                  /* optimization method 0 means longest strips, 1 means vertex cache based */
     DWORD   CacheSize;                  /* cache size to optimize for  (only required if type is 1) */
     DWORD   MagicNumber;                /* used to determine when to restart strips (only required if type is 1)*/

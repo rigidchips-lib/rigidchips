@@ -17,7 +17,7 @@
 #endif
 
 //ここからグローバル変数定義
-EXTERN LPDIRECT3DDEVICE8 g_D3DDevice;
+EXTERN LPDIRECT3DDEVICE9 g_D3DDevice;
 EXTERN GValList g_ValList[GVALMAX];
 EXTERN GKeyList g_KeyList[GKEYMAX];
 EXTERN GWorld *g_World;

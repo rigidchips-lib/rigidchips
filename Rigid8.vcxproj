@@ -112,10 +112,10 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>dsound.lib;dinput8.lib;dxerr8.lib;d3dx8dt.lib;d3d8.lib;d3dxof.lib;dxguid.lib;winmm.lib;odbc32.lib;odbccp32.lib;imm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dsound.lib;dinput8.lib;dxerr9.lib;d3dx9dt.lib;d3d9.lib;d3dxof.lib;dxguid.lib;winmm.lib;odbc32.lib;odbccp32.lib;imm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\Release/Rigid.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <IgnoreSpecificDefaultLibraries>libci.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>libci.lib;libcp.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <ProgramDatabaseFile>.\Release/Rigid.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -159,7 +159,7 @@
       <Culture>0x0411</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>dsound.lib;dinput8.lib;dxerr8.lib;d3dx8dt.lib;d3d8.lib;imm32.lib;d3dxof.lib;dxguid.lib;winmm.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dsound.lib;dinput8.lib;dxerr9.lib;d3dx9dt.lib;d3d9.lib;imm32.lib;d3dxof.lib;dxguid.lib;winmm.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\Debug/Rigid.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -179,9 +179,11 @@
     <ClInclude Include="Lua\include\lualib.h" />
     <ClInclude Include="src\Consts.hpp" />
     <ClInclude Include="src\d3dapp.h" />
+    <ClInclude Include="src\d3denumeration.h" />
     <ClInclude Include="src\d3dfile.h" />
     <ClInclude Include="src\d3dfont.h" />
     <ClInclude Include="src\d3dres.h" />
+    <ClInclude Include="src\d3dsettings.h" />
     <ClInclude Include="src\d3dutil.h" />
     <ClInclude Include="src\diutil.h" />
     <ClInclude Include="src\dmutil.h" />
@@ -208,8 +210,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\d3dapp.cpp" />
+    <ClCompile Include="src\d3denumeration.cpp" />
     <ClCompile Include="src\d3dfile.cpp" />
     <ClCompile Include="src\d3dfont.cpp" />
+    <ClCompile Include="src\d3dsettings.cpp" />
     <ClCompile Include="src\d3dutil.cpp" />
     <ClCompile Include="src\diutil.cpp" />
     <ClCompile Include="src\dmutil.cpp" />

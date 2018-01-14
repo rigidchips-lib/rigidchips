@@ -62,7 +62,7 @@ typedef struct _D3DPOINTVERTEX_ {
 //#define D3DFVF_POINTVERTEX 		(D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1| D3DFVF_PSIZE)
 #define D3DFVF_POINTVERTEX 		(D3DFVF_XYZ | D3DFVF_DIFFUSE)
 inline DWORD FtoDW(FLOAT f) { return *((DWORD*)&f); }
-D3DLIGHT8 light;
+D3DLIGHT9 light;
 //D3DLIGHT8 light1;
 
 int KeyRecord[GRECMAX][GKEYMAX + 7];//Analog‚ÆHat
@@ -111,11 +111,11 @@ CD3DMesh*	m_pXMesh[GMODELMAX];	// XMeshƒf[ƒ^
 D3DXMATRIX GMatWorld;
 D3DXMATRIX GMatView;
 
-//LPDIRECT3DVERTEXBUFFER8 pPointVB = NULL;
-LPDIRECT3DVERTEXBUFFER8 pPointVB = NULL;
-LPDIRECT3DTEXTURE8 pPointTexture = NULL;
+//LPDIRECT3DVERTEXBUFFER9 pPointVB = NULL;
+LPDIRECT3DVERTEXBUFFER9 pPointVB = NULL;
+LPDIRECT3DTEXTURE9 pPointTexture = NULL;
 LPD3DXSPRITE pSprite = NULL;
-LPDIRECT3DTEXTURE8 pMyTexture[GTEXMAX];
+LPDIRECT3DTEXTURE9 pMyTexture[GTEXMAX];
 
 HMIDIOUT hMidiOut;
 
@@ -1254,7 +1254,7 @@ void Text3D(CD3DFont*font, GVector &pos, GVector &rot, float s, char *str, DWORD
 	D3DXMatrixTranslation(&tm, pos.x, pos.y, pos.z);
 	g_D3DDevice->SetTransform(D3DTS_WORLD, &tm);
 	// Establish colors for selected vs. normal menu items
-	D3DMATERIAL8 mtrlText;
+	D3DMATERIAL9 mtrlText;
 	float r1 = (col >> 16) / 255.0f;
 	float g1 = ((col >> 8) & 0xff) / 255.0f;
 	float b1 = (col & 0xff) / 255.0f;
@@ -1268,7 +1268,7 @@ void Text3Dm(CD3DFont*font, D3DXMATRIX &m, char *str, DWORD col) {
 	g_D3DDevice->SetRenderState(D3DRS_AMBIENT, 0xFFFFFFFF);
 	g_D3DDevice->SetTransform(D3DTS_WORLD, &m);
 	// Establish colors for selected vs. normal menu items
-	D3DMATERIAL8 mtrlText;
+	D3DMATERIAL9 mtrlText;
 	float r1 = (col >> 16) / 255.0f;
 	float g1 = ((col >> 8) & 0xff) / 255.0f;
 	float b1 = (col & 0xff) / 255.0f;
@@ -1313,7 +1313,7 @@ void Line2D(GFloat x0, GFloat y0, GFloat x1, GFloat y1, int col)
 		g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// ƒJƒŠƒ“ƒOƒ‚[ƒh
 
 																	//G3dDevice->SetRenderState( D3DRS_ZENABLE, FALSE );
-		g_D3DDevice->SetVertexShader(D3DFVF_POINTVERTEX);
+		g_D3DDevice->SetFVF(D3DFVF_POINTVERTEX);
 		g_D3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, Vertex_num / 2, line2dVertexTable, sizeof(D3DPOINTVERTEX)); //_MOVE‚Æ_LINE•ª‚¯‚ÄDrawIndexedPrimitiveUP‚Åˆê‚Â‚É‚Ü‚Æ‚ß‚½‚Ù‚¤‚ª’¸“_”‚ª”¼•ª‹ß‚­‚ÉŒ¸‚ç‚¹‚é‚Ë
 
 																											   /*	G3dDevice->SetRenderState( D3DRS_ALPHAREF, 0x00000000);
@@ -1347,7 +1347,7 @@ void Line(GVector &p1, GVector &p2, unsigned int col)
 		g_D3DDevice->SetTexture(0, NULL);
 		g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// ƒJƒŠƒ“ƒOƒ‚[ƒh
 
-		g_D3DDevice->SetVertexShader(D3DFVF_POINTVERTEX);
+		g_D3DDevice->SetFVF(D3DFVF_POINTVERTEX);
 		g_D3DDevice->DrawPrimitiveUP(D3DPT_LINELIST, Vertex_num / 2, line3dVertexTable, sizeof(D3DPOINTVERTEX));
 
 		g_D3DDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
@@ -2636,7 +2636,7 @@ void GWorld::DispNetChipInfo(int n, float zz)
 		D3DXMatrixMultiply(&mat, &smat, &vmat2);
 		g_D3DDevice->SetTransform(D3DTS_WORLD, &mat);
 
-		D3DMATERIAL8 mtrlText;
+		D3DMATERIAL9 mtrlText;
 		mtrlText.Power = 1.0f;
 		mtrlText.Specular.r = mtrlText.Specular.g = mtrlText.Specular.b = mtrlText.Specular.a = 0;
 		mtrlText.Emissive.r = 1;
@@ -2687,8 +2687,8 @@ void GWorld::DispNetShadow()
 {
 	//‰e‚Ì•\Ž¦
 	g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// ƒJƒŠƒ“ƒOƒ‚[ƒh
-	g_D3DDevice->SetStreamSource(0, pPointVB, sizeof(D3DPOINTVERTEX));
-	g_D3DDevice->SetVertexShader(D3DFVF_POINTVERTEX);
+	g_D3DDevice->SetStreamSource(0, pPointVB, 0, sizeof(D3DPOINTVERTEX));
+	g_D3DDevice->SetFVF(D3DFVF_POINTVERTEX);
 	g_D3DDevice->SetTexture(0, NULL);
 	g_D3DDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 	g_D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
@@ -2713,8 +2713,8 @@ void GRigid::DispShadow()
 		static GVector sv1[GCHIPMAX * 2], sv2[GCHIPMAX * 2];
 		int sn2;
 		g_D3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// ƒJƒŠƒ“ƒOƒ‚[ƒh
-		g_D3DDevice->SetStreamSource(0, pPointVB, sizeof(D3DPOINTVERTEX));
-		g_D3DDevice->SetVertexShader(D3DFVF_POINTVERTEX);
+		g_D3DDevice->SetStreamSource(0, pPointVB, 0, sizeof(D3DPOINTVERTEX));
+		g_D3DDevice->SetFVF(D3DFVF_POINTVERTEX);
 		g_D3DDevice->SetTexture(0, NULL);
 		g_D3DDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 		g_D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
@@ -2799,7 +2799,7 @@ void GRigid::DispShadow()
 			if (tmin >= 0.9999) continue;
 			g_World->Land->ClipShadow(sv1, jj, list[i], sv2, &sn2);
 			if (sn2 > 2) {
-				pPointVB->Lock(0, 0, (BYTE**)&p2V, 0);
+				pPointVB->Lock(0, 0, (VOID**)&p2V, 0);
 				int col = 0x00111111 + (long)((1.0 - tmin*tmin) * 0x88) * 0x01000000;
 				for (j = 0;j < sn2;j++) {
 					p2V[j].x = (float)sv2[j].x;
@@ -2816,8 +2816,8 @@ void GRigid::DispShadow()
 			}
 		}
 		//…–Ê‚Ì‰e‚Ì•\Ž¦
-		g_D3DDevice->SetStreamSource(0, pPointVB, sizeof(D3DPOINTVERTEX));
-		g_D3DDevice->SetVertexShader(D3DFVF_POINTVERTEX);
+		g_D3DDevice->SetStreamSource(0, pPointVB, 0, sizeof(D3DPOINTVERTEX));
+		g_D3DDevice->SetFVF(D3DFVF_POINTVERTEX);
 		g_D3DDevice->SetTransform(D3DTS_WORLD, &GMatWorld);
 		n = GVector(0, 1, 0.5f).normalize2();
 		bool flag = false;
@@ -2863,7 +2863,7 @@ void GRigid::DispShadow()
 				tmin = tmin / 10.0f;
 			}
 			if (flag == false && tmin>-1.0) {
-				pPointVB->Lock(0, 0, (BYTE**)&p2V, 0);
+				pPointVB->Lock(0, 0, (VOID**)&p2V, 0);
 				int col = 0x00111111 + (long)((1.0 - tmin*tmin) * 0x88) * 0x01000000;
 				for (j = 0;j < sn2;j++) {
 					p2V[j].x = (float)sv2[j].x;
@@ -3145,7 +3145,8 @@ CMyD3DApplication::CMyD3DApplication()
 	m_dwCreationWidth = 640;
 	m_dwCreationHeight = 480;
 	m_strWindowTitle = TEXT("RigidChips 1.5.B27");
-	m_bUseDepthBuffer = TRUE;
+	m_d3dEnumeration.AppUsesDepthBuffer = TRUE;
+	m_d3dEnumeration.AppMinDepthBits = 24;
 
 	m_dLimidFPS = 1000 / s_LimitFPS;
 	m_inputFocus = true;
@@ -3434,13 +3435,13 @@ VOID CMyD3DApplication::ReadSettings()
 		DXUtil_ReadIntRegKey(hkey, TEXT("NameSize"), &v, v);
 		g_NameSize = (float)(v / 1000.0f);
 
-		DXUtil_ReadStringRegKey(hkey, TEXT("CurrWorkDir"), s_CurrDataDir, MAX_PATH, s_DataDir);
+		DXUtil_ReadStringRegKeyCb(hkey, TEXT("CurrWorkDir"), s_CurrDataDir, MAX_PATH, s_DataDir);
 
-		DXUtil_ReadStringRegKey(hkey, TEXT("SessionName"), SessionName, 256, "RigidChips");
+		DXUtil_ReadStringRegKeyCb(hkey, TEXT("SessionName"), SessionName, 256, "RigidChips");
 		if (SessionName[0] == '\0') strcpy(SessionName, "RigidChips");
-		DXUtil_ReadStringRegKey(hkey, TEXT("PlayerName"), PlayerName, MAX_PLAYER_NAME, "Player");
+		DXUtil_ReadStringRegKeyCb(hkey, TEXT("PlayerName"), PlayerName, MAX_PLAYER_NAME, "Player");
 		if (PlayerName[0] == '\0') strcpy(PlayerName, "Player");
-		DXUtil_ReadStringRegKey(hkey, TEXT("HostName"), HostName, 256, "localhost");
+		DXUtil_ReadStringRegKeyCb(hkey, TEXT("HostName"), HostName, 256, "localhost");
 		if (HostName[0] == '\0') strcpy(HostName, "localhost");
 		DXUtil_ReadIntRegKey(hkey, TEXT("PortNo"), &PortNo, PortNo);
 		if (PortNo == 0) PortNo = 2345;
@@ -3587,7 +3588,7 @@ HRESULT CMyD3DApplication::InitInput(HWND hWnd)
 
 	if (FAILED(hr = m_pInputDeviceManager->Create(hWnd, NULL, m_diafGame,
 		StaticInputAddDeviceCB, this)))
-		return DXTRACE_ERR_NOMSGBOX("m_pInputDeviceManager->Create", hr);
+		return DXTRACE_ERR("m_pInputDeviceManager->Create", hr);
 
 	return S_OK;
 }
@@ -3626,7 +3627,7 @@ HRESULT CMyD3DApplication::InitAudio( HWND hWnd )
 // Desc: Called during device initialization, this code checks the display device
 //       for some minimum set of capabilities
 //-----------------------------------------------------------------------------
-HRESULT CMyD3DApplication::ConfirmDevice(D3DCAPS8* pCaps, DWORD dwBehavior,
+HRESULT CMyD3DApplication::ConfirmDevice(D3DCAPS9* pCaps, DWORD dwBehavior,
 	D3DFORMAT Format)
 {
 	BOOL bCapsAcceptable;
@@ -4019,7 +4020,7 @@ HRESULT CMyD3DApplication::PlayLog() {
 	}
 	return S_OK;
 }
-HRESULT LoadLand(LPDIRECT3DDEVICE8 Device, char *fname)
+HRESULT LoadLand(LPDIRECT3DDEVICE9 Device, char *fname)
 {
 	char szDrive[_MAX_DRIVE + 1];	// ƒhƒ‰ƒCƒu–¼Ši”[—Ìˆæ 
 	char szPath[_MAX_PATH + 1];	// ƒpƒX–¼Ši”[—Ìˆæ 
@@ -4054,8 +4055,8 @@ HRESULT LoadLand(LPDIRECT3DDEVICE8 Device, char *fname)
 	if (FAILED(hr = g_pLandMesh->Create(Device, fname))) return E_FAIL;
 	//	g_pLandMesh->InvalidateDeviceObjects();
 	//	g_pLandMesh->RestoreDeviceObjects(Device);
-	LPDIRECT3DVERTEXBUFFER8 pMeshVB;
-	LPDIRECT3DINDEXBUFFER8 pMeshIB;
+	LPDIRECT3DVERTEXBUFFER9 pMeshVB;
+	LPDIRECT3DINDEXBUFFER9 pMeshIB;
 	D3DVERTEX             *pVertex;
 	struct {unsigned short p1, p2, p3; } *pIndex;
 
@@ -4078,7 +4079,7 @@ HRESULT LoadLand(LPDIRECT3DDEVICE8 Device, char *fname)
 	//D3DXATTRIBUTERANGE AttribTable[100];
 	D3DXATTRIBUTERANGE* AttribTable = new D3DXATTRIBUTERANGE[g_World->Land->AttribTableSize];
 	lpMeshC->GetAttributeTable(AttribTable, &(g_World->Land->AttribTableSize));
-	pMeshVB->Lock(0, 0, (BYTE**)&pVertex, D3DLOCK_READONLY);
+	pMeshVB->Lock(0, 0, (VOID**)&pVertex, D3DLOCK_READONLY);
 	landCode = 0;
 	for (i = 0;i < (unsigned int)v;i++) {
 		g_World->Land->Vertex[i].Pos.x = pVertex[i].x;
@@ -4090,7 +4091,7 @@ HRESULT LoadLand(LPDIRECT3DDEVICE8 Device, char *fname)
 	pMeshVB->Release();
 	//	g_pLandMesh->RestoreDeviceObjects(Device);
 	lpMeshC->GetIndexBuffer(&pMeshIB);
-	pMeshIB->Lock(0, 0, (BYTE**)&pIndex, D3DLOCK_READONLY);
+	pMeshIB->Lock(0, 0, (VOID**)&pIndex, D3DLOCK_READONLY);
 	for (i = 0;i < (unsigned int)f;i++) {
 		g_World->Land->Face[i].AttribNo = 0;
 		g_World->Land->Face[i].Ud = 1.0f;
@@ -4201,7 +4202,7 @@ HRESULT CMyD3DApplication::InitDeviceObjects()
 	m_pFont->InitDeviceObjects(m_pd3dDevice);
 	m_pFontL->InitDeviceObjects(m_pd3dDevice);
 	m_pFont3D->InitDeviceObjects(m_pd3dDevice);
-	LOGFONT lfFont;
+	/*LOGFONT lfFont;
 	lfFont.lfHeight = 12;
 	lfFont.lfWidth = lfFont.lfEscapement =
 		lfFont.lfOrientation = 0;
@@ -4214,7 +4215,7 @@ HRESULT CMyD3DApplication::InitDeviceObjects()
 	lfFont.lfClipPrecision = CLIP_DEFAULT_PRECIS;
 	lfFont.lfQuality = DEFAULT_QUALITY;
 	lfFont.lfPitchAndFamily = FIXED_PITCH | FF_SWISS;
-	lfFont.lfFaceName[0] = '\0';
+	lfFont.lfFaceName[0] = '\0';*/
 	/*
 HFONT hFont = CreateFont(
 		12,                // ‚‚³B0‚ÅƒfƒtƒHƒ‹ƒgB
@@ -4233,9 +4234,9 @@ HFONT hFont = CreateFont(
 		"ANSI_FIXED_FONT" );            // NULL‚ÅI‚í‚é•¶Žš—ñ‚Ö‚Ìƒ|ƒCƒ“ƒ^
 	*/
 	//	HFONT hFont = (HFONT) GetStockObject(OEM_FIXED_FONT);
-	HFONT hFont = CreateFontIndirect(&lfFont);
-	D3DXCreateFont(m_pd3dDevice, hFont, &g_pFont);
-	DeleteObject(hFont);
+	//HFONT hFont = CreateFontIndirect(&lfFont);
+	D3DXCreateFont(m_pd3dDevice, 12, 0, FW_BOLD, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, FIXED_PITCH | FF_SWISS, "\0", &g_pFont);
+	//DeleteObject(hFont);
 	// Create a teapot mesh using D3DX
 
 	//**********
@@ -4328,17 +4329,17 @@ HRESULT CMyD3DApplication::RestoreDeviceObjects()
 	switch (GraphicBoardType)
 	{
 	case 1: //GeForce
-		m_pd3dDevice->CreateVertexBuffer(sizeof(D3DPOINTVERTEX) * 100, D3DUSAGE_POINTS, D3DFVF_POINTVERTEX, D3DPOOL_SYSTEMMEM, &pPointVB);
+		m_pd3dDevice->CreateVertexBuffer(sizeof(D3DPOINTVERTEX) * 100, D3DUSAGE_POINTS, D3DFVF_POINTVERTEX, D3DPOOL_SYSTEMMEM, &pPointVB, NULL);
 		break;
 	case 2: //Radeon
 	default: //Others
-		m_pd3dDevice->CreateVertexBuffer(sizeof(D3DPOINTVERTEX) * 100, D3DUSAGE_POINTS, D3DFVF_POINTVERTEX, D3DPOOL_DEFAULT, &pPointVB);
+		m_pd3dDevice->CreateVertexBuffer(sizeof(D3DPOINTVERTEX) * 100, D3DUSAGE_POINTS, D3DFVF_POINTVERTEX, D3DPOOL_DEFAULT, &pPointVB, NULL);
 		break;
 	}
 	SAFE_RELEASE(pPointTexture);
 	//	D3DXCreateTextureFromFile(m_pd3dDevice,"dustw.png",&pPointTexture);
 		// Setup a material
-	D3DMATERIAL8 mtrl;
+	D3DMATERIAL9 mtrl;
 	D3DUtil_InitMaterial(mtrl, 1.0f, 0.0f, 0.0f);
 	m_pd3dDevice->SetMaterial(&mtrl);
 
@@ -4347,8 +4348,8 @@ HRESULT CMyD3DApplication::RestoreDeviceObjects()
 	m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 	m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 	m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-	m_pd3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTEXF_LINEAR);
-	m_pd3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTEXF_LINEAR);
+	m_pd3dDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+	m_pd3dDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
 
 	// Set miscellaneous render states
 	m_pd3dDevice->SetRenderState(D3DRS_SPECULARENABLE, FALSE);
@@ -4357,8 +4358,8 @@ HRESULT CMyD3DApplication::RestoreDeviceObjects()
 	m_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	m_pd3dDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 	m_pd3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	m_pd3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTEXF_LINEAR);
-	m_pd3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTEXF_LINEAR);
+	m_pd3dDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+	m_pd3dDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
 	m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 	m_pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
 
@@ -4449,9 +4450,9 @@ HRESULT CMyD3DApplication::RestoreDeviceObjects()
 	if (!m_bWindowed)
 	{
 		// Create a surface for configuring DInput devices
-		if (FAILED(hr = m_pd3dDevice->CreateImageSurface(640, 480,
-			m_d3dsdBackBuffer.Format, &m_pDIConfigSurface)))
-			return DXTRACE_ERR_NOMSGBOX("CreateImageSurface", hr);
+		if (FAILED(hr = m_pd3dDevice->CreateOffscreenPlainSurface(640, 480,
+			m_d3dsdBackBuffer.Format, D3DPOOL_SYSTEMMEM, &m_pDIConfigSurface, NULL)))
+			return DXTRACE_ERR("CreateImageSurface", hr);
 	}
 	g_World->MainStepCount = 0;
 
@@ -4484,8 +4485,8 @@ BOOL CALLBACK CMyD3DApplication::StaticConfigureInputDevicesCB(
 BOOL CMyD3DApplication::ConfigureInputDevicesCB(IUnknown* pUnknown)
 {
 	// Get access to the surface
-	LPDIRECT3DSURFACE8 pConfigSurface = NULL;
-	if (FAILED(pUnknown->QueryInterface(IID_IDirect3DSurface8,
+	LPDIRECT3DSURFACE9 pConfigSurface = NULL;
+	if (FAILED(pUnknown->QueryInterface(IID_IDirect3DSurface9,
 		(VOID**)&pConfigSurface)))
 		return TRUE;
 
@@ -4499,9 +4500,9 @@ BOOL CMyD3DApplication::ConfigureInputDevicesCB(IUnknown* pUnknown)
 	ptDst.x = (m_d3dsdBackBuffer.Width - 640) / 2;
 	ptDst.y = (m_d3dsdBackBuffer.Height - 480) / 2;
 
-	LPDIRECT3DSURFACE8 pBackBuffer;
-	m_pd3dDevice->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer);
-	m_pd3dDevice->CopyRects(pConfigSurface, &rcSrc, 1, pBackBuffer, &ptDst);
+	LPDIRECT3DSURFACE9 pBackBuffer;
+	m_pd3dDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer);
+	m_pd3dDevice->UpdateSurface(pConfigSurface, &rcSrc, pBackBuffer, &ptDst);
 	pBackBuffer->Release();
 
 	// Present the backbuffer contents to the front buffer
@@ -6073,14 +6074,14 @@ HRESULT CMyD3DApplication::_apply_vals()
 					double f = sqrt(fabs(g_Chip[i]->ArmEnergy / 125000.0)); if (f > 2.5) f = 2.5;
 					BOOL hit;
 					FLOAT dist;
-					LPDIRECT3DVERTEXBUFFER8 pVB;
-					LPDIRECT3DINDEXBUFFER8  pIB;
+					LPDIRECT3DVERTEXBUFFER9 pVB;
+					LPDIRECT3DINDEXBUFFER9  pIB;
 					WORD*            pIndices;
 					D3DVERTEX*    pVertices;
 					g_pLandMesh->GetSysMemMesh()->GetVertexBuffer(&pVB);
 					g_pLandMesh->GetSysMemMesh()->GetIndexBuffer(&pIB);
-					pIB->Lock(0, 0, (BYTE**)&pIndices, 0);
-					pVB->Lock(0, 0, (BYTE**)&pVertices, 0);
+					pIB->Lock(0, 0, (VOID**)&pIndices, 0);
+					pVB->Lock(0, 0, (VOID**)&pVertices, 0);
 					D3DXVECTOR3 v1, v2;
 					float as = ARMSPEED;
 					if (g_Chip[i]->X.y < WATER_LINE) as = as / 10;
@@ -6878,15 +6879,15 @@ void CMyD3DApplication::RenderSky() {
 	m_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0xb0b0b0);
 	m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
 	m_pd3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-	m_pd3dDevice->SetTextureStageState(0, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP);
-	m_pd3dDevice->SetTextureStageState(0, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP);
+	m_pd3dDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+	m_pd3dDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
 
 	m_pSkyMesh->Render(m_pd3dDevice);
 	// Restore the render states
 	m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
 	m_pd3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
-	m_pd3dDevice->SetTextureStageState(0, D3DTSS_ADDRESSU, D3DTADDRESS_WRAP);
-	m_pd3dDevice->SetTextureStageState(0, D3DTSS_ADDRESSV, D3DTADDRESS_WRAP);
+	m_pd3dDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
+	m_pd3dDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
 	m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 	m_pd3dDevice->SetTransform(D3DTS_VIEW, &GMatView);
 	m_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0x000F0F0F);
@@ -6966,8 +6967,8 @@ HRESULT CMyD3DApplication::Render()
 		// Restore the render states
 		m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
 		m_pd3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
-		m_pd3dDevice->SetTextureStageState(0, D3DTSS_ADDRESSU, D3DTADDRESS_WRAP);
-		m_pd3dDevice->SetTextureStageState(0, D3DTSS_ADDRESSV, D3DTADDRESS_WRAP);
+		m_pd3dDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
+		m_pd3dDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
 		m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 		m_pd3dDevice->SetTransform(D3DTS_VIEW, &GMatView);
 		m_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0x000F0F0F);
@@ -7235,7 +7236,7 @@ HRESULT CMyD3DApplication::Render()
 			if (k > 0) {
 				m_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 				m_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0x444444);
-				m_pd3dDevice->SetVertexShader(D3DFVF_POINTVERTEX);
+				m_pd3dDevice->SetFVF(D3DFVF_POINTVERTEX);
 				m_pd3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 				m_pXMesh[MESH_DUST]->m_pMaterials[0].Ambient.r = (float)lightColor.x;
 				m_pXMesh[MESH_DUST]->m_pMaterials[0].Ambient.g = (float)lightColor.y;
@@ -7303,7 +7304,7 @@ HRESULT CMyD3DApplication::Render()
 			if (k > 0) {
 				m_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 				m_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0xffffffff);
-				m_pd3dDevice->SetVertexShader(D3DFVF_POINTVERTEX);
+				m_pd3dDevice->SetFVF(D3DFVF_POINTVERTEX);
 				m_pd3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 
 				D3DXMATRIX mat1, mat2;
@@ -7352,7 +7353,7 @@ HRESULT CMyD3DApplication::Render()
 		if (k > 0) {
 			m_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 			m_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0xffffffff);
-			m_pd3dDevice->SetVertexShader(D3DFVF_POINTVERTEX);
+			m_pd3dDevice->SetFVF(D3DFVF_POINTVERTEX);
 			m_pd3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 			D3DXMATRIX mat1, mat2;
 			for (i = 0;i < k;i++) {
@@ -7395,7 +7396,7 @@ HRESULT CMyD3DApplication::Render()
 		//’eŠÛ
 		m_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 		m_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0xffffffff);
-		m_pd3dDevice->SetVertexShader(D3DFVF_POINTVERTEX);
+		m_pd3dDevice->SetFVF(D3DFVF_POINTVERTEX);
 		m_pd3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 		m_pd3dDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
 		m_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	// ƒJƒŠƒ“ƒOƒ‚[ƒh
@@ -7489,9 +7490,9 @@ HRESULT CMyD3DApplication::Render()
 
 
 		// ƒ[ƒ^[‚Ì•\Ž¦
-		D3DVIEWPORT8 viewData = { (DWORD)0, (DWORD)0, (DWORD)w, (DWORD)h, 0.0f, 1.0f };
-		D3DVIEWPORT8 viewData1 = { (DWORD)(w - 128 - 94 - 94 - 79), (DWORD)(h - 71), 64, 64, 0.0f, 1.0f };
-		D3DVIEWPORT8 viewData2 = { (DWORD)(w - 128 - 94 - 94 - 94 - 79), (DWORD)(h - 71), 64, 64, 0.0f, 1.0f };
+		D3DVIEWPORT9 viewData = { (DWORD)0, (DWORD)0, (DWORD)w, (DWORD)h, 0.0f, 1.0f };
+		D3DVIEWPORT9 viewData1 = { (DWORD)(w - 128 - 94 - 94 - 79), (DWORD)(h - 71), 64, 64, 0.0f, 1.0f };
+		D3DVIEWPORT9 viewData2 = { (DWORD)(w - 128 - 94 - 94 - 94 - 79), (DWORD)(h - 71), 64, 64, 0.0f, 1.0f };
 		D3DXMATRIX matProj;
 		D3DXMATRIX matV;
 		D3DXMATRIX mat;
@@ -7519,7 +7520,7 @@ HRESULT CMyD3DApplication::Render()
 				D3DXMatrixPerspectiveFovLH(&matProj, 0.1f, 1.0f, 1.0f, g_FarMax);
 				m_pd3dDevice->SetTransform(D3DTS_PROJECTION, &matProj);
 				m_pd3dDevice->SetRenderState(D3DRS_AMBIENT, 0xffffffff);
-				m_pd3dDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
+				m_pd3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 				m_pd3dDevice->SetViewport(&viewData1);
 				m_pd3dDevice->SetTransform(D3DTS_VIEW, &matV);
 				m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
@@ -7566,7 +7567,7 @@ HRESULT CMyD3DApplication::Render()
 					g_D3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 					/*					{	//Zƒoƒbƒtƒ@‚©‚ç‚Ì[“xî•ñ“Ç‚Ýž‚ÝiD3DFMT_D16_LOCKABLE‚Å‚È‚¢‚Æ–³—
 					D3DLOCKED_RECT zLock;
-					LPDIRECT3DSURFACE8 ZBuffer;
+					LPDIRECT3DSURFACE9 ZBuffer;
 					float widthRatio = 1.0f;
 					unsigned char *pLine,*pBase;
 					m_pd3dDevice->GetDepthStencilSurface(&ZBuffer);
@@ -7592,10 +7593,10 @@ HRESULT CMyD3DApplication::Render()
 					*/
 					{	//ƒoƒbƒNƒoƒbƒtƒ@‚©‚ç‚ÌFî•ñ“Ç‚Ýž‚Ý
 						D3DLOCKED_RECT Lock;
-						LPDIRECT3DSURFACE8 backBuffer;
+						LPDIRECT3DSURFACE9 backBuffer;
 						float widthRatio = 1.0f;
 						unsigned char *pLine, *pBase;
-						m_pd3dDevice->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &backBuffer);
+						m_pd3dDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backBuffer);
 						backBuffer->LockRect(&Lock, NULL, D3DLOCK_READONLY);//D3DLOCK_READONLY 
 						pBase = (unsigned char *)Lock.pBits;
 
@@ -7649,74 +7650,83 @@ HRESULT CMyD3DApplication::Render()
 
 
 
-
-
-	pSprite->Begin();
+	pSprite->Begin(D3DXSPRITE_ALPHABLEND);
 
 	RECT srcRect;
 
-	D3DXVECTOR2 v(64, 64);
-	D3DXVECTOR2 v1(32, 20);
-	D3DXVECTOR2 v2(48, 48);
-	D3DXVECTOR2 v3(24, 15);
-	D3DXVECTOR2 v4(24, 0);
+	D3DXVECTOR3 v(64, 64, 0);
+	D3DXVECTOR3 v1(32, 20, 0);
+	D3DXVECTOR3 v2(48, 48, 0);
+	D3DXVECTOR3 v3(24, 15, 0);
+	D3DXVECTOR3 v4(24, 0, 0);
+	D3DXVECTOR3 v5(32, 0, 0);
 	//#if (D3D_SDK_VERSION >= 220)
-	D3DXVECTOR2 s((FLOAT)0.75f, (FLOAT)0.75f);
-	D3DXVECTOR2 s2((FLOAT)0.75f, (FLOAT)0.75f);
-	D3DXVECTOR2 s3((FLOAT)1.0f, (FLOAT)1.0f);
+	D3DXVECTOR3 s((FLOAT)0.75f, (FLOAT)0.75f, 0);
+	D3DXVECTOR3 s2((FLOAT)0.75f, (FLOAT)0.75f, 0);
+	D3DXVECTOR3 s3((FLOAT)1.0f, (FLOAT)1.0f, 0);
 	//#else
 
 	//	D3DXVECTOR2 s((FLOAT)0.75f,(FLOAT)0.75f);
 	//	D3DXVECTOR2 s2((FLOAT)0.75f,(FLOAT)1.5f);
 	//	D3DXVECTOR2 s3((FLOAT)1.0f,(FLOAT)2.0f);
 	//#endif
-	D3DXVECTOR2 pos;
+	D3DXVECTOR3 pos(0, 0, 0);
 	D3DXVECTOR2 scale;
+
+	D3DXMATRIX t_matrix;
+	D3DXMatrixIdentity(&t_matrix);
+
+	pSprite->SetTransform(&t_matrix);
+
 	// ƒXƒNƒŠ[ƒ“‰ˆ—
 	SetRect(&srcRect, 0, 0, 16, 16);
 	pos.x = 0.0f;
 	pos.y = 0.0f;
-	pSprite->Draw(pMyTexture[19], &srcRect, NULL, NULL, NULL, &pos, 0xffffffff);
+	pSprite->Draw(pMyTexture[19], &srcRect, NULL, &pos, 0xffffffff);
 
 	SetRect(&srcRect, 0, 16, 16, 32);
 	pos.x = 0.0f;
 	pos.y = h - 16.0f;
-	pSprite->Draw(pMyTexture[19], &srcRect, NULL, NULL, NULL, &pos, 0xffffffff);
+	pSprite->Draw(pMyTexture[19], &srcRect, NULL, &pos, 0xffffffff);
 
 	SetRect(&srcRect, 16, 0, 32, 16);
 	pos.x = w - 16.0f;
 	pos.y = 0.0f;
-	pSprite->Draw(pMyTexture[19], &srcRect, NULL, NULL, NULL, &pos, 0xffffffff);
+	pSprite->Draw(pMyTexture[19], &srcRect, NULL, &pos, 0xffffffff);
 
 	SetRect(&srcRect, 16, 16, 32, 32);
 	pos.x = w - 16.0f;
 	pos.y = h - 16.0f;
-	pSprite->Draw(pMyTexture[19], &srcRect, NULL, NULL, NULL, &pos, 0xffffffff);
+	pSprite->Draw(pMyTexture[19], &srcRect, NULL, &pos, 0xffffffff);
 	// ó‘Ô
 	if (ShowRegulation) {
 		if (CurrentCourse != 0) {
-			scale.x = 0.5;
-			scale.y = 0.5;
+			D3DXMATRIX matrix;
+			D3DXMatrixScaling(&matrix, 0.5, 0.5, 1);
 			pos.x = w - 80.0f;
 			pos.y = 60.0f;
-			pSprite->Draw(pMyTexture[21], NULL, &scale, NULL, 0, &pos, 0xDDffffff);
+			pos.x *= 2;
+			pos.y *= 2;
+			pSprite->SetTransform(&matrix);
+			pSprite->Draw(pMyTexture[21], NULL, NULL, &pos, 0xDDffffff);
 			//			pos.x=w-70.0f;
 			//			pos.y=80.0f;
 			//			pSprite->Draw(pMyTexture[17],NULL,NULL,NULL,0,&pos,0x99ffffff);
 		}
+		pSprite->SetTransform(&t_matrix);
 		float p = 236.0f;
 		pos.x = w - p;
 		pos.y = 11.0f;
-		pSprite->Draw(pMyTexture[18], NULL, NULL, NULL, 0, &pos, 0x99ffffff);
-		for (int i = 0;i < 8;i++) {
+		pSprite->Draw(pMyTexture[18], NULL, NULL, &pos, 0x99ffffff);
+		for (int i = 0; i < 8; i++) {
 			pos.x = w - (p - 32.0f) + i*24.0f;
 			pos.y = 11.0f;
-			pSprite->Draw(pMyTexture[16], NULL, NULL, NULL, 0, &pos, 0x99ffffff);
+			pSprite->Draw(pMyTexture[16], NULL, NULL, &pos, 0x99ffffff);
 		}
 		if (KeyRecordMode != 0) {
 			pos.x = w - 58.0f + (CurrentCourse != 0 ? -78 : 0);
 			pos.y = 61.0f + (CurrentCourse == 0 ? -20 : 0);
-			pSprite->Draw(pMyTexture[17], NULL, NULL, NULL, 0, &pos, 0x99ffffff);
+			pSprite->Draw(pMyTexture[17], NULL, NULL, &pos, 0x99ffffff);
 		}
 	}
 	// ƒXƒs[ƒhƒ[ƒ^[
@@ -7730,92 +7740,261 @@ HRESULT CMyD3DApplication::Render()
 		pSprite->Draw(pMyTexture[17],NULL,&scale,NULL,0,&pos,0x99ffffff);
 		*/
 		// ”Õ
+		pSprite->SetTransform(&t_matrix);
 		pos.x = w - 128.0f;
 		pos.y = h - 117.0f;
-		pSprite->Draw(pMyTexture[0], NULL, NULL, NULL, D3DXToRadian(0), &pos, 0x99ffffff);
+		pSprite->Draw(pMyTexture[0], NULL, NULL, &pos, 0x99ffffff);
 		float d = -(float)g_Chip[0]->V.abs()*3.6f*270.0f / 450.0f;
 		ave1 = ave1*0.8f + (-g_Chip[0]->W.y)*15.0f*0.2f;
 		float d2 = ave1 + 180.0f;
 		// j‚Ì‰e2
 		pos.x = w - 128 + 32.0f + 2.0f;
 		pos.y = h - 117.0f + 44.0f + 1.0f;
-		pSprite->Draw(pMyTexture[10], NULL, NULL, &v1, D3DXToRadian(d2), &pos, 0x77ffffff);
+		{
+			D3DXMATRIX matrix;
+			D3DXMATRIX matrix2;
+			D3DXMATRIX matrix3;
+			D3DXMatrixTranslation(&matrix, pos.x + v1.x, pos.y + v1.y, 0);
+			D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d2));
+			D3DXMatrixMultiply(&matrix3, &matrix2, &matrix);
+			pSprite->SetTransform(&matrix3);
+			pSprite->Draw(pMyTexture[10], NULL, &v1, NULL, 0x77ffffff);
+		}
 		// j2
 		pos.x = w - 128.0f + 32.0f;
 		pos.y = h - 117.0f + 44.0f;
-		pSprite->Draw(pMyTexture[9], NULL, NULL, &v1, D3DXToRadian(d2), &pos, 0xffffffff);
+		{
+			D3DXMATRIX matrix;
+			D3DXMATRIX matrix2;
+			D3DXMATRIX matrix3;
+			D3DXMatrixTranslation(&matrix, pos.x + v1.x, pos.y + v1.y, 0);
+			D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d2));
+			D3DXMatrixMultiply(&matrix3, &matrix2, &matrix);
+			pSprite->SetTransform(&matrix3);
+			pSprite->Draw(pMyTexture[9], NULL, &v1, NULL, 0xffffffff);
+		}
 		// j‚Ì‰e
 		pos.x = w - 128 + 32.0f + 3.0f;
 		pos.y = h - 117.0f + 44.0f + 2.0f;
-		pSprite->Draw(pMyTexture[6], NULL, NULL, &v1, D3DXToRadian(d), &pos, 0x77ffffff);
+		{
+			D3DXMATRIX matrix;
+			D3DXMATRIX matrix2;
+			D3DXMATRIX matrix3;
+			D3DXMatrixTranslation(&matrix, pos.x + v1.x, pos.y + v1.y, 0);
+			D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d));
+			D3DXMatrixMultiply(&matrix3, &matrix2, &matrix);
+			pSprite->SetTransform(&matrix3);
+			pSprite->Draw(pMyTexture[6], NULL, &v1, NULL, 0x77ffffff);
+		}
 		// j
 		pos.x = w - 128.0f + 32.0f;
 		pos.y = h - 117.0f + 44.0f;
-		pSprite->Draw(pMyTexture[5], NULL, NULL, &v1, D3DXToRadian(d), &pos, 0xffffffff);
-
+		{
+			D3DXMATRIX matrix;
+			D3DXMATRIX matrix2;
+			D3DXMATRIX matrix3;
+			D3DXMatrixTranslation(&matrix, pos.x + v1.x, pos.y + v1.y, 0);
+			D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d));
+			D3DXMatrixMultiply(&matrix3, &matrix2, &matrix);
+			pSprite->SetTransform(&matrix3);
+			pSprite->Draw(pMyTexture[5], NULL, &v1, NULL, 0xffffffff);
+		}
 		// ‚“xŒv
 		// ”Õ
 		pos.x = w - 94 - 128.0f;
 		pos.y = h - 86.0f;
-		pSprite->Draw(pMyTexture[1], NULL, &s, NULL, D3DXToRadian(0), &pos, 0x99ffffff);
-
-
+		{
+			D3DXMATRIX matrix;
+			D3DXMATRIX matrix2;
+			D3DXMATRIX matrix3;
+			D3DXMatrixTranslation(&matrix, pos.x, pos.y, 0);
+			D3DXMatrixScaling(&matrix2, s.x, s.y, 1.0f);
+			D3DXMatrixMultiply(&matrix3, &matrix2, &matrix);
+			pSprite->SetTransform(&matrix3);
+			pSprite->Draw(pMyTexture[1], NULL, NULL, NULL, 0x99ffffff);
+		}
 		// j‚Ì‰e2
 		pos.x = w - 94.0f - 128.0f + 24.0f + 2.0f;
 		pos.y = h - 86.0f + 32.0f + 1.0f;
 		d2 = -(float)g_Chip[0]->X.y*360.0f / 10000.0f;
-		pSprite->Draw(pMyTexture[10], NULL, &s2, &v3, D3DXToRadian(d2), &pos, 0x77ffffff);
+		{
+			D3DXMATRIX matrix;
+			D3DXMATRIX matrix2;
+			D3DXMATRIX matrix3;
+			D3DXMATRIX matrix4;
+			D3DXMATRIX matrix5;
+			D3DXMatrixTranslation(&matrix, pos.x + v1.x*s2.x, pos.y + v1.y*s2.y, 0);
+			D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d2));
+			D3DXMatrixScaling(&matrix3, s2.x, s2.y, 1.0f);
+			D3DXMatrixMultiply(&matrix4, &matrix3, &matrix2);
+			D3DXMatrixMultiply(&matrix5, &matrix4, &matrix);
+			pSprite->SetTransform(&matrix5);
+			pSprite->Draw(pMyTexture[10], NULL, &v1, NULL, 0x77ffffff);
+		}
 		// j2
 		pos.x = w - 94.0f - 128.0f + 24.0f;
 		pos.y = h - 86.0f + 32.0f;
-		pSprite->Draw(pMyTexture[9], NULL, &s2, &v3, D3DXToRadian(d2), &pos, 0xffffffff);
+		{
+			D3DXMATRIX matrix;
+			D3DXMATRIX matrix2;
+			D3DXMATRIX matrix3;
+			D3DXMATRIX matrix4;
+			D3DXMATRIX matrix5;
+			D3DXMatrixTranslation(&matrix, pos.x + v1.x*s2.x, pos.y + v1.y*s2.y, 0);
+			D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d2));
+			D3DXMatrixScaling(&matrix3, s2.x, s2.y, 1.0f);
+			D3DXMatrixMultiply(&matrix4, &matrix3, &matrix2);
+			D3DXMatrixMultiply(&matrix5, &matrix4, &matrix);
+			pSprite->SetTransform(&matrix5);
+			pSprite->Draw(pMyTexture[9], NULL, &v1, NULL, 0xffffffff);
+		}
 		// j‚Ì‰e
 		pos.x = w - 94.0f - 128.0f + 24.0f + 3.0f;
 		pos.y = h - 86.0f + 32.0f + 2.0f;
 		d = -(float)g_Chip[0]->X.y*360.0f / 100.0f;
-		pSprite->Draw(pMyTexture[6], NULL, &s2, &v3, D3DXToRadian(d), &pos, 0x77ffffff);
+		{
+			D3DXMATRIX matrix;
+			D3DXMATRIX matrix2;
+			D3DXMATRIX matrix3;
+			D3DXMATRIX matrix4;
+			D3DXMATRIX matrix5;
+			D3DXMatrixTranslation(&matrix, pos.x + v1.x*s2.x, pos.y + v1.y*s2.y, 0);
+			D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d));
+			D3DXMatrixScaling(&matrix3, s2.x, s2.y, 1.0f);
+			D3DXMatrixMultiply(&matrix4, &matrix3, &matrix2);
+			D3DXMatrixMultiply(&matrix5, &matrix4, &matrix);
+			pSprite->SetTransform(&matrix5);
+			pSprite->Draw(pMyTexture[6], NULL, &v1, NULL, 0x77ffffff);
+		}
 		// j
 		pos.x = w - 94.0f - 128.0f + 24.0f;
 		pos.y = h - 86.0f + 32.0f;
-		pSprite->Draw(pMyTexture[5], NULL, &s2, &v3, D3DXToRadian(d), &pos, 0xffffffff);
+		{
+			D3DXMATRIX matrix;
+			D3DXMATRIX matrix2;
+			D3DXMATRIX matrix3;
+			D3DXMATRIX matrix4;
+			D3DXMATRIX matrix5;
+			D3DXMatrixTranslation(&matrix, pos.x + v1.x*s2.x, pos.y + v1.y*s2.y, 0);
+			D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d));
+			D3DXMatrixScaling(&matrix3, s2.x, s2.y, 1.0f);
+			D3DXMatrixMultiply(&matrix4, &matrix3, &matrix2);
+			D3DXMatrixMultiply(&matrix5, &matrix4, &matrix);
+			pSprite->SetTransform(&matrix5);
+			pSprite->Draw(pMyTexture[5], NULL, &v1, NULL, 0xffffffff);
+		}
 
 		// o—ÍŒv
 		// ”Õ
 		pos.x = w - 94.0f - 94.0f - 128.0f;
 		pos.y = h - 86.0f;
-		pSprite->Draw(pMyTexture[2], NULL, &s, NULL, D3DXToRadian(0), &pos, 0x99ffffff);
+		{
+			D3DXMATRIX matrix;
+			D3DXMATRIX matrix2;
+			D3DXMATRIX matrix3;
+			D3DXMatrixTranslation(&matrix, pos.x, pos.y, 0);
+			D3DXMatrixScaling(&matrix2, s.x, s.y, 1.0f);
+			D3DXMatrixMultiply(&matrix3, &matrix2, &matrix);
+			pSprite->SetTransform(&matrix3);
+			pSprite->Draw(pMyTexture[2], NULL, NULL, NULL, 0x99ffffff);
+		}
 
 		/*
-				// j‚Ì‰e2
-				pos.x=w-94-94-128+24.0f+2.0f;
-				pos.y=h-86.0f+32.0f+1.0f;
-				ave2=ave2*0.8f+(g_Chip[0]->V-preV)/g_World->Dt/2.0f*0.2f;
-				d2=-ave2.abs()+90.0f;
-				preV=g_Chip[0]->V;
-				pSprite->Draw(pMyTexture[10],NULL,&s2,&v3,D3DXToRadian(d2),&pos,0x77ffffff);
-				// j2
-				pos.x=w-94.0f-94.0f-128.0f+24.0f;
-				pos.y=h-86.0f+32.0f;
-				pSprite->Draw(pMyTexture[9],NULL,&s2,&v3,D3DXToRadian(d2),&pos,0xffffffff);
+		// j‚Ì‰e2
+		pos.x=w-94-94-128+24.0f+2.0f;
+		pos.y=h-86.0f+32.0f+1.0f;
+		ave2=ave2*0.8f+(g_Chip[0]->V-preV)/g_World->Dt/2.0f*0.2f;
+		d2=-ave2.abs()+90.0f;
+		preV=g_Chip[0]->V;
+		pSprite->Draw(pMyTexture[10],NULL,&s2,&v3,D3DXToRadian(d2),&pos,0x77ffffff);
+		// j2
+		pos.x=w-94.0f-94.0f-128.0f+24.0f;
+		pos.y=h-86.0f+32.0f;
+		pSprite->Draw(pMyTexture[9],NULL,&s2,&v3,D3DXToRadian(d2),&pos,0xffffffff);
 		*/
 		// j‚Ì‰e2
 		pos.x = w - 94 - 94 - 128 + 24.0f + 2.0f;
 		pos.y = h - 86.0f + 32.0f + 1.0f;
 		d2 = -g_Chip[0]->TotalFuel / g_Chip[0]->TotalFuelMax * 180 + 90.0f;
-		pSprite->Draw(pMyTexture[10], NULL, &s2, &v3, D3DXToRadian(d2), &pos, 0x77ffffff);
+		{
+			D3DXMATRIX matrix;
+			D3DXMATRIX matrix2;
+			D3DXMATRIX matrix3;
+			D3DXMATRIX matrix4;
+			D3DXMATRIX matrix5;
+			D3DXMatrixTranslation(&matrix, pos.x + v1.x*s2.x, pos.y + v1.y*s2.y, 0);
+			D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d2));
+			D3DXMatrixScaling(&matrix3, s2.x, s2.y, 1.0f);
+			D3DXMatrixMultiply(&matrix4, &matrix3, &matrix2);
+			D3DXMatrixMultiply(&matrix5, &matrix4, &matrix);
+			pSprite->SetTransform(&matrix5);
+			pSprite->Draw(pMyTexture[10], NULL, &v1, NULL, 0x77ffffff);
+		}
+
 		// j2
 		pos.x = w - 94.0f - 94.0f - 128.0f + 24.0f;
 		pos.y = h - 86.0f + 32.0f;
-		pSprite->Draw(pMyTexture[9], NULL, &s2, &v3, D3DXToRadian(d2), &pos, 0xffffffff);
+		{
+			D3DXMATRIX matrix;
+			D3DXMATRIX matrix2;
+			D3DXMATRIX matrix3;
+			D3DXMATRIX matrix4;
+			D3DXMATRIX matrix5;
+			D3DXMatrixTranslation(&matrix, pos.x + v1.x*s2.x, pos.y + v1.y*s2.y, 0);
+			D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d2));
+			D3DXMatrixScaling(&matrix3, s2.x, s2.y, 1.0f);
+			D3DXMatrixMultiply(&matrix4, &matrix3, &matrix2);
+			D3DXMatrixMultiply(&matrix5, &matrix4, &matrix);
+			pSprite->SetTransform(&matrix5);
+			pSprite->Draw(pMyTexture[9], NULL, &v1, NULL, 0xffffffff);
+		}
 		// j‚Ì‰e
 		pos.x = w - 94 - 94 - 128 + 24.0f + 3.0f;
 		pos.y = h - 86.0f + 32.0f + 2.0f;
 		d = -(float)log(s_TotalPower / 100.0f + 1.0f)*180.0f / 10.0f - 90.0f;
-		pSprite->Draw(pMyTexture[6], NULL, &s2, &v3, D3DXToRadian(d), &pos, 0x77ffffff);
+		/*D3DXMATRIX matrix13;
+		D3DXMatrixRotationZ(&matrix13, D3DXToRadian(d));
+		D3DXMatrixScaling(&matrix13, s2.x, s2.y, 1.0f);
+		pSprite->SetTransform(&matrix13);
+		pSprite->Draw(pMyTexture[6], NULL, &v3, &pos, 0x77ffffff);*/
+		{
+			D3DXMATRIX matrix;
+			D3DXMATRIX matrix2;
+			D3DXMATRIX matrix3;
+			D3DXMATRIX matrix4;
+			D3DXMATRIX matrix5;
+			D3DXMatrixTranslation(&matrix, pos.x + v1.x*s2.x, pos.y + v1.y*s2.y, 0);
+			D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d));
+			D3DXMatrixScaling(&matrix3, s2.x, s2.y, 1.0f);
+			D3DXMatrixMultiply(&matrix4, &matrix3, &matrix2);
+			D3DXMatrixMultiply(&matrix5, &matrix4, &matrix);
+			pSprite->SetTransform(&matrix5);
+			pSprite->Draw(pMyTexture[6], NULL, &v1, NULL, 0x77ffffff);
+		}
 		// j
 		pos.x = w - 94.0f - 94.0f - 128.0f + 24.0f;
 		pos.y = h - 86.0f + 32.0f;
-		pSprite->Draw(pMyTexture[5], NULL, &s2, &v3, D3DXToRadian(d), &pos, 0xffffffff);
+		//pos.x /= s2.x;
+		//pos.y /= s2.y;
+		/*D3DXMATRIX matrix14;
+		D3DXMatrixRotationZ(&matrix14, D3DXToRadian(d));
+		D3DXMatrixScaling(&matrix14, s2.x, s2.y, 1.0f);
+		pSprite->SetTransform(&matrix14);
+		pSprite->Draw(pMyTexture[5], NULL, &v3, &pos, 0xffffffff);*/
+		{
+			D3DXMATRIX matrix;
+			D3DXMATRIX matrix2;
+			D3DXMATRIX matrix3;
+			D3DXMATRIX matrix4;
+			D3DXMATRIX matrix5;
+			D3DXMatrixTranslation(&matrix, pos.x + v1.x*s2.x, pos.y + v1.y*s2.y, 0);
+			D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d));
+			D3DXMatrixScaling(&matrix3, s2.x, s2.y, 1.0f);
+			D3DXMatrixMultiply(&matrix4, &matrix3, &matrix2);
+			D3DXMatrixMultiply(&matrix5, &matrix4, &matrix);
+			pSprite->SetTransform(&matrix5);
+			pSprite->Draw(pMyTexture[5], NULL, &v1, NULL, 0xffffffff);
+		}
 
 		// ”Õ
 		if (w - 128 - 94 - 94 - 79 > 0) {
@@ -7824,8 +8003,41 @@ HRESULT CMyD3DApplication::Render()
 			d2 = -(dir).Cut2(GVector(0, 1, 0)).angle2(GVector(0, 0, 1), GVector(0, 1, 0))*180.0f / (float)M_PI;
 			pos.x = w - 94.0f - 94.0f - 94.0f - 128.0f;
 			pos.y = h - 86.0f;
-			pSprite->Draw(pMyTexture[3], NULL, &s, &v2, D3DXToRadian(0), &pos, 0x99ffffff);
-			pSprite->Draw(pMyTexture[4], NULL, &s, &v2, D3DXToRadian(d2), &pos, 0x99ffffff);
+			/*D3DXMATRIX matrix15;
+			D3DXMatrixRotationZ(&matrix15, D3DXToRadian(0));
+			D3DXMatrixScaling(&matrix15, s.x, s.y, 1.0f);
+			pSprite->SetTransform(&matrix15);
+			pSprite->Draw(pMyTexture[3], NULL, &v2, &pos, 0x99ffffff);*/
+			{
+				D3DXMATRIX matrix;
+				D3DXMATRIX matrix2;
+				D3DXMATRIX matrix3;
+				D3DXMatrixTranslation(&matrix, pos.x, pos.y, 0);
+				D3DXMatrixScaling(&matrix2, s.x, s.y, 1.0f);
+				D3DXMatrixMultiply(&matrix3, &matrix2, &matrix);
+				pSprite->SetTransform(&matrix3);
+				pSprite->Draw(pMyTexture[3], NULL, NULL, NULL, 0x99ffffff);
+			}
+
+			/*D3DXMATRIX matrix16;
+			D3DXMatrixRotationZ(&matrix16, D3DXToRadian(d2));
+			D3DXMatrixScaling(&matrix16, s.x, s.y, 1.0f);
+			pSprite->SetTransform(&matrix16);
+			pSprite->Draw(pMyTexture[4], NULL, &v2, &pos, 0x99ffffff);*/
+			{
+				D3DXMATRIX matrix;
+				D3DXMATRIX matrix2;
+				D3DXMATRIX matrix3;
+				D3DXMATRIX matrix4;
+				D3DXMATRIX matrix5;
+				D3DXMatrixTranslation(&matrix, pos.x + v.x*s.x, pos.y + v.y*s.y, 0);
+				D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d2));
+				D3DXMatrixScaling(&matrix3, s.x, s.y, 1.0f);
+				D3DXMatrixMultiply(&matrix4, &matrix3, &matrix2);
+				D3DXMatrixMultiply(&matrix5, &matrix4, &matrix);
+				pSprite->SetTransform(&matrix5);
+				pSprite->Draw(pMyTexture[4], NULL, &v, NULL, 0x99ffffff);
+			}
 
 			//ƒRƒ“ƒpƒX
 			if (CurrentCheckPoint<Course[CurrentCourse].Count || CompassTarget.y>-100000.0) {
@@ -7835,46 +8047,184 @@ HRESULT CMyD3DApplication::Render()
 				// j‚Ì‰e
 				pos.x = w - 94.0f - 94.0f - 94.0f - 128.0f + 24.0f + 2.0f;
 				pos.y = h - 86.0f + 48.0f + 1.0f;
-				pSprite->Draw(pMyTexture[12], NULL, &s2, &v4, D3DXToRadian(d), &pos, 0x77ffffff);
+				/*D3DXMATRIX matrix17;
+				pos.x /= s2.x;
+				pos.y /= s2.y;
+				D3DXMatrixRotationZ(&matrix17, D3DXToRadian(d));
+				D3DXMatrixScaling(&matrix17, s2.x, s2.y, 1.0f);
+				pSprite->SetTransform(&matrix17);
+				pSprite->Draw(pMyTexture[12], NULL, &v4, &pos, 0x77ffffff);*/
+				{
+					D3DXMATRIX matrix;
+					D3DXMATRIX matrix2;
+					D3DXMATRIX matrix3;
+					D3DXMATRIX matrix4;
+					D3DXMATRIX matrix5;
+					D3DXMatrixTranslation(&matrix, pos.x + v5.x*s2.x, pos.y + v5.y*s2.y, 0);
+					D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d));
+					D3DXMatrixScaling(&matrix3, s2.x, s2.y, 1.0f);
+					D3DXMatrixMultiply(&matrix4, &matrix3, &matrix2);
+					D3DXMatrixMultiply(&matrix5, &matrix4, &matrix);
+					pSprite->SetTransform(&matrix5);
+					pSprite->Draw(pMyTexture[12], NULL, &v5, NULL, 0x77ffffff);
+				}
 				// j
 				pos.x = w - 94.0f - 94.0f - 94.0f - 128.0f + 24.0f;
 				pos.y = h - 86.0f + 48.0f;
-				pSprite->Draw(pMyTexture[11], NULL, &s2, &v4, D3DXToRadian(d), &pos, 0xffffffff);
+				/*D3DXMATRIX matrix18;
+				D3DXMatrixRotationZ(&matrix18, D3DXToRadian(d));
+				D3DXMatrixScaling(&matrix18, s2.x, s2.y, 1.0f);
+				pSprite->SetTransform(&matrix18);
+				pSprite->Draw(pMyTexture[11], NULL, &v4, &pos, 0xffffffff);*/
+				{
+					D3DXMATRIX matrix;
+					D3DXMATRIX matrix2;
+					D3DXMATRIX matrix3;
+					D3DXMATRIX matrix4;
+					D3DXMATRIX matrix5;
+					D3DXMatrixTranslation(&matrix, pos.x + v5.x*s2.x, pos.y + v5.y*s2.y, 0);
+					D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d));
+					D3DXMatrixScaling(&matrix3, s2.x, s2.y, 1.0f);
+					D3DXMatrixMultiply(&matrix4, &matrix3, &matrix2);
+					D3DXMatrixMultiply(&matrix5, &matrix4, &matrix);
+					pSprite->SetTransform(&matrix5);
+					pSprite->Draw(pMyTexture[11], NULL, &v5, NULL, 0xffffffff);
+				}
 
 				// j‚Ì‰e
 				float heightangle = (float)(atan2(g_Chip[0]->X.y - target.y, (g_Chip[0]->X - target).Cut2(GVector(0, 1, 0)).abs())*31.0f*2.0f / M_PI);
 				pos.x = w - 94.0f - 94.0f - 94.0f - 128.0f + 24.0f + 2.0f;
 				pos.y = h - 86.0f + 32.0f + 1.0f - heightangle;
-				pSprite->Draw(pMyTexture[14], NULL, &s2, &v3, NULL, &pos, 0x77ffffff);
+				/*D3DXMATRIX matrix19;
+				D3DXMatrixScaling(&matrix19, s2.x, s2.y, 1.0f);
+				pSprite->SetTransform(&matrix19);
+				pSprite->Draw(pMyTexture[14], NULL, &v3, &pos, 0x77ffffff);*/
+				{
+					D3DXMATRIX matrix;
+					D3DXMATRIX matrix2;
+					D3DXMATRIX matrix3;
+					D3DXMatrixTranslation(&matrix, pos.x + v1.x * s2.x, pos.y + v1.y * s2.y, 0);
+					D3DXMatrixScaling(&matrix2, s2.x, s2.y, 1.0f);
+					D3DXMatrixMultiply(&matrix3, &matrix2, &matrix);
+					pSprite->SetTransform(&matrix3);
+					pSprite->Draw(pMyTexture[14], NULL, &v1, NULL, 0x77ffffff);
+				}
 				// j
 				pos.x = w - 94.0f - 94.0f - 94.0f - 128.0f + 24.0f;
 				pos.y = h - 86.0f + 32.0f - heightangle;
-				pSprite->Draw(pMyTexture[13], NULL, &s2, &v3, NULL, &pos, 0xffffffff);
+				/*D3DXMATRIX matrix20;
+				D3DXMatrixScaling(&matrix20, s2.x, s2.y, 1.0f);
+				pSprite->SetTransform(&matrix20);
+				pSprite->Draw(pMyTexture[13], NULL, &v3, &pos, 0xffffffff);*/
+				{
+					D3DXMATRIX matrix;
+					D3DXMATRIX matrix2;
+					D3DXMATRIX matrix3;
+					D3DXMatrixTranslation(&matrix, pos.x + v1.x * s2.x, pos.y + v1.y * s2.y, 0);
+					D3DXMatrixScaling(&matrix2, s2.x, s2.y, 1.0f);
+					D3DXMatrixMultiply(&matrix3, &matrix2, &matrix);
+					pSprite->SetTransform(&matrix3);
+					pSprite->Draw(pMyTexture[13], NULL, &v1, NULL, 0xffffffff);
+				}
 				// j‚Ì‰e
 				pos.x = w - 94.0f - 94.0f - 94.0f - 128.0f + 24.0f + 2.0f;
 				pos.y = h - 86.0f + 48.0f + 1.0f;
-				pSprite->Draw(pMyTexture[12], NULL, &s2, &v4, D3DXToRadian(d), &pos, 0x77ffffff);
+				/*D3DXMATRIX matrix21;
+				D3DXMatrixRotationZ(&matrix21, D3DXToRadian(d));
+				D3DXMatrixScaling(&matrix21, s2.x, s2.y, 1.0f);
+				pSprite->SetTransform(&matrix21);
+				pSprite->Draw(pMyTexture[12], NULL, &v4, &pos, 0x77ffffff);*/
+				{
+					D3DXMATRIX matrix;
+					D3DXMATRIX matrix2;
+					D3DXMATRIX matrix3;
+					D3DXMATRIX matrix4;
+					D3DXMATRIX matrix5;
+					D3DXMatrixTranslation(&matrix, pos.x + v5.x*s2.x, pos.y + v5.y*s2.y, 0);
+					D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d));
+					D3DXMatrixScaling(&matrix3, s2.x, s2.y, 1.0f);
+					D3DXMatrixMultiply(&matrix4, &matrix3, &matrix2);
+					D3DXMatrixMultiply(&matrix5, &matrix4, &matrix);
+					pSprite->SetTransform(&matrix5);
+					pSprite->Draw(pMyTexture[12], NULL, &v5, NULL, 0x77ffffff);
+				}
 				// j
 				pos.x = w - 94.0f - 94.0f - 94.0f - 128.0f + 24.0f;
 				pos.y = h - 86.0f + 48.0f;
-				pSprite->Draw(pMyTexture[11], NULL, &s2, &v4, D3DXToRadian(d), &pos, 0xffffffff);
+				/*D3DXMATRIX matrix22;
+				D3DXMatrixRotationZ(&matrix22, D3DXToRadian(d));
+				D3DXMatrixScaling(&matrix22, s2.x, s2.y, 1.0f);
+				pSprite->SetTransform(&matrix22);
+				pSprite->Draw(pMyTexture[11], NULL, &v4, &pos, 0xffffffff);*/
+				{
+					D3DXMATRIX matrix;
+					D3DXMATRIX matrix2;
+					D3DXMATRIX matrix3;
+					D3DXMATRIX matrix4;
+					D3DXMATRIX matrix5;
+					D3DXMatrixTranslation(&matrix, pos.x + v5.x*s2.x, pos.y + v5.y*s2.y, 0);
+					D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(d));
+					D3DXMatrixScaling(&matrix3, s2.x, s2.y, 1.0f);
+					D3DXMatrixMultiply(&matrix4, &matrix3, &matrix2);
+					D3DXMatrixMultiply(&matrix5, &matrix4, &matrix);
+					pSprite->SetTransform(&matrix5);
+					pSprite->Draw(pMyTexture[11], NULL, &v5, NULL, 0xffffffff);
+				}
 			}
 
 			// j‚Ì‰e
 			pos.x = w - 94.0f - 94.0f - 94.0f - 128.0f + 24.0f + 2.0f;
 			pos.y = h - 86.0f + 48.0f + 1.0f;
-			pSprite->Draw(pMyTexture[8], NULL, &s2, &v4, D3DXToRadian(180), &pos, 0x77ffffff);
+			/*D3DXMATRIX matrix23;
+			D3DXMatrixRotationZ(&matrix23, D3DXToRadian(180));
+			D3DXMatrixScaling(&matrix23, s2.x, s2.y, 1.0f);
+			pSprite->SetTransform(&matrix23);
+			pSprite->Draw(pMyTexture[8], NULL, &v4, &pos, 0x77ffffff);*/
+			{
+				D3DXMATRIX matrix;
+				D3DXMATRIX matrix2;
+				D3DXMATRIX matrix3;
+				D3DXMATRIX matrix4;
+				D3DXMATRIX matrix5;
+				D3DXMatrixTranslation(&matrix, pos.x + v5.x*s2.x, pos.y + v5.y*s2.y, 0);
+				D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(180));
+				D3DXMatrixScaling(&matrix3, s2.x, s2.y, 1.0f);
+				D3DXMatrixMultiply(&matrix4, &matrix3, &matrix2);
+				D3DXMatrixMultiply(&matrix5, &matrix4, &matrix);
+				pSprite->SetTransform(&matrix5);
+				pSprite->Draw(pMyTexture[8], NULL, &v5, NULL, 0x77ffffff);
+			}
 			// j
 			pos.x = w - 94.0f - 94.0f - 94.0f - 128.0f + 24.0f;
 			pos.y = h - 86.0f + 48.0f;
-			pSprite->Draw(pMyTexture[7], NULL, &s2, &v4, D3DXToRadian(180), &pos, 0xffffffff);
+			/*D3DXMATRIX matrix24;
+			D3DXMatrixRotationZ(&matrix24, D3DXToRadian(180));
+			D3DXMatrixScaling(&matrix24, s2.x, s2.y, 1.0f);
+			pSprite->SetTransform(&matrix24);
+			pSprite->Draw(pMyTexture[7], NULL, &v4, &pos, 0xffffffff);*/
+			{
+				D3DXMATRIX matrix;
+				D3DXMATRIX matrix2;
+				D3DXMATRIX matrix3;
+				D3DXMATRIX matrix4;
+				D3DXMATRIX matrix5;
+				D3DXMatrixTranslation(&matrix, pos.x + v5.x*s2.x, pos.y + v5.y*s2.y, 0);
+				D3DXMatrixRotationZ(&matrix2, -D3DXToRadian(180));
+				D3DXMatrixScaling(&matrix3, s2.x, s2.y, 1.0f);
+				D3DXMatrixMultiply(&matrix4, &matrix3, &matrix2);
+				D3DXMatrixMultiply(&matrix5, &matrix4, &matrix);
+				pSprite->SetTransform(&matrix5);
+				pSprite->Draw(pMyTexture[7], NULL, &v5, NULL, 0xffffffff);
+			}
 		}
 	}
+
+	pSprite->SetTransform(&t_matrix);
 
 	if (w - 128 - 94 - 94 - 94 - 79 > 0 && CCDFlag && ShowMeter) {
 		pos.x = w - 128 - 94 - 94 - 94 - 79;
 		pos.y = h - 71;
-		pSprite->Draw(pMyTexture[20], NULL, NULL, NULL, D3DXToRadian(0), &pos, 0x99ffffff);
+		pSprite->Draw(pMyTexture[20], NULL, NULL, &pos, 0x99ffffff);
 	}
 	if (ShowTitle) {
 		if (TitleAlpha <= 0xeeffffff) TitleAlpha += 0x11000000;
@@ -7885,10 +8235,9 @@ HRESULT CMyD3DApplication::Render()
 	if (TitleAlpha != 0x00ffffff) {
 		pos.x = w / 2.0f - 160.0f;
 		pos.y = 0.0f;
-		pSprite->Draw(pMyTexture[15], NULL, NULL, NULL, NULL, &pos, TitleAlpha);
+		pSprite->Draw(pMyTexture[15], NULL, NULL, &pos, TitleAlpha);
 	}
 	pSprite->End();
-
 
 
 
@@ -7992,15 +8341,15 @@ HRESULT CMyD3DApplication::RenderText()
 			if (japan) {
 				RECT rc = { left + 16,top + (int)fNextLine,16 * 40,16 };
 				rc.left = left + 17;rc.top = top + (int)fNextLine + 1;
-				g_pFont->DrawText(szMsg, -1, &rc, DT_NOCLIP, fontColor2);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
 				rc.left = left + 15;rc.top = top + (int)fNextLine - 1;
-				g_pFont->DrawText(szMsg, -1, &rc, DT_NOCLIP, fontColor2);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
 				rc.left = left + 17;rc.top = top + (int)fNextLine - 1;
-				g_pFont->DrawText(szMsg, -1, &rc, DT_NOCLIP, fontColor2);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
 				rc.left = left + 15;rc.top = top + (int)fNextLine + 1;
-				g_pFont->DrawText(szMsg, -1, &rc, DT_NOCLIP, fontColor2);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
 				rc.left = left + 16;rc.top = top + (int)fNextLine;
-				g_pFont->DrawText(szMsg, -1, &rc, DT_NOCLIP, fontColor);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor);
 			}
 			else {
 				m_pFont->DrawText((float)left + 17, top + fNextLine + 1, fontColor2, szMsg);
@@ -8050,15 +8399,15 @@ HRESULT CMyD3DApplication::RenderText()
 			if (japan) {
 				RECT rc = { 16,(long)fNextLine,16 * 40,16 };
 				rc.left = 17;rc.top = (long)fNextLine + 1;
-				g_pFont->DrawText(szMsg, -1, &rc, DT_NOCLIP, fontColor2);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
 				rc.left = 15;rc.top = (long)fNextLine - 1;
-				g_pFont->DrawText(szMsg, -1, &rc, DT_NOCLIP, fontColor2);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
 				rc.left = 17;rc.top = (long)fNextLine - 1;
-				g_pFont->DrawText(szMsg, -1, &rc, DT_NOCLIP, fontColor2);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
 				rc.left = 15;rc.top = (long)fNextLine + 1;
-				g_pFont->DrawText(szMsg, -1, &rc, DT_NOCLIP, fontColor2);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor2);
 				rc.left = 16;rc.top = (long)fNextLine;
-				g_pFont->DrawText(szMsg, -1, &rc, DT_NOCLIP, fontColor);
+				g_pFont->DrawText(NULL, szMsg, -1, &rc, DT_NOCLIP, fontColor);
 			}
 			else {
 				m_pFont->DrawText(17, fNextLine + 1, fontColor2, szMsg);
@@ -8344,13 +8693,13 @@ LRESULT CMyD3DApplication::MsgProc(HWND hWnd, UINT msg, WPARAM wParam,
 	switch (msg)
 	{
 	case WM_SIZE:
-		if (wParam == SIZE_MINIMIZED) {
+		//if (wParam == SIZE_MINIMIZED) {
 			//			GCHIPSTREAM stream;
 			//			stream.code=-1;//CLEAR
 			//			if(g_DPlay)	g_DPlay->SendAll((BYTE*)&stream,sizeof(short));
 			//			CD3DApplication::MsgProc( hWnd, msg, wParam, lParam );
 			return S_OK;
-		}
+		//}
 		break;
 	case WM_SETFOCUS:
 		//    m_hWndFocused = GetFocus( )->GetSafeHwnd( );
