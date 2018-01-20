@@ -19,7 +19,6 @@
 #include "DIUtil.h"
 #include "DMUtil.h"
 #include "DSUtil.h"
-#include "D3Dtypes.h"
 
 #include <stdio.h>
 //#include <stdlib.h>

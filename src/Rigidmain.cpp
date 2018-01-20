@@ -4057,7 +4057,7 @@ HRESULT LoadLand(LPDIRECT3DDEVICE9 Device, char *fname)
 	//	g_pLandMesh->RestoreDeviceObjects(Device);
 	LPDIRECT3DVERTEXBUFFER9 pMeshVB;
 	LPDIRECT3DINDEXBUFFER9 pMeshIB;
-	D3DVERTEX             *pVertex;
+	struct { D3DVALUE x, y, z, nx, ny, nz, tu, tv; } *pVertex;
 	struct {unsigned short p1, p2, p3; } *pIndex;
 
 	for (i = 0;i < (signed int)g_pLandMesh->m_dwNumMaterials;i++) {
@@ -6076,8 +6076,8 @@ HRESULT CMyD3DApplication::_apply_vals()
 					FLOAT dist;
 					LPDIRECT3DVERTEXBUFFER9 pVB;
 					LPDIRECT3DINDEXBUFFER9  pIB;
-					WORD*            pIndices;
-					D3DVERTEX*    pVertices;
+					WORD *pIndices;
+					WORD *pVertices;
 					g_pLandMesh->GetSysMemMesh()->GetVertexBuffer(&pVB);
 					g_pLandMesh->GetSysMemMesh()->GetIndexBuffer(&pIB);
 					pIB->Lock(0, 0, (VOID**)&pIndices, 0);

@@ -5,7 +5,9 @@
 //-----------------------------------------------------------------------------
 #ifndef AFX_RIGID_H__F533E4AC_435C_4933_8AC7_50A6C021E6DF__INCLUDED_
 #define AFX_RIGID_H__F533E4AC_435C_4933_8AC7_50A6C021E6DF__INCLUDED_
-#define STRICT
+#ifndef STRICT
+    #define STRICT
+#endif
 #define DIRECTINPUT_VERSION 0x0800
 #include <windows.h>
 #include <mmsystem.h>
@@ -26,7 +28,6 @@
 #include "DIUtil.h"
 //#include "DMUtil.h"
 #include "DSUtil.h"
-#include "D3Dtypes.h"
 #include "GVector.hpp"
 
 

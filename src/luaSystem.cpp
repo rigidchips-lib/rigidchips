@@ -19,7 +19,6 @@
 #include "DIUtil.h"
 #include "DMUtil.h"
 #include "DSUtil.h"
-#include "D3Dtypes.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -799,12 +798,13 @@ int luaGetH(lua_State *L)
 	FLOAT dist;
 	LPDIRECT3DVERTEXBUFFER9 pVB;
 	LPDIRECT3DINDEXBUFFER9  pIB;
-	WORD*            pIndices;
-	D3DVERTEX*    pVertices;
+	WORD *pIndices;
+	WORD *pVertices;
 	if (g_pLandMesh == NULL) {
 		lua_pushnumber(L, -100000.0f);
 		return 1;
 	}
+	
 	g_pLandMesh->GetSysMemMesh()->GetVertexBuffer(&pVB);
 	g_pLandMesh->GetSysMemMesh()->GetIndexBuffer(&pIB);
 	pIB->Lock(0, 0, (VOID**)&pIndices, 0);
@@ -814,6 +814,10 @@ int luaGetH(lua_State *L)
 	v1.x = x;v1.y = 100000.0f;v1.z = z;
 	v2.x = 0;v2.y = -1;v2.z = 0;
 	D3DXIntersect(g_pLandMesh->GetSysMemMesh(), &v1, &v2, &hit, NULL, NULL, NULL, &dist, NULL, NULL);
+	pVB->Unlock();
+	pIB->Unlock();
+	pVB->Release();
+	pIB->Release();
 	if (!hit) dist = -100000.0f;
 	else dist = 100000.0f - dist;
 	lua_pushnumber(L, dist);
