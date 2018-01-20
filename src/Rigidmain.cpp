@@ -6012,7 +6012,7 @@ HRESULT CMyD3DApplication::_update_vals()
 }
 HRESULT CMyD3DApplication::_apply_vals()
 {
-	int i, j, k;
+	int i, k;
 	if (g_World->Stop == false && g_World->NetStop == false) {
 		//•Ï”‚Ì“à—e‚ğXV
 		for (i = 0; i<GVALMAX; i++) {
