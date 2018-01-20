@@ -23,7 +23,7 @@
 //-----------------------------------------------------------------------------
 CD3DMesh::CD3DMesh(TCHAR* strName)
 {
-	_tcsncpy(m_strName, strName, sizeof(m_strName) / sizeof(TCHAR));
+	_tcsncpy_s(m_strName, strName, sizeof(m_strName) / sizeof(TCHAR));
 	m_strName[sizeof(m_strName) / sizeof(TCHAR) - 1] = _T('\0');
 	m_pSysMemMesh = NULL;
 	m_pLocalMesh = NULL;
@@ -369,7 +369,7 @@ HRESULT CD3DMesh::Render(LPDIRECT3DDEVICE9 pd3dDevice, bool bDrawOpaqueSubsets,
 //-----------------------------------------------------------------------------
 CD3DFrame::CD3DFrame(TCHAR* strName)
 {
-	_tcsncpy(m_strName, strName, sizeof(m_strName) / sizeof(TCHAR));
+	_tcsncpy_s(m_strName, strName, sizeof(m_strName) / sizeof(TCHAR));
 	m_strName[sizeof(m_strName) / sizeof(TCHAR) - 1] = _T('\0');
 	D3DXMatrixIdentity(&m_mat);
 	m_pMesh = NULL;

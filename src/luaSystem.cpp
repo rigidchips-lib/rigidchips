@@ -1472,7 +1472,7 @@ int luaSystemRun(char *funcName) {
 	// 関数を呼ぶ。lua_callの第2引数は渡す引数の数、第3引数は戻り値の数。
 	// 関数とその引数はスタックから取り除かれ、戻り値がスタックに残る。
 	SystemErrorCode = lua_pcall(g_SystemLua, 0, 0, 0);
-	if (SystemErrorCode)sprintf(SystemErrorStr, "%s %s\n", lua_tostring(g_SystemLua, -1));
+	if (SystemErrorCode)sprintf(SystemErrorStr, "%s\n", lua_tostring(g_SystemLua, -1));
 	for (int i = 0;i < g_VarCount;i++) {
 		lua_pushstring(g_SystemLua, g_ValList[i].Name); // (1) Luaの変数名toCを指定
 		lua_gettable(g_SystemLua, LUA_GLOBALSINDEX); // (2)と(3)の動作
