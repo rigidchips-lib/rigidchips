@@ -72,7 +72,7 @@ int luaPrint(lua_State *L)
 			sprintf(str, "%s", lua_toboolean(L, i) ? "true" : "false");
 		}
 		else {
-			sprintf("%s:%p", lua_typename(L, lua_type(L, i)), lua_topointer(L, i));
+			sprintf(str, "%s:%p", lua_typename(L, lua_type(L, i)), lua_topointer(L, i));
 		}
 		strcat(ScriptOutput[a], str);
 	}
