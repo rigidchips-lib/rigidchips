@@ -1,6 +1,6 @@
 #ifndef G_VECTOR_H
 #define G_VECTOR_H
-#define GSINGLE_PRECISION
+//#define GSINGLE_PRECISION
 #include <math.h>
 #include "Consts.hpp"
 //#define GSINGLE_PRECISION
@@ -869,5 +869,13 @@ public:
 	}
 };
 
-
+//í êM√ﬁ∞¿óp4byteFloat
+typedef float GFloat_32;
+class GVector_32 {
+public:
+	float x, y, z;
+	GVector_32(void) { x = y = z = 0; }
+	explicit GVector_32(const GVector &v) : x((GFloat_32)v.x), y((GFloat_32)v.y), z((GFloat_32)v.z) {}
+	operator GVector() { return GVector(x, y, z); }
+};
 #endif

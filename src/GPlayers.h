@@ -20,12 +20,12 @@ typedef struct {
 } GRECEIVEDATA;
 
 typedef struct {
-	GVector Pos;
-	GVector Vec;
-	GFloat Power;
-	GFloat Size;
-	GVector Tar;
-	GFloat Dist;
+	GVector_32 Pos;
+	GVector_32 Vec;
+	GFloat_32 Power;
+	GFloat_32 Size;
+	GVector_32 Tar;
+	GFloat_32 Dist;
 	DWORD dpnid;
 } GBULLETDATA;
 #define GBULLETDATAMAX 100
@@ -36,8 +36,8 @@ typedef struct {
 
 typedef struct {
 	int Type;
-	GVector Pos;
-	GFloat Power;
+	GVector_32 Pos;
+	GFloat_32 Power;
 } GEXPDATA;
 
 #define GEXPDATAMAX 100
@@ -48,8 +48,8 @@ typedef struct {
 
 typedef struct {
 	int Type;
-	GVector Pos;
-	GFloat Power;
+	GVector_32 Pos;
+	GFloat_32 Power;
 	DWORD dpnid;
 } GEXPDATA2;
 
@@ -66,10 +66,10 @@ typedef struct {
 	int yforce;
 	int scenarioCode;
 
-	float x, y, z;
-	float w1, w2;
-	float ww1, ww2;
-	float maxY;
+	GFloat x, y, z;
+	GFloat w1, w2;
+	GFloat ww1, ww2;
+	GFloat maxY;
 	DWORD time;
 	DWORD time2;
 	DWORD rtime;

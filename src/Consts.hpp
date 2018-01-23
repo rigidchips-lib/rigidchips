@@ -62,7 +62,7 @@ const double ARM_EFF = 1.0;
 const double JET_EFF = 10.0;
 const double WHL_EFF = 30.0;
 
-typedef float GFloat;//‰¼’u‚«
+typedef double GFloat;//‰¼’u‚«
 //…–Ê‚Ì‚‚³
 const GFloat WATER_LINE = -0.45f;
 

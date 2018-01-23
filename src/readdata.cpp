@@ -528,7 +528,11 @@ int readChildData(FILE *fp, int parentNo, int parentType, bool checkFlag)
 						minus = false;
 					}
 				}
-				else sscanf(str3, "%g", &value);
+				else {
+					double val;
+					sscanf(str3, "%lf", &val);
+					value = (GFloat)val;
+				}
 			}
 			else if (c3 == 1) {
 				if (!checkFlag) n = getValNo(str3);else n = 0;
@@ -736,20 +740,22 @@ int  readData2(FILE *fp, bool checkFlag)
 				if (cw == ',') cw = getToken(fp, str);
 				cw2 = getToken(fp, str2);
 				cw3 = getToken(fp, str3);
+				double temp;
+				sscanf(str3, "%lf", &temp);
 				if (strcmp("DEFAULT", str) == 0) {
-					if (!checkFlag)sscanf(str3, "%g", &(g_ValList[g_VarCount].Def));
+					if (!checkFlag) g_ValList[g_VarCount].Def = (GFloat)temp;
 				}
 				else if (strcmp("MIN", str) == 0) {
-					if (!checkFlag)sscanf(str3, "%g", &(g_ValList[g_VarCount].Min));
+					if (!checkFlag) g_ValList[g_VarCount].Min = (GFloat)temp;
 				}
 				else if (strcmp("MAX", str) == 0) {
-					if (!checkFlag)sscanf(str3, "%g", &(g_ValList[g_VarCount].Max));
+					if (!checkFlag) g_ValList[g_VarCount].Max = (GFloat)temp;
 				}
 				else if (strcmp("STEP", str) == 0) {
-					if (!checkFlag)sscanf(str3, "%g", &(g_ValList[g_VarCount].Dec));
+					if (!checkFlag) g_ValList[g_VarCount].Dec = (GFloat)temp;
 				}
 				else if (strcmp("DISP", str) == 0) {
-					if (!checkFlag)sscanf(str3, "%d", &(g_ValList[g_VarCount].visible));
+					if (!checkFlag) g_ValList[g_VarCount].visible = (int)temp;
 				}
 				else { return 6; } // It is a key-word doesn't know.
 				cw = getToken(fp, str);
@@ -789,15 +795,15 @@ int  readData2(FILE *fp, bool checkFlag)
 				if (cw == ',') cw = getToken(fp, str);
 				cw2 = getToken(fp, str2);
 				cw3 = getToken(fp, str3);
-				GFloat v = 0;
+				double v = 0;
 				bool   f = false;
 				if (strcmp("STEP", str) == 0) {
 					if (!checkFlag) {
-						sscanf(str3, "%g", &v);
-						g_KeyList[n].Step[g_KeyList[n].Count] = v;
+						sscanf(str3, "%lf", &v);
+						g_KeyList[n].Step[g_KeyList[n].Count] = (GFloat)v;
 					}
 				}
-				else if (strcmp("VALUE", str) == 0) { if (!checkFlag)sscanf(str3, "%g", &v); }
+				else if (strcmp("VALUE", str) == 0) { if (!checkFlag)sscanf(str3, "%lf", &v); }
 				else return 11;
 				cw = getToken(fp, str);
 			}
@@ -950,31 +956,31 @@ int saveChips(FILE *fp, GRigid *rigid, int level)
 			vname = checkVal(&rigid->Parent->LinkInfo->Angle, tmp);
 			if (rigid->Parent->LinkInfo->Angle != 0 || vname != NULL) {
 				if (camma == 0) camma = 1;else fprintf(fp, ",");
-				if (vname == NULL) fprintf(fp, "angle=%g", rigid->Parent->LinkInfo->Angle);
+				if (vname == NULL) fprintf(fp, "angle=%f", rigid->Parent->LinkInfo->Angle);
 				else fprintf(fp, "angle=%s", vname);
 			}
 			vname = checkVal(&rigid->Power, tmp);
 			if (rigid->Power != 0 || vname != NULL) {
 				if (camma == 0) camma = 1;else fprintf(fp, ",");
-				if (vname == NULL) fprintf(fp, "power=%g", rigid->Power);
+				if (vname == NULL) fprintf(fp, "power=%f", rigid->Power);
 				else fprintf(fp, "power=%s", vname);
 			}
 			vname = checkVal(&rigid->LinkInfo->FrictionK, tmp);
 			if (rigid->LinkInfo->FrictionK != 0 || vname != NULL) {
 				if (camma == 0) camma = 1;else fprintf(fp, ",");
-				if (vname == NULL) fprintf(fp, "brake=%g", rigid->LinkInfo->FrictionK);
+				if (vname == NULL) fprintf(fp, "brake=%f", rigid->LinkInfo->FrictionK);
 				else fprintf(fp, "brake=%s", vname);
 			}
 			vname = checkVal(&rigid->Parent->LinkInfo->SpringK, tmp);
 			if (rigid->Parent->LinkInfo->SpringK != 1 || vname != NULL) {
 				if (camma == 0) camma = 1;else fprintf(fp, ",");
-				if (vname == NULL) fprintf(fp, "spring=%g", rigid->Parent->LinkInfo->SpringK);
+				if (vname == NULL) fprintf(fp, "spring=%f", rigid->Parent->LinkInfo->SpringK);
 				else fprintf(fp, "spring=%s", vname);
 			}
 			vname = checkVal(&rigid->Parent->LinkInfo->DamperK, tmp);
 			if (rigid->Parent->LinkInfo->DamperK != 0.5 || vname != NULL) {
 				if (camma == 0) camma = 1;else fprintf(fp, ",");
-				if (vname == NULL) fprintf(fp, "dumper=%g", rigid->Parent->LinkInfo->DamperK);
+				if (vname == NULL) fprintf(fp, "dumper=%f", rigid->Parent->LinkInfo->DamperK);
 				else fprintf(fp, "dumper=%s", vname);
 			}
 			vname = checkVal(&rigid->Color, tmp);
@@ -985,12 +991,12 @@ int saveChips(FILE *fp, GRigid *rigid, int level)
 			}
 			if (rigid->Option != 0) {
 				if (camma == 0) camma = 1;else fprintf(fp, ",");
-				fprintf(fp, "option=%g", rigid->Option);
+				fprintf(fp, "option=%f", rigid->Option);
 			}
 			vname = checkVal(&rigid->Effect, tmp);
 			if (rigid->Effect != 0 || vname != NULL) {
 				if (camma == 0) camma = 1;else fprintf(fp, ",");
-				if (vname == NULL) fprintf(fp, "effect=%g", rigid->Effect);
+				if (vname == NULL) fprintf(fp, "effect=%f", rigid->Effect);
 				else fprintf(fp, "effect=%s", vname);
 			}
 			if (rigid->Name[0] != '\0') {
@@ -1004,25 +1010,25 @@ int saveChips(FILE *fp, GRigid *rigid, int level)
 			vname = checkVal(&rigid->LinkInfo->Angle, tmp);
 			if (rigid->LinkInfo->Angle != 0 || vname != NULL) {
 				if (camma == 0) camma = 1;else fprintf(fp, ",");
-				if (vname == NULL) fprintf(fp, "angle=%g", rigid->LinkInfo->Angle);
+				if (vname == NULL) fprintf(fp, "angle=%f", rigid->LinkInfo->Angle);
 				else fprintf(fp, "angle=%s", vname);
 			}
 			vname = checkVal(&rigid->Power, tmp);
 			if (rigid->Power != 0 || vname != NULL) {
 				if (camma == 0) camma = 1;else fprintf(fp, ",");
-				if (vname == NULL) fprintf(fp, "power=%g", rigid->Power);
+				if (vname == NULL) fprintf(fp, "power=%f", rigid->Power);
 				else fprintf(fp, "power=%s", vname);
 			}
 			vname = checkVal(&rigid->LinkInfo->SpringK, tmp);
 			if (rigid->LinkInfo->SpringK != 1 || vname != NULL) {
 				if (camma == 0) camma = 1;else fprintf(fp, ",");
-				if (vname == NULL) fprintf(fp, "spring=%g", rigid->LinkInfo->SpringK);
+				if (vname == NULL) fprintf(fp, "spring=%f", rigid->LinkInfo->SpringK);
 				else fprintf(fp, "spring=%s", vname);
 			}
 			vname = checkVal(&rigid->LinkInfo->DamperK, tmp);
 			if (rigid->LinkInfo->DamperK != 0.5 || vname != NULL) {
 				if (camma == 0) camma = 1;else fprintf(fp, ",");
-				if (vname == NULL) fprintf(fp, "dumper=%g", rigid->LinkInfo->DamperK);
+				if (vname == NULL) fprintf(fp, "dumper=%f", rigid->LinkInfo->DamperK);
 				else fprintf(fp, "dumper=%s", vname);
 			}
 			vname = checkVal(&rigid->Color, tmp);
@@ -1033,12 +1039,12 @@ int saveChips(FILE *fp, GRigid *rigid, int level)
 			}
 			if (rigid->Option != 0) {
 				if (camma == 0) camma = 1;else fprintf(fp, ",");
-				fprintf(fp, "option=%g", rigid->Option);
+				fprintf(fp, "option=%f", rigid->Option);
 			}
 			vname = checkVal(&rigid->Effect, tmp);
 			if (rigid->Effect != 0 || vname != NULL) {
 				if (camma == 0) camma = 1;else fprintf(fp, ",");
-				if (vname == NULL) fprintf(fp, "effect=%g", rigid->Effect);
+				if (vname == NULL) fprintf(fp, "effect=%f", rigid->Effect);
 				else fprintf(fp, "effect=%s", vname);
 			}
 			if (rigid->Name[0] != '\0') {
@@ -1048,12 +1054,12 @@ int saveChips(FILE *fp, GRigid *rigid, int level)
 			vname = checkVal(&rigid->UserEffect, tmp);
 			if (rigid->UserEffect != 0 || vname != NULL) {
 				if (camma == 0) camma = 1;else fprintf(fp, ",");
-				if (vname == NULL) fprintf(fp, "user1=%g", rigid->UserEffect);
+				if (vname == NULL) fprintf(fp, "user1=%f", rigid->UserEffect);
 				else fprintf(fp, "user1=%s", vname);
 			}
 			if (rigid->UserOption != 0) {
 				if (camma == 0) camma = 1;else fprintf(fp, ",");
-				fprintf(fp, "user2=%g", rigid->UserOption);
+				fprintf(fp, "user2=%f", rigid->UserOption);
 			}
 
 			fprintf(fp, ") {");
